@@ -1,26 +1,9 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
-import { Product } from "@/utils/supabase/types";
 import { revalidatePath } from "next/cache";
 
-// Define el tipo para la respuesta de addProduct
-interface AddProductResponse {
-  status: "success" | "error";
-  message: string;
-  product?: Product; // Opcional porque solo está presente en caso de éxito
-}
-
-// Define el tipo para la respuesta de getCategories
-interface GetCategoriesResponse {
-  status: "success" | "error";
-  message?: string; // Opcional porque solo está presente en caso de error
-  categories: string[];
-}
-
-export async function addProduct(
-  formData: FormData,
-): Promise<AddProductResponse> {
+export async function addProduct(formData: FormData) {
   try {
     const supabase = await createClient();
 
@@ -28,90 +11,129 @@ export async function addProduct(
     const name = formData.get("name") as string;
     const category = formData.get("category") as string;
     const customCategory = formData.get("customCategory") as string;
-    const price = Number.parseFloat(formData.get("price") as string);
+    const price = parseFloat(formData.get("price") as string);
     const unit = formData.get("unit") as string;
-    const stock = Number.parseInt(formData.get("stock") as string);
+    const stock = parseInt(formData.get("stock") as string);
     const description = formData.get("description") as string;
     const imageUrl = formData.get("imageUrl") as string;
 
-    // Usar la categoría personalizada si se proporciona, de lo contrario usar la categoría seleccionada
-    const finalCategory = customCategory ? customCategory : category;
-
-    // Validar datos
-    if (!name || !finalCategory || isNaN(price) || isNaN(stock)) {
-      return {
-        status: "error",
-        message: "Please fill all required fields with valid data",
-      };
+    // Validar datos básicos
+    if (!name || !category || isNaN(price) || isNaN(stock)) {
+      return { error: "Faltan campos requeridos" };
     }
 
-    // Insertar producto en la base de datos
-    const { data, error } = await supabase
-      .from("products")
-      .insert({
-        name,
-        category: finalCategory,
-        price,
-        unit: unit || null,
-        stock,
-        description: description || null,
-        image_url: imageUrl || null,
-      })
-      .select()
-      .single();
+    // Insertar producto
+    const { error } = await supabase.from("products").insert({
+      name,
+      category: customCategory || category,
+      price,
+      unit,
+      stock,
+      description,
+      image_url: imageUrl,
+    });
 
     if (error) {
-      console.error("Error adding product:", error);
-      return {
-        status: "error",
-        message: error.message,
-      };
+      console.error("Error al añadir producto:", error);
+      return { error: error.message };
     }
 
-    // Revalidar la página del catálogo para mostrar el nuevo producto
-    revalidatePath("/catalog");
     revalidatePath("/dashboard");
-
-    return {
-      status: "success",
-      message: "Product added successfully",
-      product: data as Product, // Asegurar que data sea del tipo Product
-    };
+    return { success: true };
   } catch (error: any) {
-    console.error("Error in addProduct:", error);
-    return {
-      status: "error",
-      message: error.message || "An error occurred while adding the product",
-    };
+    console.error("Error en addProduct:", error);
+    return { error: error.message };
   }
 }
 
-export async function getCategories(): Promise<GetCategoriesResponse> {
+export async function deleteProduct(id: string) {
   try {
     const supabase = await createClient();
 
+    // Primero eliminar la imagen si existe
+    const { data: product } = await supabase
+      .from("products")
+      .select("image_url")
+      .eq("id", id)
+      .single();
+
+    if (product?.image_url) {
+      const path = product.image_url.split("/").pop();
+      if (path) {
+        await supabase.storage.from("products-images").remove([`images/${path}`]);
+      }
+    }
+
+    // Eliminar el producto
+    const { error } = await supabase
+      .from("products")
+      .delete()
+      .eq("id", id);
+
+    if (error) throw error;
+
+    revalidatePath("/dashboard");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error al eliminar producto:", error);
+    return { error: error.message };
+  }
+}
+
+export async function updateProduct(id: string, formData: FormData) {
+  try {
+    const supabase = await createClient();
+
+    const name = formData.get("name") as string;
+    const category = formData.get("category") as string;
+    const customCategory = formData.get("customCategory") as string;
+    const price = parseFloat(formData.get("price") as string);
+    const unit = formData.get("unit") as string;
+    const stock = parseInt(formData.get("stock") as string);
+    const description = formData.get("description") as string;
+    const imageUrl = formData.get("imageUrl") as string;
+
+    if (!name || !category || isNaN(price) || isNaN(stock)) {
+      return { error: "Faltan campos requeridos" };
+    }
+
+    const { error } = await supabase
+      .from("products")
+      .update({
+        name,
+        category: customCategory || category,
+        price,
+        unit,
+        stock,
+        description,
+        image_url: imageUrl || null,
+      })
+      .eq("id", id);
+
+    if (error) throw error;
+
+    revalidatePath("/dashboard");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error al actualizar producto:", error);
+    return { error: error.message };
+  }
+}
+
+export async function getCategories() {
+  try {
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("products")
       .select("category")
       .order("category");
 
-    if (error) {
-      throw error;
-    }
+    if (error) throw error;
 
-    // Extraer categorías únicas
-    const uniqueCategories = [...new Set(data.map((item) => item.category))];
-
-    return {
-      status: "success",
-      categories: uniqueCategories,
-    };
+    const categories = [...new Set(data.map((item) => item.category))];
+    return { categories };
   } catch (error: any) {
-    console.error("Error fetching categories:", error);
-    return {
-      status: "error",
-      message: error.message || "An error occurred while fetching categories",
-      categories: [],
-    };
+    console.error("Error al obtener categorías:", error);
+    return { error: error.message };
   }
 }

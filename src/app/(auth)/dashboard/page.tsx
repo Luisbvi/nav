@@ -25,7 +25,12 @@ import {
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { createClient } from "@/utils/supabase/client";
-import { addProduct, getCategories } from "@/app/(auth)/actions/products";
+import {
+  addProduct,
+  deleteProduct,
+  updateProduct,
+  getCategories,
+} from "@/app/(auth)/actions/products";
 
 // UI Components
 import { Button } from "@/components/ui/button";
@@ -55,14 +60,14 @@ const defaultCategories = [
 
 // Define el tipo Product
 interface Product {
+  image_url: string;
   id: string;
   name: string;
   category: string;
   price: number;
-  unit: string;
+  unit?: string;
   stock: number;
   description?: string;
-  image?: string;
 }
 
 export default function DashboardPage() {
@@ -95,6 +100,8 @@ export default function DashboardPage() {
     image: "",
   });
 
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
+
   const supabase = createClient();
 
   // Fetch products and categories on component mount
@@ -112,7 +119,7 @@ export default function DashboardPage() {
 
         // Fetch categories
         const result = await getCategories();
-        if (result.status === "success" && result.categories.length > 0) {
+        if (result.categories && result.categories.length > 0) {
           setCategories(result.categories);
           setFormData((prev) => ({
             ...prev,
@@ -136,9 +143,9 @@ export default function DashboardPage() {
   const stats = {
     totalProducts: products.length,
     totalCategories: categories.length,
-    lowStock: products.filter((p: any) => p.stock < 50).length,
+    lowStock: products.filter((p) => p.stock < 50).length,
     totalValue: products.reduce(
-      (sum, product: any) => sum + product.price * product.stock,
+      (sum, product) => sum + product.price * product.stock,
       0,
     ),
   };
@@ -161,7 +168,60 @@ export default function DashboardPage() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle form submission for adding a product
+  // Handle delete product
+  const handleDeleteProduct = async (id: string) => {
+    if (!confirm("¿Estás seguro de que quieres eliminar este producto?")) {
+      return;
+    }
+
+    try {
+      const result = await deleteProduct(id);
+
+      if (result.error) {
+        console.error("Error deleting product:", result.error);
+        return;
+      }
+
+      // Actualizar la lista de productos
+      const { data: productsData, error: productsError } = await supabase
+        .from("products")
+        .select("*")
+        .order("name");
+
+      if (!productsError && productsData) {
+        setProducts(productsData);
+      }
+    } catch (error) {
+      console.error("Error deleting product:", error);
+    }
+  };
+
+  // Handle edit product
+  const handleEditProduct = async (id: string) => {
+    try {
+      const product = products.find((p) => p.id === id);
+      if (!product) return;
+
+      setEditingProductId(id);
+      setFormData({
+        name: product.name,
+        category: product.category,
+        customCategory: "",
+        price: product.price.toString(),
+        unit: product.unit || "KG",
+        stock: product.stock.toString(),
+        description: product.description || "",
+        image: product.image_url || "",
+      });
+
+      setImageUrl(product.image_url || "");
+      setShowAddModal(true);
+    } catch (error) {
+      console.error("Error editing product:", error);
+    }
+  };
+
+  // Handle form submission for adding/editing a product
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -184,19 +244,21 @@ export default function DashboardPage() {
       submitData.append("imageUrl", imageUrl);
 
       // Submit the form
-      const result = await addProduct(submitData);
+      const result = editingProductId
+        ? await updateProduct(editingProductId, submitData)
+        : await addProduct(submitData);
 
-      if (result.status === "error") {
-        setFormError(result.message);
+      if (result.error) {
+        setFormError(result.error);
       } else {
-        setFormSuccess("Product added successfully!");
+        setFormSuccess(
+          editingProductId
+            ? "Product updated successfully!"
+            : "Product added successfully!",
+        );
+        setShowAddModal(false);
 
-        // Add the new product to the local state
-        if (result.product) {
-          setProducts([...products, result.product]);
-        }
-
-        // Reset form after successful submission
+        // Reset form
         setFormData({
           name: "",
           category: categories[0],
@@ -209,32 +271,22 @@ export default function DashboardPage() {
         });
         setImageUrl("");
         setUseCustomCategory(false);
+        setEditingProductId(null);
 
-        // Close modal after a short delay
-        setTimeout(() => {
-          setShowAddModal(false);
-          setFormSuccess(null);
-        }, 2000);
+        // Fetch updated products list
+        const { data: productsData, error: productsError } = await supabase
+          .from("products")
+          .select("*")
+          .order("name");
+
+        if (!productsError && productsData) {
+          setProducts(productsData);
+        }
       }
-    } catch (err: any) {
-      console.error("Error submitting form:", err);
-      setFormError(err.message || "An error occurred while adding the product");
+    } catch (error: any) {
+      setFormError(error.message);
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  // Handle product deletion
-  const handleDeleteProduct = async (id: string) => {
-    try {
-      const { error } = await supabase.from("products").delete().eq("id", id);
-
-      if (error) throw error;
-
-      // Update local state
-      setProducts(products.filter((product: any) => product.id !== id));
-    } catch (error) {
-      console.error("Error deleting product:", error);
     }
   };
 
@@ -267,29 +319,46 @@ export default function DashboardPage() {
           const worksheet = workbook.Sheets[sheetName];
           const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-          // Validate the data
-          const errors: string[] = [];
-          const validData = jsonData.filter((row: any, index) => {
-            if (!row.name) {
-              errors.push(`Row ${index + 2}: Missing product name`);
-              return false;
-            }
-            if (!row.category) {
-              errors.push(`Row ${index + 2}: Missing category`);
-              return false;
-            }
-            if (isNaN(Number.parseFloat(row.price))) {
-              errors.push(`Row ${index + 2}: Invalid price`);
-              return false;
-            }
-            if (isNaN(Number.parseInt(row.stock))) {
-              errors.push(`Row ${index + 2}: Invalid stock`);
-              return false;
-            }
-            return true;
-          });
+          // Validate and transform the data
+          const validData = jsonData
+            .filter((row: any) => {
+              if (!row.name || !row.category || !row.price || !row.stock) {
+                setImportErrors((prev) => [
+                  ...prev,
+                  `Row ${jsonData.indexOf(row) + 2}: Missing required fields`,
+                ]);
+                return false;
+              }
+              if (isNaN(Number.parseFloat(row.price))) {
+                setImportErrors((prev) => [
+                  ...prev,
+                  `Row ${jsonData.indexOf(row) + 2}: Invalid price`,
+                ]);
+                return false;
+              }
+              if (isNaN(Number.parseInt(row.stock))) {
+                setImportErrors((prev) => [
+                  ...prev,
+                  `Row ${jsonData.indexOf(row) + 2}: Invalid stock`,
+                ]);
+                return false;
+              }
+              return true;
+            })
+            .map(
+              (row: any): Product => ({
+                id: crypto.randomUUID(),
+                name: row.name,
+                category: row.category,
+                price: Number.parseFloat(row.price),
+                unit: row.unit || "KG",
+                stock: Number.parseInt(row.stock),
+                description: row.description || "",
+                image_url: row.image || "",
+              }),
+            );
 
-          setImportErrors(errors);
+          setImportedData(validData);
           setShowImportModal(true);
         } catch (error) {
           console.error("Error parsing Excel file:", error);
@@ -311,12 +380,12 @@ export default function DashboardPage() {
         const { data, error } = await supabase
           .from("products")
           .insert(
-            importedData.map((item: any) => ({
+            importedData.map((item) => ({
               name: item.name,
               category: item.category,
-              price: Number.parseFloat(item.price),
+              price: item.price.toFixed(2),
               unit: item.unit || "KG",
-              stock: Number.parseInt(item.stock),
+              stock: item.stock,
               image_url: null,
             })),
           )
@@ -357,14 +426,58 @@ export default function DashboardPage() {
     XLSX.writeFile(workbook, "product_import_template.xlsx");
   };
 
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      category: categories[0],
+      customCategory: "",
+      price: "",
+      unit: "KG",
+      stock: "",
+      description: "",
+      image: "",
+    });
+    setImageUrl("");
+    setUseCustomCategory(false);
+    setEditingProductId(null);
+    setFormError(null);
+    setFormSuccess(null);
+    setIsSubmitting(false);
+  };
+
+  const handleCloseModal = () => {
+    resetForm();
+    setShowAddModal(false);
+  };
+
+  const resetImportModal = () => {
+    setImportedData([]);
+    setImportErrors([]);
+    setImportSuccess(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleCloseImportModal = () => {
+    resetImportModal();
+    setShowImportModal(false);
+  };
+
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Sidebar */}
       <div className="w-64 bg-[#0099ff] text-white">
-        <div className="p-4 flex items-center gap-2 border-b border-blue-400">
-          <ShipIcon className="h-8 w-8" />
-          <h1 className="text-xl font-bold">NaviSupply</h1>
-        </div>
+        <Link href="/" className="w-60">
+          <div className="relative h-32">
+            <Image
+              src="/images/logo-w-lg.png"
+              alt="logo"
+              fill
+              className="object-contain"
+            />
+          </div>
+        </Link>
 
         <nav className="p-4">
           <ul className="space-y-2">
@@ -456,7 +569,7 @@ export default function DashboardPage() {
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-gray-200 rounded-full overflow-hidden">
                 <Image
-                  src="/placeholder.svg?height=32&width=32"
+                  src="/images/img-placeholder.webp"
                   alt="User"
                   width={32}
                   height={32}
@@ -539,16 +652,19 @@ export default function DashboardPage() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {products.slice(0, 5).map((product: any) => (
+                    {products.slice(0, 5).map((product) => (
                       <tr key={product.id}>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div className="flex-shrink-0 h-10 w-10 relative">
                               <Image
-                                src={product.image_url || "/placeholder.svg"}
+                                src={
+                                  product.image_url ||
+                                  "/images/img-placeholder.webp"
+                                }
                                 alt={product.name}
                                 fill
-                                className="rounded-md object-cover"
+                                className="rounded-md object-contain"
                               />
                             </div>
                             <div className="ml-4">
@@ -603,14 +719,16 @@ export default function DashboardPage() {
                     onChange={() => {}}
                   />
                   <button
+                    disabled={true}
                     onClick={() => fileInputRef.current?.click()}
-                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md"
+                    className=" flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md"
                   >
                     <FileSpreadsheet className="h-5 w-5" />
                     Import Excel
                   </button>
                 </div>
                 <button
+                  disabled={true}
                   onClick={downloadTemplate}
                   className="flex items-center gap-2 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-md"
                 >
@@ -650,16 +768,19 @@ export default function DashboardPage() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredProducts.map((product: any) => (
+                    {filteredProducts.map((product) => (
                       <tr key={product.id}>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div className="flex-shrink-0 h-10 w-10 relative">
                               <Image
-                                src={product.image_url || "/placeholder.svg"}
+                                src={
+                                  product.image_url ||
+                                  "/images/img-placeholder.webp"
+                                }
                                 alt={product.name}
                                 fill
-                                className="rounded-md object-cover"
+                                className="rounded-md object-contain"
                               />
                             </div>
                             <div className="ml-4">
@@ -695,18 +816,19 @@ export default function DashboardPage() {
                             {product.stock}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <div className="flex gap-2">
-                            <button className="text-blue-600 hover:text-blue-900">
-                              <Edit className="h-5 w-5" />
-                            </button>
-                            <button
-                              className="text-red-600 hover:text-red-900"
-                              onClick={() => handleDeleteProduct(product.id)}
-                            >
-                              <Trash2 className="h-5 w-5" />
-                            </button>
-                          </div>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <button
+                            onClick={() => handleEditProduct(product.id)}
+                            className="text-blue-600 hover:text-blue-900 mr-4"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteProduct(product.id)}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -740,16 +862,25 @@ export default function DashboardPage() {
 
       {/* Add Product Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-lg w-full max-w-4xl">
-            <div className="p-6">
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          {/* Backdrop con desenfoque */}
+          <div
+            className="fixed inset-0 bg-black/20 backdrop-blur-[2px] transition-opacity"
+            onClick={handleCloseModal}
+          ></div>
+
+          {/* Modal Content */}
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="relative w-full max-w-2xl transform rounded-xl bg-white p-6 shadow-xl transition-all">
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">Add New Product</h2>
+                <h2 className="text-2xl font-semibold">
+                  {editingProductId ? "Edit Product" : "Add New Product"}
+                </h2>
                 <button
-                  onClick={() => setShowAddModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
+                  onClick={handleCloseModal}
+                  className="rounded-full p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-500 transition-colors"
                 >
-                  <X className="h-6 w-6" />
+                  <X className="h-5 w-5" />
                 </button>
               </div>
 
@@ -909,9 +1040,12 @@ export default function DashboardPage() {
                   <div>
                     <Label>Product Image</Label>
                     <ImageUploader
-                      bucket="product-images"
-                      path="products"
-                      onUploadComplete={(url: string) => setImageUrl(url)}
+                      bucket="products-images"
+                      path="images"
+                      onUploadComplete={(url: string) => {
+                        setImageUrl(url);
+                        setFormData((prev) => ({ ...prev, image: url }));
+                      }}
                       className="mt-2"
                     />
                     <p className="text-sm text-gray-500 mt-2">
@@ -924,7 +1058,7 @@ export default function DashboardPage() {
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="flex items-center gap-2"
+                    className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600"
                   >
                     {isSubmitting ? (
                       <>
@@ -966,23 +1100,25 @@ export default function DashboardPage() {
 
       {/* Import Excel Modal */}
       {showImportModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-lg w-full max-w-4xl">
-            <div className="p-6">
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          {/* Backdrop con desenfoque */}
+          <div
+            className="fixed inset-0 bg-black/20 backdrop-blur-[2px] transition-opacity"
+            onClick={handleCloseImportModal}
+          ></div>
+
+          {/* Modal Content */}
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="relative w-full max-w-4xl transform rounded-xl bg-white p-6 shadow-xl transition-all">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold">
                   Import Products from Excel
                 </h2>
                 <button
-                  onClick={() => {
-                    setShowImportModal(false);
-                    setImportedData([]);
-                    setImportErrors([]);
-                    setImportSuccess(false);
-                  }}
-                  className="text-gray-400 hover:text-gray-600"
+                  onClick={handleCloseImportModal}
+                  className="rounded-full p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-500 transition-colors"
                 >
-                  <X className="h-6 w-6" />
+                  <X className="h-5 w-5" />
                 </button>
               </div>
 
@@ -999,12 +1135,7 @@ export default function DashboardPage() {
                     successfully.
                   </p>
                   <button
-                    onClick={() => {
-                      setShowImportModal(false);
-                      setImportedData([]);
-                      setImportErrors([]);
-                      setImportSuccess(false);
-                    }}
+                    onClick={handleCloseImportModal}
                     className="px-4 py-2 bg-[#0099ff] hover:bg-[#0088ee] text-white rounded-md"
                   >
                     Close
@@ -1063,7 +1194,7 @@ export default function DashboardPage() {
                               </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
-                              {importedData.map((item: any, index) => (
+                              {importedData.map((item, index) => (
                                 <tr key={index}>
                                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                     {item.name}
@@ -1072,13 +1203,13 @@ export default function DashboardPage() {
                                     {item.category}
                                   </td>
                                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    ${Number.parseFloat(item.price).toFixed(2)}
+                                    ${item.price.toFixed(2)}
                                   </td>
                                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {item.unit || "KG"}
                                   </td>
                                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {Number.parseInt(item.stock)}
+                                    {item.stock}
                                   </td>
                                 </tr>
                               ))}
@@ -1089,7 +1220,7 @@ export default function DashboardPage() {
 
                       <div className="flex justify-end gap-2">
                         <button
-                          onClick={() => setShowImportModal(false)}
+                          onClick={handleCloseImportModal}
                           className="px-4 py-2 border rounded-md text-gray-700 hover:bg-gray-50"
                         >
                           Cancel
@@ -1109,7 +1240,7 @@ export default function DashboardPage() {
                         format.
                       </p>
                       <button
-                        onClick={() => setShowImportModal(false)}
+                        onClick={handleCloseImportModal}
                         className="px-4 py-2 border rounded-md text-gray-700 hover:bg-gray-50"
                       >
                         Close

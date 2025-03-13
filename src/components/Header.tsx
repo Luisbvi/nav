@@ -9,6 +9,7 @@ const Header = async () => {
     data: { user },
   } = await supabase.auth.getUser();
 
+  console.log(user)
   return (
     <header className="flex ">
       <aside className="ml-24 rounded w-80">

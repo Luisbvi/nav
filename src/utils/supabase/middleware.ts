@@ -34,7 +34,7 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // For debugging - temporarily allow all authenticated users to access dashboard
+  // Handle dashboard access
   if (request.nextUrl.pathname.startsWith("/dashboard")) {
     if (!user) {
       // If no user is trying to access dashboard, redirect to login
@@ -43,50 +43,26 @@ export async function updateSession(request: NextRequest) {
       url.searchParams.set("redirect", request.nextUrl.pathname);
       return NextResponse.redirect(url);
     }
-
-    // TEMPORARY: Skip admin check and allow any authenticated user to access dashboard
-    // This helps us debug if the issue is with the admin check
+    // Allow access to dashboard for authenticated users
     return supabaseResponse;
-
-    /* Original code - commented out for debugging
-    // Check if user is admin
-    const { data, error } = await supabase
-      .from("admin_users")
-      .select("id")
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    if (error) {
-      console.error("Error checking admin status:", error);
-      // If there's an error, redirect to home
-      const url = request.nextUrl.clone();
-      url.pathname = "/";
-      return NextResponse.redirect(url);
-    }
-
-    if (!data) {
-      // If not admin, redirect to home
-      const url = request.nextUrl.clone();
-      url.pathname = "/";
-      return NextResponse.redirect(url);
-    }
-
-    // If admin, allow access
-    return supabaseResponse;
-    */
   }
+
+  const publicRountes = [
+    "/login",
+    "/register",
+    "/forgot-password",
+    "/reset-password",
+    "/",
+    "/catalog",
+    "/product/",
+  ];
 
   // For other protected routes
   if (
     !user &&
-    !request.nextUrl.pathname.includes("/login") &&
-    !request.nextUrl.pathname.includes("/register") &&
-    !request.nextUrl.pathname.includes("/forgot-password") &&
-    !request.nextUrl.pathname.includes("/reset-password") &&
+    !publicRountes.includes(request.nextUrl.pathname) &&
     !request.nextUrl.pathname.startsWith("/auth") &&
-    request.nextUrl.pathname !== "/" &&
-    !request.nextUrl.pathname.includes("/catalog") &&
-    !request.nextUrl.pathname.startsWith("/product/")
+    request.nextUrl.pathname !== "/"
   ) {
     // no user, redirect to login page
     const url = request.nextUrl.clone();

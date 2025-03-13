@@ -292,17 +292,21 @@ export default function CatalogPage() {
             </div>
           </div>
           <div className="mt-12">
-            <div className="bg-[#0099ff] text-white rounded-lg overflow-hidden">
+            <div className="relative bg-[#0099ff] text-white rounded-xl overflow-hidden shadow-lg h-[650px]">
               <Image
-                src="/placeholder.svg?height=400&width=300"
+                src="/images/BANNER.webp"
                 alt="Support"
-                width={300}
-                height={400}
-                className="w-full h-auto"
+                fill
+                className="object-cover object-[45%_55%]"
+                priority
               />
-              <div className="p-4 items-center justify-center">
-                <h3 className="text-center text-2xl font-bold mb-2">
-                  Optimiza tu Abastecimiento
+              {/* Overlay oscuro para mejorar legibilidad */}
+              <div className="absolute inset-0 from-black/50 to-transparent bg-gradient-to-t"></div>
+
+              {/* Contenido superpuesto */}
+              <div className="absolute inset-0 flex flex-col items-center justify-end p-6 text-center">
+                <h3 className="text-4xl font-bold mb-4 text-white drop-shadow-lg">
+                  Optimize your supply
                 </h3>
               </div>
             </div>

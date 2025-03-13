@@ -1,7 +1,6 @@
 "use client";
 
 import type React from "react";
-
 import { useState } from "react";
 import Image from "next/image";
 import { Upload, X, Check, Loader2 } from "lucide-react";
@@ -15,7 +14,7 @@ interface ImageUploaderProps {
   className?: string;
 }
 
-export default async function ImageUploader({
+export default function ImageUploader({
   bucket,
   path,
   initialImage,
@@ -26,8 +25,6 @@ export default async function ImageUploader({
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-
-  const storage = await uploadImageClient();
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -50,13 +47,16 @@ export default async function ImageUploader({
     setSuccess(false);
 
     try {
-      // Generate a unique filename
+      // Generate a unique filename using timestamp and original extension
       const fileExt = file.name.split(".").pop();
-      const fileName = `${path}/${Date.now()}.${fileExt}`;
+      const timestamp = Date.now();
+      const fileName = `${timestamp}.${fileExt}`;
+
+      const storage = await uploadImageClient();
 
       // Upload the image
       const { publicUrl } = await storage.upload(file, bucket, fileName, {
-        upsert: true,
+        upsert: false,
       });
 
       // Update state
@@ -81,7 +81,7 @@ export default async function ImageUploader({
         {image ? (
           <div className="relative aspect-square w-full overflow-hidden rounded-md">
             <Image
-              src={image || "/placeholder.svg"}
+              src={image}
               alt="Uploaded image"
               fill
               className="object-cover"

@@ -1,36 +1,10 @@
-import { createClient } from "@/utils/supabase/server";
+"use client";
 
-// Función para subir una imagen desde el servidor
-export async function uploadImageServer(
-  file: File,
-  bucket: string,
-  path: string,
-  options?: { upsert?: boolean },
-) {
-  const supabase = await createClient();
-
-  const { data, error } = await supabase.storage
-    .from(bucket)
-    .upload(path, file, {
-      upsert: options?.upsert || false,
-      contentType: file.type,
-    });
-
-  if (error) {
-    throw error;
-  }
-
-  // Obtener la URL pública
-  const {
-    data: { publicUrl },
-  } = supabase.storage.from(bucket).getPublicUrl(path);
-
-  return { path: data.path, publicUrl };
-}
+import { createClient } from "@/utils/supabase/client";
 
 // Función para subir una imagen desde el cliente
 export async function uploadImageClient() {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   return {
     upload: async (

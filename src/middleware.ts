@@ -2,12 +2,7 @@ import type { NextRequest } from "next/server";
 import { updateSession } from "@/utils/supabase/middleware";
 
 export async function middleware(request: NextRequest) {
-  // Primero verificamos la sesión
   const response = await updateSession(request);
-
-  // El acceso al dashboard ya está manejado en updateSession
-  // No necesitamos lógica adicional aquí
-
   return response;
 }
 
