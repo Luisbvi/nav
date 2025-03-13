@@ -1,34 +1,34 @@
-"use client";
+'use client';
 
-import type React from "react";
+import type React from 'react';
 
-import { useEffect, useState } from "react";
-import { Filter, Search, SortDesc } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from 'react';
+import { Filter, Search, SortDesc } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import ProductCard from "@/components/product-card";
-import Image from "next/image";
-import { createClient } from "@/utils/supabase/client";
-import type { Product, Category } from "@/utils/supabase/types";
+} from '@/components/ui/select';
+import ProductCard from '@/components/product-card';
+import Image from 'next/image';
+import { createClient } from '@/utils/supabase/client';
+import type { Product, Category } from '@/utils/supabase/types';
 
 export default function CatalogPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const category = searchParams.get("category") || "All Categories";
-  const search = searchParams.get("search") || "";
-  const minPrice = searchParams.get("minPrice") || "";
-  const maxPrice = searchParams.get("maxPrice") || "";
-  const sort = searchParams.get("sort") || "featured";
-  const page = Number.parseInt(searchParams.get("page") || "1", 10);
+  const category = searchParams.get('category') || 'All Categories';
+  const search = searchParams.get('search') || '';
+  const minPrice = searchParams.get('minPrice') || '';
+  const maxPrice = searchParams.get('maxPrice') || '';
+  const sort = searchParams.get('sort') || 'featured';
+  const page = Number.parseInt(searchParams.get('page') || '1', 10);
   const pageSize = 9;
 
   const [products, setProducts] = useState<Product[]>([]);
@@ -37,7 +37,7 @@ export default function CatalogPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [minPriceInput, setMinPriceInput] = useState(minPrice);
   const [maxPriceInput, setMaxPriceInput] = useState(maxPrice);
-  const [availability, setAvailability] = useState("all");
+  const [availability, setAvailability] = useState('all');
 
   const supabase = createClient();
 
@@ -48,9 +48,9 @@ export default function CatalogPage() {
       try {
         // Cargar categorías
         const { data: categoriesData, error: categoriesError } = await supabase
-          .from("products")
-          .select("category")
-          .order("category");
+          .from('products')
+          .select('category')
+          .order('category');
 
         console.log({ categoriesData });
 
@@ -67,62 +67,57 @@ export default function CatalogPage() {
         });
 
         // Convertir a array de Category
-        const categoryList: Category[] = Object.entries(categoryCounts).map(
-          ([name, count]) => ({
-            name,
-            count,
-          }),
-        );
+        const categoryList: Category[] = Object.entries(categoryCounts).map(([name, count]) => ({
+          name,
+          count,
+        }));
 
         // Añadir "All Categories"
-        const totalProducts = categoryList.reduce(
-          (sum, cat) => sum + cat.count,
-          0,
-        );
+        const totalProducts = categoryList.reduce((sum, cat) => sum + cat.count, 0);
         categoryList.unshift({
-          name: "All Categories",
+          name: 'All Categories',
           count: totalProducts,
         });
 
         setCategories(categoryList);
 
         // Construir la consulta para productos
-        let query = supabase.from("products").select("*", { count: "exact" });
+        let query = supabase.from('products').select('*', { count: 'exact' });
 
         // Aplicar filtros
-        if (category && category !== "All Categories") {
-          query = query.eq("category", category);
+        if (category && category !== 'All Categories') {
+          query = query.eq('category', category);
         }
 
         if (search) {
-          query = query.ilike("name", `%${search}%`);
+          query = query.ilike('name', `%${search}%`);
         }
 
         if (minPrice) {
-          query = query.gte("price", Number.parseFloat(minPrice));
+          query = query.gte('price', Number.parseFloat(minPrice));
         }
 
         if (maxPrice) {
-          query = query.lte("price", Number.parseFloat(maxPrice));
+          query = query.lte('price', Number.parseFloat(maxPrice));
         }
 
-        if (availability === "in-stock") {
-          query = query.gt("stock", 0);
+        if (availability === 'in-stock') {
+          query = query.gt('stock', 0);
         }
 
         // Aplicar ordenación
         switch (sort) {
-          case "price-low":
-            query = query.order("price", { ascending: true });
+          case 'price-low':
+            query = query.order('price', { ascending: true });
             break;
-          case "price-high":
-            query = query.order("price", { ascending: false });
+          case 'price-high':
+            query = query.order('price', { ascending: false });
             break;
-          case "name-asc":
-            query = query.order("name", { ascending: true });
+          case 'name-asc':
+            query = query.order('name', { ascending: true });
             break;
           default:
-            query = query.order("name", { ascending: true });
+            query = query.order('name', { ascending: true });
         }
 
         // Aplicar paginación
@@ -138,23 +133,14 @@ export default function CatalogPage() {
         setProducts(productsData);
         setTotalCount(count || 0);
       } catch (error) {
-        console.error("Error loading data:", error);
+        console.error('Error loading data:', error);
       } finally {
         setIsLoading(false);
       }
     }
 
     loadData();
-  }, [
-    category,
-    search,
-    minPrice,
-    maxPrice,
-    sort,
-    page,
-    availability,
-    supabase,
-  ]);
+  }, [category, search, minPrice, maxPrice, sort, page, availability, supabase]);
 
   // Actualizar la URL con los parámetros de búsqueda
   const updateSearchParams = (params: Record<string, string>) => {
@@ -169,8 +155,8 @@ export default function CatalogPage() {
     });
 
     // Resetear a la página 1 si cambian los filtros
-    if (!params.hasOwnProperty("page")) {
-      newParams.set("page", "1");
+    if (!params.hasOwnProperty('page')) {
+      newParams.set('page', '1');
     }
 
     router.push(`/catalog?${newParams.toString()}`);
@@ -185,7 +171,7 @@ export default function CatalogPage() {
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const searchValue = formData.get("search") as string;
+    const searchValue = formData.get('search') as string;
     updateSearchParams({ search: searchValue });
   };
 
@@ -215,25 +201,25 @@ export default function CatalogPage() {
 
   // Limpiar filtros
   const clearFilters = () => {
-    router.push("/catalog");
+    router.push('/catalog');
   };
 
   // Calcular el número total de páginas
   const totalPages = Math.ceil(totalCount / pageSize);
 
   return (
-    <div className="px-12 py-8 flex-1">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+    <div className="flex-1 px-12 py-8">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
         <div className="lg:col-span-1">
-          <div className="bg-white p-4 rounded-lg shadow mb-6">
-            <h2 className="text-lg font-medium mb-4 flex items-center gap-2">
+          <div className="mb-6 rounded-lg bg-white p-4 shadow">
+            <h2 className="mb-4 flex items-center gap-2 text-lg font-medium">
               <Filter className="h-5 w-5" />
               Filters
             </h2>
 
             <div className="space-y-4">
               <div>
-                <h3 className="text-sm font-medium mb-2">Category</h3>
+                <h3 className="mb-2 text-sm font-medium">Category</h3>
                 <Select value={category} onValueChange={handleCategoryChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select category" />
@@ -249,7 +235,7 @@ export default function CatalogPage() {
               </div>
 
               <div>
-                <h3 className="text-sm font-medium mb-2">Price Range</h3>
+                <h3 className="mb-2 text-sm font-medium">Price Range</h3>
                 <div className="grid grid-cols-2 gap-2">
                   <Input
                     type="number"
@@ -267,7 +253,7 @@ export default function CatalogPage() {
                   />
                 </div>
                 <Button
-                  className="w-full bg-blue-400 text-white hover:bg-blue-500 cursor-pointer mt-2"
+                  className="mt-2 w-full cursor-pointer bg-blue-400 text-white hover:bg-blue-500"
                   onClick={handlePriceFilter}
                 >
                   Apply Filters
@@ -275,11 +261,8 @@ export default function CatalogPage() {
               </div>
 
               <div>
-                <h3 className="text-sm font-medium mb-2">Availability</h3>
-                <Select
-                  value={availability}
-                  onValueChange={handleAvailabilityChange}
-                >
+                <h3 className="mb-2 text-sm font-medium">Availability</h3>
+                <Select value={availability} onValueChange={handleAvailabilityChange}>
                   <SelectTrigger>
                     <SelectValue placeholder="Availability" />
                   </SelectTrigger>
@@ -292,7 +275,7 @@ export default function CatalogPage() {
             </div>
           </div>
           <div className="mt-12">
-            <div className="relative bg-[#0099ff] text-white rounded-xl overflow-hidden shadow-lg h-[650px]">
+            <div className="relative h-[650px] overflow-hidden rounded-xl bg-[#0099ff] text-white shadow-lg">
               <Image
                 src="/images/BANNER.webp"
                 alt="Support"
@@ -301,11 +284,11 @@ export default function CatalogPage() {
                 priority
               />
               {/* Overlay oscuro para mejorar legibilidad */}
-              <div className="absolute inset-0 from-black/50 to-transparent bg-gradient-to-t"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
 
               {/* Contenido superpuesto */}
               <div className="absolute inset-0 flex flex-col items-center justify-end p-6 text-center">
-                <h3 className="text-4xl font-bold mb-4 text-white drop-shadow-lg">
+                <h3 className="mb-4 text-4xl font-bold text-white drop-shadow-lg">
                   Optimize your supply
                 </h3>
               </div>
@@ -314,13 +297,11 @@ export default function CatalogPage() {
         </div>
 
         <div className="lg:col-span-3">
-          <h1 className="justify-center items-center text-3xl font-bold mb-6">
-            Product Catalog
-          </h1>
-          <div className="bg-white p-4 rounded-lg shadow mb-6">
-            <div className="flex flex-col sm:flex-row gap-4 justify-between">
+          <h1 className="mb-6 items-center justify-center text-3xl font-bold">Product Catalog</h1>
+          <div className="mb-6 rounded-lg bg-white p-4 shadow">
+            <div className="flex flex-col justify-between gap-4 sm:flex-row">
               <form onSubmit={handleSearch} className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
                 <Input
                   type="search"
                   name="search"
@@ -333,7 +314,7 @@ export default function CatalogPage() {
                 </button>
               </form>
 
-              <div className="flex gap-2 items-center">
+              <div className="flex items-center gap-2">
                 <SortDesc className="h-4 w-4" />
                 <Select value={sort} onValueChange={handleSortChange}>
                   <SelectTrigger className="w-[180px]">
@@ -341,12 +322,8 @@ export default function CatalogPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="featured">Featured</SelectItem>
-                    <SelectItem value="price-low">
-                      Price: Low to High
-                    </SelectItem>
-                    <SelectItem value="price-high">
-                      Price: High to Low
-                    </SelectItem>
+                    <SelectItem value="price-low">Price: Low to High</SelectItem>
+                    <SelectItem value="price-high">Price: High to Low</SelectItem>
                     <SelectItem value="name-asc">Name: A to Z</SelectItem>
                   </SelectContent>
                 </Select>
@@ -361,11 +338,11 @@ export default function CatalogPage() {
           </div>
 
           {isLoading ? (
-            <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            <div className="flex h-64 items-center justify-center">
+              <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-blue-500"></div>
             </div>
           ) : products.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {products.map((product) => (
                 <ProductCard
                   key={product.id}
@@ -374,17 +351,15 @@ export default function CatalogPage() {
                     name: product.name,
                     category: product.category,
                     price: product.price,
-                    image: product.image_url || "/images/img-placeholder.webp",
+                    image: product.image_url || '/images/img-placeholder.webp',
                   }}
                 />
               ))}
             </div>
           ) : (
-            <div className="text-center py-10">
-              <h3 className="text-lg font-medium mb-2">No products found</h3>
-              <p className="text-gray-500 mb-4">
-                Try changing your search or filter criteria
-              </p>
+            <div className="py-10 text-center">
+              <h3 className="mb-2 text-lg font-medium">No products found</h3>
+              <p className="mb-4 text-gray-500">Try changing your search or filter criteria</p>
               <Button onClick={clearFilters}>Clear Filters</Button>
             </div>
           )}
@@ -417,11 +392,7 @@ export default function CatalogPage() {
                     <Button
                       key={pageNum}
                       variant="outline"
-                      className={
-                        page === pageNum
-                          ? "bg-blue-600 text-primary-foreground"
-                          : ""
-                      }
+                      className={page === pageNum ? 'text-primary-foreground bg-blue-600' : ''}
                       onClick={() => handlePageChange(pageNum)}
                     >
                       {pageNum}

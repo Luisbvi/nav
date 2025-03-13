@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import type React from "react";
+import type React from 'react';
 
-import { useState } from "react";
-import { Eye, EyeOff, Lock, Mail } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
-import { signIn } from "../actions/auth";
-import { useRouter } from "next/navigation";
+import { useState } from 'react';
+import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { signIn } from '../actions/auth';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -27,10 +27,10 @@ export default function LoginPage() {
 
     console.log({ result });
 
-    if (result.status === "success") {
-      router.push("/");
+    if (result.status === 'success') {
+      router.push('/');
     } else {
-      setError(result.status || "An error occurred during sign in");
+      setError(result.status || 'An error occurred during sign in');
     }
   };
 
@@ -40,16 +40,11 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      <div className="flex-1 flex flex-col mt-[-240px] justify-center px-4 sm:px-6 lg:px-8">
+      <div className="mt-[-240px] flex flex-1 flex-col justify-center px-4 sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <Link href={"/"}>
-            <div className="overflow-hidden relative w-auto h-48">
-              <Image
-                src="/images/logo-lg.png"
-                alt="logo"
-                fill
-                className="object-contain"
-              />
+          <Link href={'/'}>
+            <div className="relative h-48 w-auto overflow-hidden">
+              <Image src="/images/logo-lg.png" alt="logo" fill className="object-contain" />
             </div>
           </Link>
 
@@ -57,74 +52,61 @@ export default function LoginPage() {
             Sign in to your account
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Or{" "}
-            <Link
-              href="/register"
-              className="font-medium text-[#0099ff] hover:text-[#0088ee]"
-            >
+            Or{' '}
+            <Link href="/register" className="font-medium text-[#0099ff] hover:text-[#0088ee]">
               register a new vessel account
             </Link>
           </p>
         </div>
 
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          <div className="bg-white px-4 py-8 shadow sm:rounded-lg sm:px-10">
             {error && (
-              <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-500 text-red-700">
+              <div className="mb-4 border-l-4 border-red-500 bg-red-50 p-3 text-red-700">
                 <p>{error}</p>
               </div>
             )}
 
             <form className="space-y-6" onSubmit={handleSubmit}>
               <div>
-                <label
-                  htmlFor="email"
-                  className="block text-sm font-medium text-gray-700"
-                >
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                   Email address
                 </label>
-                <div className="mt-1 relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <div className="relative mt-1">
+                  <Mail className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
                   <input
                     id="email"
                     name="email"
                     type="email"
                     autoComplete="email"
                     placeholder="captain@example.com"
-                    className="pl-10 py-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-[#0099ff] focus:border-[#0099ff]"
+                    className="block w-full rounded-md border border-gray-300 py-2 pl-10 shadow-sm focus:border-[#0099ff] focus:ring-[#0099ff]"
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-gray-700"
-                >
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                   Password
                 </label>
-                <div className="mt-1 relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <div className="relative mt-1">
+                  <Lock className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
                   <input
                     id="password"
                     name="password"
-                    type={showPassword ? "text" : "password"}
+                    type={showPassword ? 'text' : 'password'}
                     autoComplete="current-password"
                     placeholder="••••••••"
-                    className="pl-10 py-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-[#0099ff] focus:border-[#0099ff]"
+                    className="block w-full rounded-md border border-gray-300 py-2 pl-10 shadow-sm focus:border-[#0099ff] focus:ring-[#0099ff]"
                     required
                   />
                   <button
                     type="button"
                     onClick={togglePasswordVisibility}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-500"
+                    className="absolute top-1/2 right-3 -translate-y-1/2 transform text-gray-400 hover:text-gray-500"
                   >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
               </div>
@@ -135,12 +117,9 @@ export default function LoginPage() {
                     id="remember-me"
                     name="remember-me"
                     type="checkbox"
-                    className="h-4 w-4 text-[#0099ff] focus:ring-[#0099ff] border-gray-300 rounded"
+                    className="h-4 w-4 rounded border-gray-300 text-[#0099ff] focus:ring-[#0099ff]"
                   />
-                  <label
-                    htmlFor="remember-me"
-                    className="ml-2 block text-sm text-gray-700"
-                  >
+                  <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
                     Remember me
                   </label>
                 </div>
@@ -159,12 +138,12 @@ export default function LoginPage() {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#0099ff] hover:bg-[#0088ee] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0099ff] disabled:opacity-50"
+                  className="flex w-full justify-center rounded-md border border-transparent bg-[#0099ff] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#0088ee] focus:ring-2 focus:ring-[#0099ff] focus:ring-offset-2 focus:outline-none disabled:opacity-50"
                 >
                   {isLoading ? (
                     <>
                       <svg
-                        className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                        className="mr-2 -ml-1 h-4 w-4 animate-spin text-white"
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
@@ -186,7 +165,7 @@ export default function LoginPage() {
                       Signing in...
                     </>
                   ) : (
-                    "Sign in"
+                    'Sign in'
                   )}
                 </button>
               </div>

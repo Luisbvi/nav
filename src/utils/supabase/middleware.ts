@@ -1,9 +1,35 @@
-import { createServerClient } from "@supabase/ssr";
-import { NextResponse, type NextRequest } from "next/server";
+import { createServerClient } from '@supabase/ssr';
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
+export async function middleware(request: NextRequest) {
+  const { supabase, response } = await createClient(request);
+
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  // Si no hay sesión y la ruta es protegida, redirigir a login
+  if (!session && request.nextUrl.pathname.startsWith('/dashboard')) {
+    return NextResponse.redirect(new URL('/login', request.url));
+  }
+
+  // Si hay sesión y la ruta es de auth, redirigir a dashboard
+  if (
+    session &&
+    (request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/register')
+  ) {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
+  }
+
+  return response;
+}
+
+async function createClient(request: NextRequest) {
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
   });
 
   const supabase = createServerClient(
@@ -11,64 +37,44 @@ export async function updateSession(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() {
-          return request.cookies.getAll();
+        get(name: string) {
+          return request.cookies.get(name)?.value;
         },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            request.cookies.set(name, value),
-          );
-          supabaseResponse = NextResponse.next({
-            request,
+        set(name: string, value: string, options: any) {
+          request.cookies.set({
+            name,
+            value,
+            ...options,
           });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options),
-          );
+          response = NextResponse.next({
+            request: {
+              headers: request.headers,
+            },
+          });
+          response.cookies.set({
+            name,
+            value,
+            ...options,
+          });
+        },
+        remove(name: string, options: any) {
+          request.cookies.delete({
+            name,
+            ...options,
+          });
+          response = NextResponse.next({
+            request: {
+              headers: request.headers,
+            },
+          });
+          response.cookies.delete({
+            name,
+            ...options,
+          });
         },
       },
-    },
+    }
   );
 
-  // IMPORTANT: DO NOT REMOVE auth.getUser()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  // Handle dashboard access
-  if (request.nextUrl.pathname.startsWith("/dashboard")) {
-    if (!user) {
-      // If no user is trying to access dashboard, redirect to login
-      const url = request.nextUrl.clone();
-      url.pathname = "/login";
-      url.searchParams.set("redirect", request.nextUrl.pathname);
-      return NextResponse.redirect(url);
-    }
-    // Allow access to dashboard for authenticated users
-    return supabaseResponse;
-  }
-
-  const publicRountes = [
-    "/login",
-    "/register",
-    "/forgot-password",
-    "/reset-password",
-    "/",
-    "/catalog",
-    "/product/",
-  ];
-
-  // For other protected routes
-  if (
-    !user &&
-    !publicRountes.includes(request.nextUrl.pathname) &&
-    !request.nextUrl.pathname.startsWith("/auth") &&
-    request.nextUrl.pathname !== "/"
-  ) {
-    // no user, redirect to login page
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    return NextResponse.redirect(url);
-  }
-
-  return supabaseResponse;
+  return { supabase, response };
 }

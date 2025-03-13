@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import type React from "react";
+import type React from 'react';
 
-import { useState, useRef, useEffect } from "react";
-import Image from "next/image";
-import Link from "next/link";
+import { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
 import {
   ShipIcon,
   Package,
@@ -22,40 +22,40 @@ import {
   Check,
   AlertCircle,
   Save,
-} from "lucide-react";
-import * as XLSX from "xlsx";
-import { createClient } from "@/utils/supabase/client";
+} from 'lucide-react';
+import * as XLSX from 'xlsx';
+import { createClient } from '@/utils/supabase/client';
 import {
   addProduct,
   deleteProduct,
   updateProduct,
   getCategories,
-} from "@/app/(auth)/actions/products";
+} from '@/app/(auth)/actions/products';
 
 // UI Components
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import ImageUploader from "@/components/imageUploader";
+} from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import ImageUploader from '@/components/imageUploader';
 
 // Default categories if API fails
 const defaultCategories = [
-  "ESSENTIALS",
-  "FOOD & PROVISIONS",
-  "MEDICAL SUPPLIES",
-  "SAFETY EQUIPMENT",
-  "TECHNICAL PARTS",
-  "CLOTHING",
-  "MISCELLANEOUS",
+  'ESSENTIALS',
+  'FOOD & PROVISIONS',
+  'MEDICAL SUPPLIES',
+  'SAFETY EQUIPMENT',
+  'TECHNICAL PARTS',
+  'CLOTHING',
+  'MISCELLANEOUS',
 ];
 
 // Define el tipo Product
@@ -71,11 +71,11 @@ interface Product {
 }
 
 export default function DashboardPage() {
-  const [activeTab, setActiveTab] = useState("products");
+  const [activeTab, setActiveTab] = useState('products');
   const [products, setProducts] = useState<Product[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [importedData, setImportedData] = useState<Product[]>([]);
   const [importErrors, setImportErrors] = useState<string[]>([]);
   const [importSuccess, setImportSuccess] = useState(false);
@@ -84,20 +84,20 @@ export default function DashboardPage() {
   // Add product form state
   const [categories, setCategories] = useState<string[]>(defaultCategories);
   const [useCustomCategory, setUseCustomCategory] = useState(false);
-  const [imageUrl, setImageUrl] = useState<string>("");
+  const [imageUrl, setImageUrl] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
-    name: "",
+    name: '',
     category: defaultCategories[0],
-    customCategory: "",
-    price: "",
-    unit: "KG",
-    stock: "",
-    description: "",
-    image: "",
+    customCategory: '',
+    price: '',
+    unit: 'KG',
+    stock: '',
+    description: '',
+    image: '',
   });
 
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
@@ -110,9 +110,9 @@ export default function DashboardPage() {
       try {
         // Fetch products
         const { data: productsData, error: productsError } = await supabase
-          .from("products")
-          .select("*")
-          .order("name");
+          .from('products')
+          .select('*')
+          .order('name');
 
         if (productsError) throw productsError;
         setProducts(productsData || []);
@@ -127,7 +127,7 @@ export default function DashboardPage() {
           }));
         }
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error('Error fetching data:', error);
       }
     }
 
@@ -136,7 +136,7 @@ export default function DashboardPage() {
 
   // Filter products based on search
   const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase()),
+    product.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   // Stats for dashboard
@@ -144,23 +144,17 @@ export default function DashboardPage() {
     totalProducts: products.length,
     totalCategories: categories.length,
     lowStock: products.filter((p) => p.stock < 50).length,
-    totalValue: products.reduce(
-      (sum, product) => sum + product.price * product.stock,
-      0,
-    ),
+    totalValue: products.reduce((sum, product) => sum + product.price * product.stock, 0),
   };
 
   // Handle form input changes
   const handleInputChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >,
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]:
-        name === "price" || name === "stock" ? Number.parseFloat(value) : value,
+      [name]: name === 'price' || name === 'stock' ? Number.parseFloat(value) : value,
     });
   };
 
@@ -170,7 +164,7 @@ export default function DashboardPage() {
 
   // Handle delete product
   const handleDeleteProduct = async (id: string) => {
-    if (!confirm("¿Estás seguro de que quieres eliminar este producto?")) {
+    if (!confirm('¿Estás seguro de que quieres eliminar este producto?')) {
       return;
     }
 
@@ -178,21 +172,21 @@ export default function DashboardPage() {
       const result = await deleteProduct(id);
 
       if (result.error) {
-        console.error("Error deleting product:", result.error);
+        console.error('Error deleting product:', result.error);
         return;
       }
 
       // Actualizar la lista de productos
       const { data: productsData, error: productsError } = await supabase
-        .from("products")
-        .select("*")
-        .order("name");
+        .from('products')
+        .select('*')
+        .order('name');
 
       if (!productsError && productsData) {
         setProducts(productsData);
       }
     } catch (error) {
-      console.error("Error deleting product:", error);
+      console.error('Error deleting product:', error);
     }
   };
 
@@ -206,18 +200,18 @@ export default function DashboardPage() {
       setFormData({
         name: product.name,
         category: product.category,
-        customCategory: "",
+        customCategory: '',
         price: product.price.toString(),
-        unit: product.unit || "KG",
+        unit: product.unit || 'KG',
         stock: product.stock.toString(),
-        description: product.description || "",
-        image: product.image_url || "",
+        description: product.description || '',
+        image: product.image_url || '',
       });
 
-      setImageUrl(product.image_url || "");
+      setImageUrl(product.image_url || '');
       setShowAddModal(true);
     } catch (error) {
-      console.error("Error editing product:", error);
+      console.error('Error editing product:', error);
     }
   };
 
@@ -231,17 +225,14 @@ export default function DashboardPage() {
     try {
       // Create FormData object
       const submitData = new FormData();
-      submitData.append("name", formData.name);
-      submitData.append("category", formData.category);
-      submitData.append(
-        "customCategory",
-        useCustomCategory ? formData.customCategory : "",
-      );
-      submitData.append("price", formData.price.toString());
-      submitData.append("unit", formData.unit);
-      submitData.append("stock", formData.stock.toString());
-      submitData.append("description", formData.description);
-      submitData.append("imageUrl", imageUrl);
+      submitData.append('name', formData.name);
+      submitData.append('category', formData.category);
+      submitData.append('customCategory', useCustomCategory ? formData.customCategory : '');
+      submitData.append('price', formData.price.toString());
+      submitData.append('unit', formData.unit);
+      submitData.append('stock', formData.stock.toString());
+      submitData.append('description', formData.description);
+      submitData.append('imageUrl', imageUrl);
 
       // Submit the form
       const result = editingProductId
@@ -252,32 +243,30 @@ export default function DashboardPage() {
         setFormError(result.error);
       } else {
         setFormSuccess(
-          editingProductId
-            ? "Product updated successfully!"
-            : "Product added successfully!",
+          editingProductId ? 'Product updated successfully!' : 'Product added successfully!'
         );
         setShowAddModal(false);
 
         // Reset form
         setFormData({
-          name: "",
+          name: '',
           category: categories[0],
-          customCategory: "",
-          price: "",
-          unit: "KG",
-          stock: "",
-          description: "",
-          image: "",
+          customCategory: '',
+          price: '',
+          unit: 'KG',
+          stock: '',
+          description: '',
+          image: '',
         });
-        setImageUrl("");
+        setImageUrl('');
         setUseCustomCategory(false);
         setEditingProductId(null);
 
         // Fetch updated products list
         const { data: productsData, error: productsError } = await supabase
-          .from("products")
-          .select("*")
-          .order("name");
+          .from('products')
+          .select('*')
+          .order('name');
 
         if (!productsError && productsData) {
           setProducts(productsData);
@@ -314,7 +303,7 @@ export default function DashboardPage() {
       reader.onload = (e) => {
         try {
           const data = e.target?.result;
-          const workbook = XLSX.read(data, { type: "binary" });
+          const workbook = XLSX.read(data, { type: 'binary' });
           const sheetName = workbook.SheetNames[0];
           const worksheet = workbook.Sheets[sheetName];
           const jsonData = XLSX.utils.sheet_to_json(worksheet);
@@ -351,20 +340,18 @@ export default function DashboardPage() {
                 name: row.name,
                 category: row.category,
                 price: Number.parseFloat(row.price),
-                unit: row.unit || "KG",
+                unit: row.unit || 'KG',
                 stock: Number.parseInt(row.stock),
-                description: row.description || "",
-                image_url: row.image || "",
-              }),
+                description: row.description || '',
+                image_url: row.image || '',
+              })
             );
 
           setImportedData(validData);
           setShowImportModal(true);
         } catch (error) {
-          console.error("Error parsing Excel file:", error);
-          setImportErrors([
-            "Error processing Excel file. Make sure the format is correct.",
-          ]);
+          console.error('Error parsing Excel file:', error);
+          setImportErrors(['Error processing Excel file. Make sure the format is correct.']);
           setShowImportModal(true);
         }
       };
@@ -378,16 +365,16 @@ export default function DashboardPage() {
       try {
         // Insert products into database
         const { data, error } = await supabase
-          .from("products")
+          .from('products')
           .insert(
             importedData.map((item) => ({
               name: item.name,
               category: item.category,
               price: item.price.toFixed(2),
-              unit: item.unit || "KG",
+              unit: item.unit || 'KG',
               stock: item.stock,
               image_url: null,
-            })),
+            }))
           )
           .select();
 
@@ -399,11 +386,11 @@ export default function DashboardPage() {
 
         // Reset file input
         if (fileInputRef.current) {
-          fileInputRef.current.value = "";
+          fileInputRef.current.value = '';
         }
       } catch (error) {
-        console.error("Error importing products:", error);
-        setImportErrors(["Error importing products to database"]);
+        console.error('Error importing products:', error);
+        setImportErrors(['Error importing products to database']);
       }
     }
   };
@@ -412,32 +399,32 @@ export default function DashboardPage() {
   const downloadTemplate = () => {
     const template = [
       {
-        name: "PRODUCT NAME",
-        category: "CATEGORY",
-        price: "0.00",
-        unit: "KG",
-        stock: "0",
+        name: 'PRODUCT NAME',
+        category: 'CATEGORY',
+        price: '0.00',
+        unit: 'KG',
+        stock: '0',
       },
     ];
 
     const worksheet = XLSX.utils.json_to_sheet(template);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Products");
-    XLSX.writeFile(workbook, "product_import_template.xlsx");
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Products');
+    XLSX.writeFile(workbook, 'product_import_template.xlsx');
   };
 
   const resetForm = () => {
     setFormData({
-      name: "",
+      name: '',
       category: categories[0],
-      customCategory: "",
-      price: "",
-      unit: "KG",
-      stock: "",
-      description: "",
-      image: "",
+      customCategory: '',
+      price: '',
+      unit: 'KG',
+      stock: '',
+      description: '',
+      image: '',
     });
-    setImageUrl("");
+    setImageUrl('');
     setUseCustomCategory(false);
     setEditingProductId(null);
     setFormError(null);
@@ -455,7 +442,7 @@ export default function DashboardPage() {
     setImportErrors([]);
     setImportSuccess(false);
     if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+      fileInputRef.current.value = '';
     }
   };
 
@@ -470,12 +457,7 @@ export default function DashboardPage() {
       <div className="w-64 bg-[#0099ff] text-white">
         <Link href="/" className="w-60">
           <div className="relative h-32">
-            <Image
-              src="/images/logo-w-lg.png"
-              alt="logo"
-              fill
-              className="object-contain"
-            />
+            <Image src="/images/logo-w-lg.png" alt="logo" fill className="object-contain" />
           </div>
         </Link>
 
@@ -483,8 +465,8 @@ export default function DashboardPage() {
           <ul className="space-y-2">
             <li>
               <button
-                onClick={() => setActiveTab("dashboard")}
-                className={`w-full flex items-center gap-3 p-2 rounded-md ${activeTab === "dashboard" ? "bg-white text-[#0099ff]" : "hover:bg-blue-600"}`}
+                onClick={() => setActiveTab('dashboard')}
+                className={`flex w-full items-center gap-3 rounded-md p-2 ${activeTab === 'dashboard' ? 'bg-white text-[#0099ff]' : 'hover:bg-blue-600'}`}
               >
                 <BarChart3 className="h-5 w-5" />
                 Dashboard
@@ -492,8 +474,8 @@ export default function DashboardPage() {
             </li>
             <li>
               <button
-                onClick={() => setActiveTab("products")}
-                className={`w-full flex items-center gap-3 p-2 rounded-md ${activeTab === "products" ? "bg-white text-[#0099ff]" : "hover:bg-blue-600"}`}
+                onClick={() => setActiveTab('products')}
+                className={`flex w-full items-center gap-3 rounded-md p-2 ${activeTab === 'products' ? 'bg-white text-[#0099ff]' : 'hover:bg-blue-600'}`}
               >
                 <Package className="h-5 w-5" />
                 Products
@@ -501,8 +483,8 @@ export default function DashboardPage() {
             </li>
             <li>
               <button
-                onClick={() => setActiveTab("orders")}
-                className={`w-full flex items-center gap-3 p-2 rounded-md ${activeTab === "orders" ? "bg-white text-[#0099ff]" : "hover:bg-blue-600"}`}
+                onClick={() => setActiveTab('orders')}
+                className={`flex w-full items-center gap-3 rounded-md p-2 ${activeTab === 'orders' ? 'bg-white text-[#0099ff]' : 'hover:bg-blue-600'}`}
               >
                 <Anchor className="h-5 w-5" />
                 Orders
@@ -510,8 +492,8 @@ export default function DashboardPage() {
             </li>
             <li>
               <button
-                onClick={() => setActiveTab("customers")}
-                className={`w-full flex items-center gap-3 p-2 rounded-md ${activeTab === "customers" ? "bg-white text-[#0099ff]" : "hover:bg-blue-600"}`}
+                onClick={() => setActiveTab('customers')}
+                className={`flex w-full items-center gap-3 rounded-md p-2 ${activeTab === 'customers' ? 'bg-white text-[#0099ff]' : 'hover:bg-blue-600'}`}
               >
                 <Users className="h-5 w-5" />
                 Customers
@@ -519,8 +501,8 @@ export default function DashboardPage() {
             </li>
             <li>
               <button
-                onClick={() => setActiveTab("settings")}
-                className={`w-full flex items-center gap-3 p-2 rounded-md ${activeTab === "settings" ? "bg-white text-[#0099ff]" : "hover:bg-blue-600"}`}
+                onClick={() => setActiveTab('settings')}
+                className={`flex w-full items-center gap-3 rounded-md p-2 ${activeTab === 'settings' ? 'bg-white text-[#0099ff]' : 'hover:bg-blue-600'}`}
               >
                 <Settings className="h-5 w-5" />
                 Settings
@@ -528,11 +510,8 @@ export default function DashboardPage() {
             </li>
           </ul>
 
-          <div className="mt-8 pt-4 border-t border-blue-400">
-            <Link
-              href="/"
-              className="flex items-center gap-3 p-2 rounded-md hover:bg-blue-600"
-            >
+          <div className="mt-8 border-t border-blue-400 pt-4">
+            <Link href="/" className="flex items-center gap-3 rounded-md p-2 hover:bg-blue-600">
               <LogOut className="h-5 w-5" />
               Logout
             </Link>
@@ -543,37 +522,32 @@ export default function DashboardPage() {
       {/* Main Content */}
       <div className="flex-1 overflow-auto">
         {/* Header */}
-        <header className="bg-white p-4 shadow flex justify-between items-center">
+        <header className="flex items-center justify-between bg-white p-4 shadow">
           <h1 className="text-xl font-bold">
-            {activeTab === "dashboard" && "Dashboard"}
-            {activeTab === "products" && "Product Management"}
-            {activeTab === "orders" && "Order Management"}
-            {activeTab === "customers" && "Customer Management"}
-            {activeTab === "settings" && "Settings"}
+            {activeTab === 'dashboard' && 'Dashboard'}
+            {activeTab === 'products' && 'Product Management'}
+            {activeTab === 'orders' && 'Order Management'}
+            {activeTab === 'customers' && 'Customer Management'}
+            {activeTab === 'settings' && 'Settings'}
           </h1>
 
           <div className="flex items-center gap-4">
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                 <Search className="h-4 w-4 text-gray-400" />
               </div>
               <input
                 type="search"
                 placeholder="Search..."
-                className="pl-10 pr-4 py-2 border rounded-md"
+                className="rounded-md border py-2 pr-4 pl-10"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
 
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gray-200 rounded-full overflow-hidden">
-                <Image
-                  src="/images/img-placeholder.webp"
-                  alt="User"
-                  width={32}
-                  height={32}
-                />
+              <div className="h-8 w-8 overflow-hidden rounded-full bg-gray-200">
+                <Image src="/images/img-placeholder.webp" alt="User" width={32} height={32} />
               </div>
               <span className="font-medium">Admin</span>
             </div>
@@ -581,87 +555,70 @@ export default function DashboardPage() {
         </header>
 
         {/* Dashboard Content */}
-        {activeTab === "dashboard" && (
+        {activeTab === 'dashboard' && (
           <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <div className="bg-white p-6 rounded-lg shadow">
-                <h3 className="text-gray-500 text-sm font-medium mb-2">
-                  Total Products
-                </h3>
+            <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+              <div className="rounded-lg bg-white p-6 shadow">
+                <h3 className="mb-2 text-sm font-medium text-gray-500">Total Products</h3>
                 <div className="flex items-center">
-                  <Package className="h-8 w-8 text-[#0099ff] mr-2" />
-                  <span className="text-2xl font-bold">
-                    {stats.totalProducts}
-                  </span>
+                  <Package className="mr-2 h-8 w-8 text-[#0099ff]" />
+                  <span className="text-2xl font-bold">{stats.totalProducts}</span>
                 </div>
               </div>
 
-              <div className="bg-white p-6 rounded-lg shadow">
-                <h3 className="text-gray-500 text-sm font-medium mb-2">
-                  Categories
-                </h3>
+              <div className="rounded-lg bg-white p-6 shadow">
+                <h3 className="mb-2 text-sm font-medium text-gray-500">Categories</h3>
                 <div className="flex items-center">
-                  <Package className="h-8 w-8 text-[#0099ff] mr-2" />
-                  <span className="text-2xl font-bold">
-                    {stats.totalCategories}
-                  </span>
+                  <Package className="mr-2 h-8 w-8 text-[#0099ff]" />
+                  <span className="text-2xl font-bold">{stats.totalCategories}</span>
                 </div>
               </div>
 
-              <div className="bg-white p-6 rounded-lg shadow">
-                <h3 className="text-gray-500 text-sm font-medium mb-2">
-                  Low Stock
-                </h3>
+              <div className="rounded-lg bg-white p-6 shadow">
+                <h3 className="mb-2 text-sm font-medium text-gray-500">Low Stock</h3>
                 <div className="flex items-center">
-                  <Package className="h-8 w-8 text-red-500 mr-2" />
+                  <Package className="mr-2 h-8 w-8 text-red-500" />
                   <span className="text-2xl font-bold">{stats.lowStock}</span>
                 </div>
               </div>
 
-              <div className="bg-white p-6 rounded-lg shadow">
-                <h3 className="text-gray-500 text-sm font-medium mb-2">
-                  Total Value
-                </h3>
+              <div className="rounded-lg bg-white p-6 shadow">
+                <h3 className="mb-2 text-sm font-medium text-gray-500">Total Value</h3>
                 <div className="flex items-center">
-                  <Package className="h-8 w-8 text-green-500 mr-2" />
-                  <span className="text-2xl font-bold">
-                    ${stats.totalValue.toFixed(2)}
-                  </span>
+                  <Package className="mr-2 h-8 w-8 text-green-500" />
+                  <span className="text-2xl font-bold">${stats.totalValue.toFixed(2)}</span>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white p-6 rounded-lg shadow">
-              <h2 className="text-lg font-bold mb-4">Recent Products</h2>
+            <div className="rounded-lg bg-white p-6 shadow">
+              <h2 className="mb-4 text-lg font-bold">Recent Products</h2>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                         Product
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                         Category
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                         Price
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                         Stock
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="divide-y divide-gray-200 bg-white">
                     {products.slice(0, 5).map((product) => (
                       <tr key={product.id}>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
-                            <div className="flex-shrink-0 h-10 w-10 relative">
+                            <div className="relative h-10 w-10 flex-shrink-0">
                               <Image
-                                src={
-                                  product.image_url ||
-                                  "/images/img-placeholder.webp"
-                                }
+                                src={product.image_url || '/images/img-placeholder.webp'}
                                 alt={product.name}
                                 fill
                                 className="rounded-md object-contain"
@@ -675,21 +632,17 @@ export default function DashboardPage() {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-500">
-                            {product.category}
-                          </div>
+                          <div className="text-sm text-gray-500">{product.category}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            ${product.price.toFixed(2)}
-                          </div>
+                          <div className="text-sm text-gray-900">${product.price.toFixed(2)}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span
-                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            className={`inline-flex rounded-full px-2 text-xs leading-5 font-semibold ${
                               product.stock > 50
-                                ? "bg-green-100 text-green-800"
-                                : "bg-red-100 text-red-800"
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-red-100 text-red-800'
                             }`}
                           >
                             {product.stock}
@@ -705,9 +658,9 @@ export default function DashboardPage() {
         )}
 
         {/* Products Content */}
-        {activeTab === "products" && (
+        {activeTab === 'products' && (
           <div className="p-6">
-            <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
               <h2 className="text-lg font-bold">Product List</h2>
               <div className="flex gap-2">
                 <div className="relative">
@@ -721,7 +674,7 @@ export default function DashboardPage() {
                   <button
                     disabled={true}
                     onClick={() => fileInputRef.current?.click()}
-                    className=" flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md"
+                    className="flex items-center gap-2 rounded-md bg-green-600 px-4 py-2 text-white hover:bg-green-700"
                   >
                     <FileSpreadsheet className="h-5 w-5" />
                     Import Excel
@@ -730,14 +683,14 @@ export default function DashboardPage() {
                 <button
                   disabled={true}
                   onClick={downloadTemplate}
-                  className="flex items-center gap-2 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-md"
+                  className="flex items-center gap-2 rounded-md bg-gray-600 px-4 py-2 text-white hover:bg-gray-700"
                 >
                   <Download className="h-5 w-5" />
                   Download Template
                 </button>
                 <button
                   onClick={() => setShowAddModal(true)}
-                  className="flex items-center gap-2 bg-[#0099ff] hover:bg-[#0088ee] text-white py-2 px-4 rounded-md"
+                  className="flex items-center gap-2 rounded-md bg-[#0099ff] px-4 py-2 text-white hover:bg-[#0088ee]"
                 >
                   <PlusCircle className="h-5 w-5" />
                   Add Product
@@ -745,39 +698,36 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="overflow-hidden rounded-lg bg-white shadow">
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                         Product
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                         Category
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                         Price
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                         Stock
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                         Actions
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="divide-y divide-gray-200 bg-white">
                     {filteredProducts.map((product) => (
                       <tr key={product.id}>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
-                            <div className="flex-shrink-0 h-10 w-10 relative">
+                            <div className="relative h-10 w-10 flex-shrink-0">
                               <Image
-                                src={
-                                  product.image_url ||
-                                  "/images/img-placeholder.webp"
-                                }
+                                src={product.image_url || '/images/img-placeholder.webp'}
                                 alt={product.name}
                                 fill
                                 className="rounded-md object-contain"
@@ -791,35 +741,31 @@ export default function DashboardPage() {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-500">
-                            {product.category}
-                          </div>
+                          <div className="text-sm text-gray-500">{product.category}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">
                             ${product.price.toFixed(2)}
                             {product.unit && (
-                              <span className="text-xs text-gray-500 ml-1">
-                                / {product.unit}
-                              </span>
+                              <span className="ml-1 text-xs text-gray-500">/ {product.unit}</span>
                             )}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span
-                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            className={`inline-flex rounded-full px-2 text-xs leading-5 font-semibold ${
                               product.stock > 50
-                                ? "bg-green-100 text-green-800"
-                                : "bg-red-100 text-red-800"
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-red-100 text-red-800'
                             }`}
                           >
                             {product.stock}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <td className="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
                           <button
                             onClick={() => handleEditProduct(product.id)}
-                            className="text-blue-600 hover:text-blue-900 mr-4"
+                            className="mr-4 text-blue-600 hover:text-blue-900"
                           >
                             <Edit className="h-4 w-4" />
                           </button>
@@ -837,7 +783,7 @@ export default function DashboardPage() {
               </div>
 
               {filteredProducts.length === 0 && (
-                <div className="text-center py-8">
+                <div className="py-8 text-center">
                   <p className="text-gray-500">No products found</p>
                 </div>
               )}
@@ -846,16 +792,10 @@ export default function DashboardPage() {
         )}
 
         {/* Other tabs would go here */}
-        {(activeTab === "orders" ||
-          activeTab === "customers" ||
-          activeTab === "settings") && (
+        {(activeTab === 'orders' || activeTab === 'customers' || activeTab === 'settings') && (
           <div className="p-6 text-center">
-            <h2 className="text-2xl font-bold text-gray-400">
-              Section under development
-            </h2>
-            <p className="text-gray-500 mt-2">
-              This functionality will be available soon
-            </p>
+            <h2 className="text-2xl font-bold text-gray-400">Section under development</h2>
+            <p className="mt-2 text-gray-500">This functionality will be available soon</p>
           </div>
         )}
       </div>
@@ -872,20 +812,20 @@ export default function DashboardPage() {
           {/* Modal Content */}
           <div className="flex min-h-full items-center justify-center p-4">
             <div className="relative w-full max-w-2xl transform rounded-xl bg-white p-6 shadow-xl transition-all">
-              <div className="flex justify-between items-center mb-4">
+              <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-2xl font-semibold">
-                  {editingProductId ? "Edit Product" : "Add New Product"}
+                  {editingProductId ? 'Edit Product' : 'Add New Product'}
                 </h2>
                 <button
                   onClick={handleCloseModal}
-                  className="rounded-full p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-500 transition-colors"
+                  className="rounded-full p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-500"
                 >
                   <X className="h-5 w-5" />
                 </button>
               </div>
 
               {formError && (
-                <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
+                <div className="mb-6 border-l-4 border-red-500 bg-red-50 p-4">
                   <div className="flex">
                     <div className="flex-shrink-0">
                       <AlertCircle className="h-5 w-5 text-red-500" />
@@ -898,7 +838,7 @@ export default function DashboardPage() {
               )}
 
               {formSuccess && (
-                <div className="bg-green-50 border-l-4 border-green-500 p-4 mb-6">
+                <div className="mb-6 border-l-4 border-green-500 bg-green-50 p-4">
                   <div className="flex">
                     <div className="flex-shrink-0">
                       <Check className="h-5 w-5 text-green-500" />
@@ -911,7 +851,7 @@ export default function DashboardPage() {
               )}
 
               <form onSubmit={handleAddProduct}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                   <div className="space-y-4">
                     <div>
                       <Label htmlFor="name">Product Name *</Label>
@@ -925,19 +865,17 @@ export default function DashboardPage() {
                     </div>
 
                     <div>
-                      <div className="flex items-center justify-between mb-2">
+                      <div className="mb-2 flex items-center justify-between">
                         <Label htmlFor="category">Category *</Label>
                         <div className="flex items-center space-x-2">
                           <Checkbox
                             id="useCustomCategory"
                             checked={useCustomCategory}
-                            onCheckedChange={(checked) =>
-                              setUseCustomCategory(checked === true)
-                            }
+                            onCheckedChange={(checked) => setUseCustomCategory(checked === true)}
                           />
                           <label
                             htmlFor="useCustomCategory"
-                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                            className="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                           >
                             Create custom category
                           </label>
@@ -958,9 +896,7 @@ export default function DashboardPage() {
                       ) : (
                         <Select
                           value={formData.category}
-                          onValueChange={(value) =>
-                            handleSelectChange("category", value)
-                          }
+                          onValueChange={(value) => handleSelectChange('category', value)}
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Select a category" />
@@ -995,9 +931,7 @@ export default function DashboardPage() {
                         <Label htmlFor="unit">Unit</Label>
                         <Select
                           value={formData.unit}
-                          onValueChange={(value) =>
-                            handleSelectChange("unit", value)
-                          }
+                          onValueChange={(value) => handleSelectChange('unit', value)}
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Select a unit" />
@@ -1040,15 +974,14 @@ export default function DashboardPage() {
                   <div>
                     <Label>Product Image</Label>
                     <ImageUploader
-                      bucket="products-images"
-                      path="images"
-                      onUploadComplete={(url: string) => {
+                      bucket="products"
+                      onUploadComplete={(url) => {
                         setImageUrl(url);
-                        setFormData((prev) => ({ ...prev, image: url }));
+                        setFormSuccess('Image uploaded successfully!');
                       }}
-                      className="mt-2"
+                      className="mt-4"
                     />
-                    <p className="text-sm text-gray-500 mt-2">
+                    <p className="mt-2 text-sm text-gray-500">
                       Upload an image for the product. Maximum size: 5MB.
                     </p>
                   </div>
@@ -1063,7 +996,7 @@ export default function DashboardPage() {
                     {isSubmitting ? (
                       <>
                         <svg
-                          className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                          className="mr-2 -ml-1 h-4 w-4 animate-spin text-white"
                           xmlns="http://www.w3.org/2000/svg"
                           fill="none"
                           viewBox="0 0 24 24"
@@ -1110,33 +1043,28 @@ export default function DashboardPage() {
           {/* Modal Content */}
           <div className="flex min-h-full items-center justify-center p-4">
             <div className="relative w-full max-w-4xl transform rounded-xl bg-white p-6 shadow-xl transition-all">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">
-                  Import Products from Excel
-                </h2>
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-xl font-bold">Import Products from Excel</h2>
                 <button
                   onClick={handleCloseImportModal}
-                  className="rounded-full p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-500 transition-colors"
+                  className="rounded-full p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-500"
                 >
                   <X className="h-5 w-5" />
                 </button>
               </div>
 
               {importSuccess ? (
-                <div className="text-center py-8">
-                  <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+                <div className="py-8 text-center">
+                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
                     <Check className="h-6 w-6 text-green-600" />
                   </div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    Import Successful
-                  </h3>
-                  <p className="text-gray-500 mb-6">
-                    {importedData.length} products have been imported
-                    successfully.
+                  <h3 className="mb-2 text-lg font-medium text-gray-900">Import Successful</h3>
+                  <p className="mb-6 text-gray-500">
+                    {importedData.length} products have been imported successfully.
                   </p>
                   <button
                     onClick={handleCloseImportModal}
-                    className="px-4 py-2 bg-[#0099ff] hover:bg-[#0088ee] text-white rounded-md"
+                    className="rounded-md bg-[#0099ff] px-4 py-2 text-white hover:bg-[#0088ee]"
                   >
                     Close
                   </button>
@@ -1144,21 +1072,19 @@ export default function DashboardPage() {
               ) : (
                 <>
                   {importErrors.length > 0 && (
-                    <div className="mb-6 p-4 bg-red-50 rounded-md border border-red-200">
+                    <div className="mb-6 rounded-md border border-red-200 bg-red-50 p-4">
                       <div className="flex items-start">
-                        <AlertCircle className="h-5 w-5 text-red-500 mt-0.5 mr-2" />
+                        <AlertCircle className="mt-0.5 mr-2 h-5 w-5 text-red-500" />
                         <div>
-                          <h3 className="text-sm font-medium text-red-800 mb-2">
+                          <h3 className="mb-2 text-sm font-medium text-red-800">
                             {importErrors.length} errors found in the file
                           </h3>
-                          <ul className="text-sm text-red-700 list-disc pl-5 space-y-1">
+                          <ul className="list-disc space-y-1 pl-5 text-sm text-red-700">
                             {importErrors.slice(0, 5).map((error, index) => (
                               <li key={index}>{error}</li>
                             ))}
                             {importErrors.length > 5 && (
-                              <li>
-                                And {importErrors.length - 5} more errors...
-                              </li>
+                              <li>And {importErrors.length - 5} more errors...</li>
                             )}
                           </ul>
                         </div>
@@ -1169,46 +1095,46 @@ export default function DashboardPage() {
                   {importedData.length > 0 ? (
                     <>
                       <div className="mb-4">
-                        <h3 className="font-medium text-gray-700 mb-2">
+                        <h3 className="mb-2 font-medium text-gray-700">
                           Data preview ({importedData.length} products)
                         </h3>
-                        <div className="overflow-x-auto max-h-80 border rounded-md">
+                        <div className="max-h-80 overflow-x-auto rounded-md border">
                           <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50 sticky top-0">
+                            <thead className="sticky top-0 bg-gray-50">
                               <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                                   Name
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                                   Category
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                                   Price
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                                   Unit
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
                                   Stock
                                 </th>
                               </tr>
                             </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
+                            <tbody className="divide-y divide-gray-200 bg-white">
                               {importedData.map((item, index) => (
                                 <tr key={index}>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                  <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
                                     {item.name}
                                   </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                  <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-500">
                                     {item.category}
                                   </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                  <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
                                     ${item.price.toFixed(2)}
                                   </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {item.unit || "KG"}
+                                  <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-500">
+                                    {item.unit || 'KG'}
                                   </td>
-                                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                  <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
                                     {item.stock}
                                   </td>
                                 </tr>
@@ -1221,27 +1147,26 @@ export default function DashboardPage() {
                       <div className="flex justify-end gap-2">
                         <button
                           onClick={handleCloseImportModal}
-                          className="px-4 py-2 border rounded-md text-gray-700 hover:bg-gray-50"
+                          className="rounded-md border px-4 py-2 text-gray-700 hover:bg-gray-50"
                         >
                           Cancel
                         </button>
                         <button
                           onClick={handleImportConfirm}
-                          className="px-4 py-2 bg-[#0099ff] hover:bg-[#0088ee] text-white rounded-md"
+                          className="rounded-md bg-[#0099ff] px-4 py-2 text-white hover:bg-[#0088ee]"
                         >
                           Confirm Import
                         </button>
                       </div>
                     </>
                   ) : (
-                    <div className="text-center py-8">
-                      <p className="text-gray-500 mb-4">
-                        No valid data found to import. Please check the file
-                        format.
+                    <div className="py-8 text-center">
+                      <p className="mb-4 text-gray-500">
+                        No valid data found to import. Please check the file format.
                       </p>
                       <button
                         onClick={handleCloseImportModal}
-                        className="px-4 py-2 border rounded-md text-gray-700 hover:bg-gray-50"
+                        className="rounded-md border px-4 py-2 text-gray-700 hover:bg-gray-50"
                       >
                         Close
                       </button>

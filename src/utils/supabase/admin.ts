@@ -1,16 +1,16 @@
-import { createClient } from "@/utils/supabase/server";
+import { createClient } from '@/utils/supabase/server';
 
 export async function isUserAdmin(userId: string): Promise<boolean> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("admin_users")
-    .select("id")
-    .eq("user_id", userId)
+    .from('admin_users')
+    .select('id')
+    .eq('user_id', userId)
     .maybeSingle();
 
   if (error) {
-    console.error("Error checking admin status:", error);
+    console.error('Error checking admin status:', error);
     return false;
   }
 
@@ -21,23 +21,20 @@ export async function getAdminRole(userId: string): Promise<string | null> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
-    .from("admin_users")
-    .select("role")
-    .eq("user_id", userId)
+    .from('admin_users')
+    .select('role')
+    .eq('user_id', userId)
     .maybeSingle();
 
   if (error || !data) {
-    console.error("Error getting admin role:", error);
+    console.error('Error getting admin role:', error);
     return null;
   }
 
   return data.role;
 }
 
-export async function addAdminUser(
-  userId: string,
-  role = "admin",
-): Promise<boolean> {
+export async function addAdminUser(userId: string, role = 'admin'): Promise<boolean> {
   const supabase = await createClient();
 
   // Verificar si el usuario actual es super_admin
@@ -51,18 +48,16 @@ export async function addAdminUser(
 
   const currentUserRole = await getAdminRole(user.id);
 
-  if (currentUserRole !== "super_admin") {
-    console.error("Only super_admin can add new admins");
+  if (currentUserRole !== 'super_admin') {
+    console.error('Only super_admin can add new admins');
     return false;
   }
 
   // Añadir el nuevo administrador
-  const { error } = await supabase
-    .from("admin_users")
-    .insert({ user_id: userId, role });
+  const { error } = await supabase.from('admin_users').insert({ user_id: userId, role });
 
   if (error) {
-    console.error("Error adding admin user:", error);
+    console.error('Error adding admin user:', error);
     return false;
   }
 
@@ -83,19 +78,16 @@ export async function removeAdminUser(userId: string): Promise<boolean> {
 
   const currentUserRole = await getAdminRole(user.id);
 
-  if (currentUserRole !== "super_admin") {
-    console.error("Only super_admin can remove admins");
+  if (currentUserRole !== 'super_admin') {
+    console.error('Only super_admin can remove admins');
     return false;
   }
 
   // Eliminar el administrador
-  const { error } = await supabase
-    .from("admin_users")
-    .delete()
-    .eq("user_id", userId);
+  const { error } = await supabase.from('admin_users').delete().eq('user_id', userId);
 
   if (error) {
-    console.error("Error removing admin user:", error);
+    console.error('Error removing admin user:', error);
     return false;
   }
 

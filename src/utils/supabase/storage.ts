@@ -1,57 +1,20 @@
-"use client";
+'use client';
 
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from '@/utils/supabase/client';
 
 // Función para subir una imagen desde el cliente
-export async function uploadImageClient() {
-  const supabase = createClient();
+export async function upload(
+  file: File,
+  bucket: string,
+  fileName: string,
+  options = { upsert: false }
+) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.storage.from(bucket).upload(fileName, file, options);
 
-  return {
-    upload: async (
-      file: File,
-      bucket: string,
-      path: string,
-      options?: { upsert?: boolean },
-    ) => {
-      const { data, error } = await supabase.storage
-        .from(bucket)
-        .upload(path, file, {
-          upsert: options?.upsert || false,
-          contentType: file.type,
-        });
+  if (error) throw error;
 
-      if (error) {
-        throw error;
-      }
+  const { data: publicUrl } = await supabase.storage.from(bucket).getPublicUrl(fileName);
 
-      // Obtener la URL pública
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from(bucket).getPublicUrl(path);
-
-      return { path: data.path, publicUrl };
-    },
-
-    delete: async (bucket: string, path: string) => {
-      const { error } = await supabase.storage.from(bucket).remove([path]);
-
-      if (error) {
-        throw error;
-      }
-
-      return true;
-    },
-
-    list: async (bucket: string, folder?: string) => {
-      const { data, error } = await supabase.storage
-        .from(bucket)
-        .list(folder || "");
-
-      if (error) {
-        throw error;
-      }
-
-      return data;
-    },
-  };
+  return { data, publicUrl: publicUrl.publicUrl };
 }

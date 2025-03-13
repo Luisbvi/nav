@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import type React from "react";
-import { useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
+import type React from 'react';
+import { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { signUp } from "@/app/(auth)/actions/auth";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { signUp } from '@/app/(auth)/actions/auth';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -27,45 +27,37 @@ export default function RegisterPage() {
     const result = await signUp(formData);
 
     setIsLoading(false);
-    if (result.status === "success") {
-      router.push("/login");
+    if (result.status === 'success') {
+      router.push('/login');
     } else {
-      setError(result.status || "An error occurred during registration");
+      setError(result.status || 'An error occurred during registration');
     }
   };
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      <div className="flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <Link href={"/"}>
-            <div className="overflow-hidden relative w-auto h-48">
-              <Image
-                src="/images/logo-lg.png"
-                alt="logo"
-                fill
-                className="object-contain"
-              />
+          <Link href={'/'}>
+            <div className="relative h-48 w-auto overflow-hidden">
+              <Image src="/images/logo-lg.png" alt="logo" fill className="object-contain" />
             </div>
           </Link>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             Register your vessel
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Already registered?{" "}
-            <Link
-              href="/login"
-              className="font-medium text-[#0099ff] hover:text-[#0088ee]"
-            >
+            Already registered?{' '}
+            <Link href="/login" className="font-medium text-[#0099ff] hover:text-[#0088ee]">
               Sign in
             </Link>
           </p>
         </div>
 
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          <div className="bg-white px-4 py-8 shadow sm:rounded-lg sm:px-10">
             {error && (
-              <div className="mb-4 p-3 bg-red-50 border-l-4 border-red-500 text-red-700">
+              <div className="mb-4 border-l-4 border-red-500 bg-red-50 p-3 text-red-700">
                 <p>{error}</p>
               </div>
             )}
@@ -86,24 +78,13 @@ export default function RegisterPage() {
 
                 <div>
                   <Label htmlFor="email">Email address</Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    autoComplete="email"
-                    required
-                  />
+                  <Input id="email" name="email" type="email" autoComplete="email" required />
                 </div>
 
                 <div>
                   <div>
                     <Label htmlFor="password">Password</Label>
-                    <Input
-                      id="password"
-                      name="password"
-                      type="password"
-                      required
-                    />
+                    <Input id="password" name="password" type="password" required />
                   </div>
                 </div>
               </div>
@@ -118,9 +99,7 @@ export default function RegisterPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="shipping-company">
-                    Shipping company (optional)
-                  </Label>
+                  <Label htmlFor="shipping-company">Shipping company (optional)</Label>
                   <Input id="shipping-company" name="shipping-company" />
                 </div>
               </div>
@@ -128,12 +107,12 @@ export default function RegisterPage() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-[#0099ff] hover:bg-[#0088ee] text-white disabled:opacity-50"
+                className="w-full bg-[#0099ff] text-white hover:bg-[#0088ee] disabled:opacity-50"
               >
                 {isLoading ? (
                   <>
                     <svg
-                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                      className="mr-2 -ml-1 h-4 w-4 animate-spin text-white"
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
                       viewBox="0 0 24 24"
@@ -155,7 +134,7 @@ export default function RegisterPage() {
                     Registering...
                   </>
                 ) : (
-                  "Register"
+                  'Register'
                 )}
               </Button>
             </form>

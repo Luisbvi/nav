@@ -1,43 +1,43 @@
-"use client";
+'use client';
 
-import type React from "react";
+import type React from 'react';
 
-import { useState } from "react";
-import { Mail, ArrowLeft } from "lucide-react";
-import Link from "next/link";
-import { forgotPassword } from "../actions/auth";
+import { useState } from 'react';
+import { Mail, ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
+import { forgotPassword } from '../actions/auth';
 
 export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError("");
+    setError('');
 
     const formData = new FormData();
-    formData.append("email", email);
+    formData.append('email', email);
 
     const result = await forgotPassword(formData);
 
     setIsLoading(false);
 
-    if (result.status === "success") {
+    if (result.status === 'success') {
       setIsSubmitted(true);
     } else {
-      setError(result.status || "An error occurred. Please try again.");
+      setError(result.status || 'An error occurred. Please try again.');
     }
   };
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      <div className="flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            {isSubmitted ? "Check your email" : "Recover your password"}
+            {isSubmitted ? 'Check your email' : 'Recover your password'}
           </h2>
 
           <p className="mt-2 text-center text-sm text-gray-600">
@@ -48,16 +48,16 @@ export default function ForgotPasswordPage() {
         </div>
 
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          <div className="bg-white px-4 py-8 shadow sm:rounded-lg sm:px-10">
             {isSubmitted ? (
               <div className="text-center">
-                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
                   <Mail className="h-6 w-6 text-green-600" />
                 </div>
 
-                <p className="text-sm text-gray-500 mb-6">
-                  If an account exists with <strong>{email}</strong>, you will
-                  receive an email with instructions to reset your password.
+                <p className="mb-6 text-sm text-gray-500">
+                  If an account exists with <strong>{email}</strong>, you will receive an email with
+                  instructions to reset your password.
                 </p>
 
                 <div className="mt-6">
@@ -73,7 +73,7 @@ export default function ForgotPasswordPage() {
             ) : (
               <form className="space-y-6" onSubmit={handleSubmit}>
                 {error && (
-                  <div className="bg-red-50 border-l-4 border-red-500 p-4">
+                  <div className="border-l-4 border-red-500 bg-red-50 p-4">
                     <div className="flex">
                       <div className="flex-shrink-0">
                         <svg
@@ -97,14 +97,11 @@ export default function ForgotPasswordPage() {
                 )}
 
                 <div>
-                  <label
-                    htmlFor="email"
-                    className="block text-sm font-medium text-gray-700"
-                  >
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                     Email address
                   </label>
-                  <div className="mt-1 relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <div className="relative mt-1">
+                    <Mail className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
                     <input
                       id="email"
                       name="email"
@@ -113,7 +110,7 @@ export default function ForgotPasswordPage() {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10 pr-4 py-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-[#0099ff] focus:border-[#0099ff]"
+                      className="block w-full rounded-md border border-gray-300 py-2 pr-4 pl-10 shadow-sm focus:border-[#0099ff] focus:ring-[#0099ff]"
                       placeholder="captain@example.com"
                     />
                   </div>
@@ -123,12 +120,12 @@ export default function ForgotPasswordPage() {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#0099ff] hover:bg-[#0088ee] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0099ff] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex w-full justify-center rounded-md border border-transparent bg-[#0099ff] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#0088ee] focus:ring-2 focus:ring-[#0099ff] focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {isLoading ? (
                       <>
                         <svg
-                          className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                          className="mr-2 -ml-1 h-4 w-4 animate-spin text-white"
                           xmlns="http://www.w3.org/2000/svg"
                           fill="none"
                           viewBox="0 0 24 24"
@@ -150,7 +147,7 @@ export default function ForgotPasswordPage() {
                         Sending...
                       </>
                     ) : (
-                      "Send recovery link"
+                      'Send recovery link'
                     )}
                   </button>
                 </div>
