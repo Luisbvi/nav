@@ -6,7 +6,6 @@ import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
-  ShipIcon,
   Package,
   Users,
   Anchor,
@@ -44,7 +43,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
 import ImageUploader from '@/components/imageUploader';
 
 // Default categories if API fails
@@ -70,6 +68,17 @@ interface Product {
   description?: string;
 }
 
+interface FormData {
+  name: string;
+  description: string;
+  price: number;
+  category: string;
+  unit: string;
+  stock: number;
+  status: 'active' | 'inactive' | 'pending' | 'archived';
+  image_url?: string;
+}
+
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState('products');
   const [products, setProducts] = useState<Product[]>([]);
@@ -83,21 +92,19 @@ export default function DashboardPage() {
 
   // Add product form state
   const [categories, setCategories] = useState<string[]>(defaultCategories);
-  const [useCustomCategory, setUseCustomCategory] = useState(false);
   const [imageUrl, setImageUrl] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: '',
-    category: defaultCategories[0],
-    customCategory: '',
-    price: '',
-    unit: 'KG',
-    stock: '',
     description: '',
-    image: '',
+    price: 0,
+    category: defaultCategories[0],
+    unit: 'KG',
+    stock: 0,
+    status: 'active',
   });
 
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
@@ -106,7 +113,7 @@ export default function DashboardPage() {
 
   // Fetch products and categories on component mount
   useEffect(() => {
-    async function fetchData() {
+    const fetchData = async () => {
       try {
         // Fetch products
         const { data: productsData, error: productsError } = await supabase
@@ -119,20 +126,23 @@ export default function DashboardPage() {
 
         // Fetch categories
         const result = await getCategories();
-        if (result.categories && result.categories.length > 0) {
-          setCategories(result.categories);
+        const categoryList = result.categories ?? defaultCategories;
+        if (categoryList.length > 0) {
+          setCategories(categoryList);
           setFormData((prev) => ({
             ...prev,
-            category: result.categories[0],
+            category: categoryList[0],
           }));
         }
       } catch (error) {
         console.error('Error fetching data:', error);
+        // Fallback to default categories on error
+        setCategories(defaultCategories);
       }
-    }
+    };
 
     fetchData();
-  }, []);
+  }, [supabase]);
 
   // Filter products based on search
   const filteredProducts = products.filter((product) =>
@@ -158,8 +168,11 @@ export default function DashboardPage() {
     });
   };
 
-  const handleSelectChange = (name: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  const handleSelectChange = (field: keyof FormData, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   };
 
   // Handle delete product
@@ -199,13 +212,12 @@ export default function DashboardPage() {
       setEditingProductId(id);
       setFormData({
         name: product.name,
-        category: product.category,
-        customCategory: '',
-        price: product.price.toString(),
-        unit: product.unit || 'KG',
-        stock: product.stock.toString(),
         description: product.description || '',
-        image: product.image_url || '',
+        price: product.price,
+        category: product.category,
+        unit: product.unit || 'KG',
+        stock: product.stock,
+        status: 'active',
       });
 
       setImageUrl(product.image_url || '');
@@ -226,12 +238,11 @@ export default function DashboardPage() {
       // Create FormData object
       const submitData = new FormData();
       submitData.append('name', formData.name);
-      submitData.append('category', formData.category);
-      submitData.append('customCategory', useCustomCategory ? formData.customCategory : '');
+      submitData.append('description', formData.description);
       submitData.append('price', formData.price.toString());
+      submitData.append('category', formData.category);
       submitData.append('unit', formData.unit);
       submitData.append('stock', formData.stock.toString());
-      submitData.append('description', formData.description);
       submitData.append('imageUrl', imageUrl);
 
       // Submit the form
@@ -250,16 +261,14 @@ export default function DashboardPage() {
         // Reset form
         setFormData({
           name: '',
-          category: categories[0],
-          customCategory: '',
-          price: '',
-          unit: 'KG',
-          stock: '',
           description: '',
-          image: '',
+          price: 0,
+          category: categories[0],
+          unit: 'KG',
+          stock: 0,
+          status: 'active',
         });
         setImageUrl('');
-        setUseCustomCategory(false);
         setEditingProductId(null);
 
         // Fetch updated products list
@@ -272,126 +281,10 @@ export default function DashboardPage() {
           setProducts(productsData);
         }
       }
-    } catch (error: any) {
-      setFormError(error.message);
+    } catch (error: Error | unknown) {
+      setFormError(error instanceof Error ? error.message : 'Unknown error occurred');
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  // Handle file upload
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // In a real app, you would upload the file to a server
-      // For this demo, we'll just use a placeholder
-      setFormData({
-        ...formData,
-        image: URL.createObjectURL(file),
-      });
-    }
-  };
-
-  // Handle Excel file import
-  const handleExcelImport = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    setImportErrors([]);
-    setImportSuccess(false);
-
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const data = e.target?.result;
-          const workbook = XLSX.read(data, { type: 'binary' });
-          const sheetName = workbook.SheetNames[0];
-          const worksheet = workbook.Sheets[sheetName];
-          const jsonData = XLSX.utils.sheet_to_json(worksheet);
-
-          // Validate and transform the data
-          const validData = jsonData
-            .filter((row: any) => {
-              if (!row.name || !row.category || !row.price || !row.stock) {
-                setImportErrors((prev) => [
-                  ...prev,
-                  `Row ${jsonData.indexOf(row) + 2}: Missing required fields`,
-                ]);
-                return false;
-              }
-              if (isNaN(Number.parseFloat(row.price))) {
-                setImportErrors((prev) => [
-                  ...prev,
-                  `Row ${jsonData.indexOf(row) + 2}: Invalid price`,
-                ]);
-                return false;
-              }
-              if (isNaN(Number.parseInt(row.stock))) {
-                setImportErrors((prev) => [
-                  ...prev,
-                  `Row ${jsonData.indexOf(row) + 2}: Invalid stock`,
-                ]);
-                return false;
-              }
-              return true;
-            })
-            .map(
-              (row: any): Product => ({
-                id: crypto.randomUUID(),
-                name: row.name,
-                category: row.category,
-                price: Number.parseFloat(row.price),
-                unit: row.unit || 'KG',
-                stock: Number.parseInt(row.stock),
-                description: row.description || '',
-                image_url: row.image || '',
-              })
-            );
-
-          setImportedData(validData);
-          setShowImportModal(true);
-        } catch (error) {
-          console.error('Error parsing Excel file:', error);
-          setImportErrors(['Error processing Excel file. Make sure the format is correct.']);
-          setShowImportModal(true);
-        }
-      };
-      reader.readAsBinaryString(file);
-    }
-  };
-
-  // Handle import confirmation
-  const handleImportConfirm = async () => {
-    if (importedData.length > 0) {
-      try {
-        // Insert products into database
-        const { data, error } = await supabase
-          .from('products')
-          .insert(
-            importedData.map((item) => ({
-              name: item.name,
-              category: item.category,
-              price: item.price.toFixed(2),
-              unit: item.unit || 'KG',
-              stock: item.stock,
-              image_url: null,
-            }))
-          )
-          .select();
-
-        if (error) throw error;
-
-        // Update local state
-        setProducts([...products, ...(data || [])]);
-        setImportSuccess(true);
-
-        // Reset file input
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-        }
-      } catch (error) {
-        console.error('Error importing products:', error);
-        setImportErrors(['Error importing products to database']);
-      }
     }
   };
 
@@ -416,16 +309,14 @@ export default function DashboardPage() {
   const resetForm = () => {
     setFormData({
       name: '',
-      category: categories[0],
-      customCategory: '',
-      price: '',
-      unit: 'KG',
-      stock: '',
       description: '',
-      image: '',
+      price: 0,
+      category: categories[0],
+      unit: 'KG',
+      stock: 0,
+      status: 'active',
     });
     setImageUrl('');
-    setUseCustomCategory(false);
     setEditingProductId(null);
     setFormError(null);
     setFormSuccess(null);
@@ -663,29 +554,20 @@ export default function DashboardPage() {
             <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
               <h2 className="text-lg font-bold">Product List</h2>
               <div className="flex gap-2">
-                <div className="relative">
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    accept=".xlsx, .xls"
-                    className="hidden"
-                    onChange={() => {}}
-                  />
-                  <button
-                    disabled={true}
-                    onClick={() => fileInputRef.current?.click()}
-                    className="flex items-center gap-2 rounded-md bg-green-600 px-4 py-2 text-white hover:bg-green-700"
-                  >
-                    <FileSpreadsheet className="h-5 w-5" />
-                    Import Excel
-                  </button>
-                </div>
+                <button
+                  disabled={true}
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex items-center gap-2 rounded-md bg-green-600 px-4 py-2 text-white hover:bg-green-700"
+                >
+                  <FileSpreadsheet className="h-5 w-5" />
+                  Import Excel
+                </button>
                 <button
                   disabled={true}
                   onClick={downloadTemplate}
                   className="flex items-center gap-2 rounded-md bg-gray-600 px-4 py-2 text-white hover:bg-gray-700"
                 >
-                  <Download className="h-5 w-5" />
+                  <FileSpreadsheet className="h-5 w-5" />
                   Download Template
                 </button>
                 <button
@@ -865,51 +747,22 @@ export default function DashboardPage() {
                     </div>
 
                     <div>
-                      <div className="mb-2 flex items-center justify-between">
-                        <Label htmlFor="category">Category *</Label>
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id="useCustomCategory"
-                            checked={useCustomCategory}
-                            onCheckedChange={(checked) => setUseCustomCategory(checked === true)}
-                          />
-                          <label
-                            htmlFor="useCustomCategory"
-                            className="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                          >
-                            Create custom category
-                          </label>
-                        </div>
-                      </div>
-
-                      {useCustomCategory ? (
-                        <div className="flex items-center space-x-2">
-                          <Input
-                            id="customCategory"
-                            name="customCategory"
-                            value={formData.customCategory}
-                            onChange={handleInputChange}
-                            placeholder="Enter custom category name"
-                            required={useCustomCategory}
-                          />
-                        </div>
-                      ) : (
-                        <Select
-                          value={formData.category}
-                          onValueChange={(value) => handleSelectChange('category', value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a category" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {categories.map((category) => (
-                              <SelectItem key={category} value={category}>
-                                {category}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
+                      <Label htmlFor="category">Category *</Label>
+                      <Select
+                        value={formData.category}
+                        onValueChange={(value) => handleSelectChange('category', value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categories.map((category) => (
+                            <SelectItem key={category} value={category}>
+                              {category}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -1152,7 +1005,7 @@ export default function DashboardPage() {
                           Cancel
                         </button>
                         <button
-                          onClick={handleImportConfirm}
+                          onClick={() => {}}
                           className="rounded-md bg-[#0099ff] px-4 py-2 text-white hover:bg-[#0088ee]"
                         >
                           Confirm Import
@@ -1179,26 +1032,5 @@ export default function DashboardPage() {
         </div>
       )}
     </div>
-  );
-}
-
-function Download(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-      <polyline points="7 10 12 15 17 10" />
-      <line x1="12" x2="12" y1="15" y2="3" />
-    </svg>
   );
 }

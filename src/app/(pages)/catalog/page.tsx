@@ -220,8 +220,8 @@ export default function CatalogPage() {
             <div className="space-y-4">
               <div>
                 <h3 className="mb-2 text-sm font-medium">Category</h3>
-                <Select value={category} onValueChange={handleCategoryChange}>
-                  <SelectTrigger>
+                <Select defaultValue={category} onValueChange={handleCategoryChange}>
+                  <SelectTrigger className="w-[200px]">
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -262,8 +262,8 @@ export default function CatalogPage() {
 
               <div>
                 <h3 className="mb-2 text-sm font-medium">Availability</h3>
-                <Select value={availability} onValueChange={handleAvailabilityChange}>
-                  <SelectTrigger>
+                <Select defaultValue={availability} onValueChange={handleAvailabilityChange}>
+                  <SelectTrigger className="w-[200px]">
                     <SelectValue placeholder="Availability" />
                   </SelectTrigger>
                   <SelectContent>
@@ -276,13 +276,16 @@ export default function CatalogPage() {
           </div>
           <div className="mt-12">
             <div className="relative h-[650px] overflow-hidden rounded-xl bg-[#0099ff] text-white shadow-lg">
-              <Image
-                src="/images/BANNER.webp"
-                alt="Support"
-                fill
-                className="object-cover object-[45%_55%]"
-                priority
-              />
+              <div className="relative h-full w-full">
+                <Image
+                  src="/images/BANNER.webp"
+                  alt="Support"
+                  fill
+                  className="object-contain"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  priority
+                />
+              </div>
               {/* Overlay oscuro para mejorar legibilidad */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
 
@@ -316,7 +319,7 @@ export default function CatalogPage() {
 
               <div className="flex items-center gap-2">
                 <SortDesc className="h-4 w-4" />
-                <Select value={sort} onValueChange={handleSortChange}>
+                <Select defaultValue={sort} onValueChange={handleSortChange}>
                   <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="Sort by" />
                   </SelectTrigger>

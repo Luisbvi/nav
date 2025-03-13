@@ -1,3 +1,6 @@
+export type Availability = 'all' | 'in-stock';
+export type SortOption = 'featured' | 'price-low' | 'price-high' | 'name-asc';
+
 export interface Product {
   id: string;
   name: string;
@@ -7,11 +10,21 @@ export interface Product {
   stock: number;
   description?: string;
   image_url?: string;
-  created_at?: string;
-  updated_at?: string;
+  created_at: Date;
+  updated_at: Date;
 }
 
 export interface Category {
   name: string;
   count: number;
+}
+
+export interface SearchParams {
+  category?: string;
+  search?: string;
+  minPrice?: string;
+  maxPrice?: string;
+  sort?: SortOption;
+  page?: string;
+  availability?: Availability;
 }

@@ -154,7 +154,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
               <h2 className="mb-4 text-xl font-bold">Shipping Information</h2>
               <p className="mb-4">
                 We deliver to most major ports worldwide. Shipping times vary depending on your
-                vessel's location and port of call.
+                vessel&apos;s location and port of call.
               </p>
               <h3 className="mb-2 font-medium">Delivery Options:</h3>
               <ul className="mb-4 list-disc space-y-1 pl-5">

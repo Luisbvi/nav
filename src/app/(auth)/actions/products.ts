@@ -3,7 +3,17 @@
 import { createClient } from '@/utils/supabase/server';
 import { revalidatePath } from 'next/cache';
 
-export async function addProduct(formData: FormData) {
+interface ProductResponse {
+  success?: boolean;
+  error?: string;
+}
+
+interface CategoryResponse {
+  categories?: string[];
+  error?: string;
+}
+
+export async function addProduct(formData: FormData): Promise<ProductResponse> {
   try {
     const supabase = await createClient();
 
@@ -34,19 +44,18 @@ export async function addProduct(formData: FormData) {
     });
 
     if (error) {
-      console.error('Error al añadir producto:', error);
-      return { error: error.message };
+      throw error;
     }
 
     revalidatePath('/dashboard');
     return { success: true };
-  } catch (error: any) {
-    console.error('Error en addProduct:', error);
-    return { error: error.message };
+  } catch (error: Error | unknown) {
+    console.error('Error al añadir producto:', error);
+    return { error: error instanceof Error ? error.message : 'Unknown error occurred' };
   }
 }
 
-export async function deleteProduct(id: string) {
+export async function deleteProduct(id: string): Promise<{ error?: string }> {
   try {
     const supabase = await createClient();
 
@@ -67,17 +76,19 @@ export async function deleteProduct(id: string) {
     // Eliminar el producto
     const { error } = await supabase.from('products').delete().eq('id', id);
 
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
 
     revalidatePath('/dashboard');
-    return { success: true };
-  } catch (error: any) {
+    return {};
+  } catch (error: Error | unknown) {
     console.error('Error al eliminar producto:', error);
-    return { error: error.message };
+    return { error: error instanceof Error ? error.message : 'Unknown error occurred' };
   }
 }
 
-export async function updateProduct(id: string, formData: FormData) {
+export async function updateProduct(id: string, formData: FormData): Promise<{ error?: string }> {
   try {
     const supabase = await createClient();
 
@@ -107,27 +118,31 @@ export async function updateProduct(id: string, formData: FormData) {
       })
       .eq('id', id);
 
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
 
     revalidatePath('/dashboard');
-    return { success: true };
-  } catch (error: any) {
+    return {};
+  } catch (error: Error | unknown) {
     console.error('Error al actualizar producto:', error);
-    return { error: error.message };
+    return { error: error instanceof Error ? error.message : 'Unknown error occurred' };
   }
 }
 
-export async function getCategories() {
+export async function getCategories(): Promise<CategoryResponse> {
   try {
     const supabase = await createClient();
     const { data, error } = await supabase.from('products').select('category').order('category');
 
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
 
     const categories = [...new Set(data.map((item) => item.category))];
     return { categories };
-  } catch (error: any) {
+  } catch (error: Error | unknown) {
     console.error('Error al obtener categorías:', error);
-    return { error: error.message };
+    return { error: error instanceof Error ? error.message : 'Unknown error occurred' };
   }
 }
