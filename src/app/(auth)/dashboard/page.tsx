@@ -43,6 +43,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import ImageUploader from '@/components/imageUploader';
 
 // Default categories if API fails
@@ -77,6 +78,10 @@ interface FormData {
   stock: number;
   status: 'active' | 'inactive' | 'pending' | 'archived';
   image_url?: string;
+}
+
+interface FileUploadEvent extends Event {
+  target: HTMLInputElement & EventTarget;
 }
 
 export default function DashboardPage() {
@@ -126,23 +131,21 @@ export default function DashboardPage() {
 
         // Fetch categories
         const result = await getCategories();
-        const categoryList = result.categories ?? defaultCategories;
-        if (categoryList.length > 0) {
-          setCategories(categoryList);
+        const fetchedCategories = result.categories || defaultCategories;
+        if (fetchedCategories.length > 0) {
+          setCategories(fetchedCategories);
           setFormData((prev) => ({
             ...prev,
-            category: categoryList[0],
+            category: fetchedCategories[0],
           }));
         }
       } catch (error) {
         console.error('Error fetching data:', error);
-        // Fallback to default categories on error
-        setCategories(defaultCategories);
       }
     };
 
     fetchData();
-  }, [supabase]);
+  }, []);
 
   // Filter products based on search
   const filteredProducts = products.filter((product) =>
@@ -281,8 +284,8 @@ export default function DashboardPage() {
           setProducts(productsData);
         }
       }
-    } catch (error: Error | unknown) {
-      setFormError(error instanceof Error ? error.message : 'Unknown error occurred');
+    } catch (error: any) {
+      setFormError(error.message);
     } finally {
       setIsSubmitting(false);
     }
