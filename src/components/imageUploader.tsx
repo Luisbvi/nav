@@ -15,7 +15,7 @@ interface ImageUploaderProps {
   className?: string;
 }
 
-export default function ImageUploader({
+export default async function ImageUploader({
   bucket,
   path,
   initialImage,
@@ -27,7 +27,7 @@ export default function ImageUploader({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const storage = uploadImageClient();
+  const storage = await uploadImageClient();
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

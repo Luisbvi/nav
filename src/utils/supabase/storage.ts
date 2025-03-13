@@ -1,5 +1,4 @@
 import { createClient } from "@/utils/supabase/server";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
 // Función para subir una imagen desde el servidor
 export async function uploadImageServer(
@@ -30,8 +29,8 @@ export async function uploadImageServer(
 }
 
 // Función para subir una imagen desde el cliente
-export function uploadImageClient() {
-  const supabase = createClientComponentClient();
+export async function uploadImageClient() {
+  const supabase = await createClient();
 
   return {
     upload: async (

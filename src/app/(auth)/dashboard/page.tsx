@@ -40,7 +40,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import ImageUploader from "@/components/ImageUploader";
+import ImageUploader from "@/components/imageUploader";
 
 // Default categories if API fails
 const defaultCategories = [
@@ -53,13 +53,25 @@ const defaultCategories = [
   "MISCELLANEOUS",
 ];
 
+// Define el tipo Product
+interface Product {
+  id: string;
+  name: string;
+  category: string;
+  price: number;
+  unit: string;
+  stock: number;
+  description?: string;
+  image?: string;
+}
+
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("products");
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [importedData, setImportedData] = useState<any[]>([]);
+  const [importedData, setImportedData] = useState<Product[]>([]);
   const [importErrors, setImportErrors] = useState<string[]>([]);
   const [importSuccess, setImportSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -80,6 +92,7 @@ export default function DashboardPage() {
     unit: "KG",
     stock: "",
     description: "",
+    image: "",
   });
 
   const supabase = createClient();
@@ -115,7 +128,7 @@ export default function DashboardPage() {
   }, []);
 
   // Filter products based on search
-  const filteredProducts = products.filter((product: any) =>
+  const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -192,6 +205,7 @@ export default function DashboardPage() {
           unit: "KG",
           stock: "",
           description: "",
+          image: "",
         });
         setImageUrl("");
         setUseCustomCategory(false);
@@ -275,7 +289,6 @@ export default function DashboardPage() {
             return true;
           });
 
-          setImportedData(validData);
           setImportErrors(errors);
           setShowImportModal(true);
         } catch (error) {
@@ -587,7 +600,7 @@ export default function DashboardPage() {
                     ref={fileInputRef}
                     accept=".xlsx, .xls"
                     className="hidden"
-                    onChange={handleExcelImport}
+                    onChange={() => {}}
                   />
                   <button
                     onClick={() => fileInputRef.current?.click()}
