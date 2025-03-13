@@ -5,7 +5,7 @@ export async function uploadImageServer(
   file: File,
   bucket: string,
   path: string,
-  options?: { upsert?: boolean }
+  options?: { upsert?: boolean },
 ) {
   const supabase = await createClient();
 
@@ -37,7 +37,7 @@ export async function uploadImageClient() {
       file: File,
       bucket: string,
       path: string,
-      options?: { upsert?: boolean }
+      options?: { upsert?: boolean },
     ) => {
       const { data, error } = await supabase.storage
         .from(bucket)

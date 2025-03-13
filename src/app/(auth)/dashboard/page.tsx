@@ -129,7 +129,7 @@ export default function DashboardPage() {
 
   // Filter products based on search
   const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    product.name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   // Stats for dashboard
@@ -139,7 +139,7 @@ export default function DashboardPage() {
     lowStock: products.filter((p: any) => p.stock < 50).length,
     totalValue: products.reduce(
       (sum, product: any) => sum + product.price * product.stock,
-      0
+      0,
     ),
   };
 
@@ -147,7 +147,7 @@ export default function DashboardPage() {
   const handleInputChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    >,
   ) => {
     const { name, value } = e.target;
     setFormData({
@@ -175,7 +175,7 @@ export default function DashboardPage() {
       submitData.append("category", formData.category);
       submitData.append(
         "customCategory",
-        useCustomCategory ? formData.customCategory : ""
+        useCustomCategory ? formData.customCategory : "",
       );
       submitData.append("price", formData.price.toString());
       submitData.append("unit", formData.unit);
@@ -318,7 +318,7 @@ export default function DashboardPage() {
               unit: item.unit || "KG",
               stock: Number.parseInt(item.stock),
               image_url: null,
-            }))
+            })),
           )
           .select();
 

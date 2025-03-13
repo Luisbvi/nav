@@ -71,13 +71,13 @@ export default function CatalogPage() {
           ([name, count]) => ({
             name,
             count,
-          })
+          }),
         );
 
         // Añadir "All Categories"
         const totalProducts = categoryList.reduce(
           (sum, cat) => sum + cat.count,
-          0
+          0,
         );
         categoryList.unshift({
           name: "All Categories",

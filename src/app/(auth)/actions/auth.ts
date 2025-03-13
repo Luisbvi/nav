@@ -118,7 +118,7 @@ export const forgotPassword = async (formData: FormData) => {
     formData.get("email") as string,
     {
       redirectTo: `${origin}/reset-password`,
-    }
+    },
   );
 
   if (error) {

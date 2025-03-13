@@ -40,7 +40,7 @@ export async function getProducts(options?: {
   if (options?.offset) {
     query = query.range(
       options.offset,
-      options.offset + (options.limit || 10) - 1
+      options.offset + (options.limit || 10) - 1,
     );
   }
 
@@ -99,13 +99,13 @@ export async function getCategories(): Promise<Category[]> {
     ([name, count]) => ({
       name,
       count,
-    })
+    }),
   );
 
   // Add "All Categories" option
   const totalProducts = categories.reduce(
     (sum, category) => sum + category.count,
-    0
+    0,
   );
   categories.unshift({
     name: "All categories",

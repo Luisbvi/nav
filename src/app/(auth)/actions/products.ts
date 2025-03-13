@@ -1,13 +1,30 @@
 "use server";
 
 import { createClient } from "@/utils/supabase/server";
+import { Product } from "@/utils/supabase/types";
 import { revalidatePath } from "next/cache";
 
-export async function addProduct(formData: FormData) {
+// Define el tipo para la respuesta de addProduct
+interface AddProductResponse {
+  status: "success" | "error";
+  message: string;
+  product?: Product; // Opcional porque solo está presente en caso de éxito
+}
+
+// Define el tipo para la respuesta de getCategories
+interface GetCategoriesResponse {
+  status: "success" | "error";
+  message?: string; // Opcional porque solo está presente en caso de error
+  categories: string[];
+}
+
+export async function addProduct(
+  formData: FormData,
+): Promise<AddProductResponse> {
   try {
     const supabase = await createClient();
 
-    // Extract data from form
+    // Extraer datos del formulario
     const name = formData.get("name") as string;
     const category = formData.get("category") as string;
     const customCategory = formData.get("customCategory") as string;
@@ -17,10 +34,10 @@ export async function addProduct(formData: FormData) {
     const description = formData.get("description") as string;
     const imageUrl = formData.get("imageUrl") as string;
 
-    // Use custom category if provided, otherwise use selected category
+    // Usar la categoría personalizada si se proporciona, de lo contrario usar la categoría seleccionada
     const finalCategory = customCategory ? customCategory : category;
 
-    // Validate data
+    // Validar datos
     if (!name || !finalCategory || isNaN(price) || isNaN(stock)) {
       return {
         status: "error",
@@ -28,7 +45,7 @@ export async function addProduct(formData: FormData) {
       };
     }
 
-    // Insert product into database
+    // Insertar producto en la base de datos
     const { data, error } = await supabase
       .from("products")
       .insert({
@@ -51,14 +68,14 @@ export async function addProduct(formData: FormData) {
       };
     }
 
-    // Revalidate the catalog page to show the new product
+    // Revalidar la página del catálogo para mostrar el nuevo producto
     revalidatePath("/catalog");
     revalidatePath("/dashboard");
 
     return {
       status: "success",
       message: "Product added successfully",
-      product: data,
+      product: data as Product, // Asegurar que data sea del tipo Product
     };
   } catch (error: any) {
     console.error("Error in addProduct:", error);
@@ -69,7 +86,7 @@ export async function addProduct(formData: FormData) {
   }
 }
 
-export async function getCategories() {
+export async function getCategories(): Promise<GetCategoriesResponse> {
   try {
     const supabase = await createClient();
 
@@ -82,7 +99,7 @@ export async function getCategories() {
       throw error;
     }
 
-    // Extract unique categories
+    // Extraer categorías únicas
     const uniqueCategories = [...new Set(data.map((item) => item.category))];
 
     return {

@@ -36,7 +36,7 @@ export async function getAdminRole(userId: string): Promise<string | null> {
 
 export async function addAdminUser(
   userId: string,
-  role = "admin"
+  role = "admin",
 ): Promise<boolean> {
   const supabase = await createClient();
 
