@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -13,7 +13,7 @@ import { Product } from '@/types';
 // Default categories if API fails
 const defaultCategories = ['Electronics', 'Clothing', 'Books', 'Food'];
 
-export default function CatalogPage() {
+function CatalogContent() {
   const supabase = createClient();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -202,5 +202,19 @@ export default function CatalogPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function CatalogPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="container mx-auto flex min-h-screen items-center justify-center px-4 py-8">
+          <div className="text-lg">Loading catalog...</div>
+        </div>
+      }
+    >
+      <CatalogContent />
+    </Suspense>
   );
 }

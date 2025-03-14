@@ -82,13 +82,14 @@ export default function ProductPage() {
 
         <div className="grid gap-10 md:grid-cols-2">
           <div className="rounded-md bg-white p-4 shadow">
-            <div className="relative aspect-square overflow-hidden rounded">
+            <div className="relative h-[600px] w-full rounded">
               <Image
                 src={product.image_url || '/placeholder.svg?height=400&width=400'}
                 alt={product.name}
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 className="object-contain"
+                priority
               />
             </div>
           </div>

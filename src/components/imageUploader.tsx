@@ -20,7 +20,7 @@ export default function ImageUploader({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validar tamaño y tipo
+    // Validate file type and size
     if (!file.type.startsWith('image/')) {
       setError('Please upload an image file');
       return;
@@ -31,15 +31,19 @@ export default function ImageUploader({
       return;
     }
 
+    // Recommend WebP format
+    if (!file.type.includes('webp')) {
+      console.warn('Consider using WebP format for better performance');
+    }
+
     setIsUploading(true);
     setError(null);
 
     try {
-      // Generar nombre único
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}.${fileExt}`;
+      // Generate unique name with WebP extension if possible
+      const fileName = `${Date.now()}.webp`;
 
-      // Subir archivo
+      // Upload file
       const { publicUrl } = await upload(file, bucket, fileName);
       onUploadComplete(publicUrl);
     } catch (error) {
@@ -52,7 +56,15 @@ export default function ImageUploader({
 
   return (
     <div className={className}>
-      <Input type="file" accept="image/*" onChange={handleFileChange} disabled={isUploading} />
+      <Input 
+        type="file" 
+        accept="image/webp,image/png,image/jpeg" 
+        onChange={handleFileChange} 
+        disabled={isUploading} 
+      />
+      <p className="mt-1 text-xs text-gray-500">
+        Recommended: WebP format, max 5MB. Images will be displayed using object-contain to maintain aspect ratio.
+      </p>
       {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
       {isUploading && <p className="mt-1 text-sm text-gray-500">Uploading image...</p>}
     </div>

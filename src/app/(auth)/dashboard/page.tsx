@@ -441,8 +441,14 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <div className="h-8 w-8 overflow-hidden rounded-full bg-gray-200">
-                <Image src="/images/img-placeholder.webp" alt="User" width={32} height={32} />
+              <div className="relative h-[32px] w-[32px] overflow-hidden rounded-full bg-gray-200">
+                <Image 
+                  src="/images/img-placeholder.webp" 
+                  alt="User" 
+                  fill
+                  className="object-contain"
+                  sizes="32px"
+                />
               </div>
               <span className="font-medium">Admin</span>
             </div>
@@ -511,12 +517,13 @@ export default function DashboardPage() {
                       <tr key={product.id}>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
-                            <div className="relative h-10 w-10 flex-shrink-0">
+                            <div className="relative h-[40px] w-[40px] flex-shrink-0">
                               <Image
                                 src={product.image_url || '/images/img-placeholder.webp'}
                                 alt={product.name}
                                 fill
                                 className="rounded-md object-contain"
+                                sizes="40px"
                               />
                             </div>
                             <div className="ml-4">
@@ -611,12 +618,13 @@ export default function DashboardPage() {
                       <tr key={product.id}>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
-                            <div className="relative h-10 w-10 flex-shrink-0">
+                            <div className="relative h-[40px] w-[40px] flex-shrink-0">
                               <Image
                                 src={product.image_url || '/images/img-placeholder.webp'}
                                 alt={product.name}
                                 fill
                                 className="rounded-md object-contain"
+                                sizes="40px"
                               />
                             </div>
                             <div className="ml-4">
