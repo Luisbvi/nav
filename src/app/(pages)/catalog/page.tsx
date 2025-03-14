@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { createClient } from '@/utils/supabase/client';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
-import { getCategories } from '@/app/(auth)/actions/products';
+import { getCategories } from '@/app/(auth)/actions/server-actions';
 import { Product } from '@/types';
 
 // Default categories if API fails

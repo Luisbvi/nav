@@ -1,7 +1,6 @@
 'use client';
 
 import type React from 'react';
-
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -29,7 +28,7 @@ import {
   deleteProduct,
   updateProduct,
   getCategories,
-} from '@/app/(auth)/actions/products';
+} from '@/app/(auth)/actions/server-actions';
 
 // UI Components
 import { Button } from '@/components/ui/button';
