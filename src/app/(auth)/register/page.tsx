@@ -39,8 +39,15 @@ export default function RegisterPage() {
       <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
           <Link href={'/'}>
-            <div className="relative h-48 w-auto overflow-hidden">
-              <Image src="/images/logo-lg.png" alt="logo" fill className="object-contain" />
+            <div className="relative h-[60px] w-[180px]">
+              <Image 
+                src="/images/logo-lg.png" 
+                alt="logo" 
+                fill 
+                className="object-contain"
+                sizes="180px"
+                priority
+              />
             </div>
           </Link>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">

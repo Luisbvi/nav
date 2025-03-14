@@ -1,18 +1,60 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { MinusCircle, PlusCircle, ShieldCheck, Truck } from 'lucide-react';
-import { getProductById } from '@/utils/supabase/products';
+import { createClient } from '@/utils/supabase/client';
+import { Product } from '@/types';
 
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-export default async function ProductPage({ params }: { params: { id: string } }) {
-  const product = await getProductById(params.id);
+export default function ProductPage() {
+  const params = useParams();
+  const [product, setProduct] = useState<Product | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const supabase = createClient();
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('id', params.id)
+          .single();
+
+        if (error) throw error;
+        if (!data) throw new Error('Product not found');
+
+        setProduct(data);
+      } catch (error) {
+        console.error('Error fetching product:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [params.id, supabase]);
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-lg">Loading product...</div>
+      </div>
+    );
+  }
 
   if (!product) {
-    notFound();
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-lg">Product not found</div>
+      </div>
+    );
   }
 
   // Mock specifications if not available in the database
@@ -45,7 +87,8 @@ export default async function ProductPage({ params }: { params: { id: string } }
                 src={product.image_url || '/placeholder.svg?height=400&width=400'}
                 alt={product.name}
                 fill
-                className="object-cover"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                className="object-contain"
               />
             </div>
           </div>
