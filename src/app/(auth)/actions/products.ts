@@ -2,7 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server';
 import { revalidatePath } from 'next/cache';
-import { ProductResponse, CategoryResponse, Product } from '@/types';
+import { ProductResponse, CategoryResponse } from '@/types';
 
 export async function addProduct(formData: FormData): Promise<ProductResponse> {
   try {

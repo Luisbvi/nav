@@ -42,7 +42,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
 import ImageUploader from '@/components/imageUploader';
 
 // Default categories if API fails
@@ -79,9 +78,6 @@ interface FormData {
   image_url?: string;
 }
 
-interface FileUploadEvent extends Event {
-  target: HTMLInputElement & EventTarget;
-}
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState('products');
@@ -144,7 +140,7 @@ export default function DashboardPage() {
     };
 
     fetchData();
-  }, []);
+  }, [supabase]);
 
   // Filter products based on search
   const filteredProducts = products.filter((product) =>
@@ -283,8 +279,8 @@ export default function DashboardPage() {
           setProducts(productsData);
         }
       }
-    } catch (error: any) {
-      setFormError(error.message);
+    } catch (error: Error | unknown) {
+      setFormError(error instanceof Error ? error.message : 'Failed to add product');
     } finally {
       setIsSubmitting(false);
     }
