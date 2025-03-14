@@ -7,14 +7,8 @@ const Footer = () => {
     <footer className="mt-auto bg-blue-400 px-[120px]">
       <div className="flex items-center justify-between">
         <Link href="/" className="w-60">
-          <div className="relative h-[40px] w-[120px]">
-            <Image 
-              src="/images/logo-w-lg.png" 
-              alt="logo" 
-              fill 
-              className="object-contain"
-              sizes="120px"
-            />
+          <div className="relative h-48">
+            <Image src="/images/logo-w-lg.png" alt="logo" fill className="object-contain" />
           </div>
         </Link>
 

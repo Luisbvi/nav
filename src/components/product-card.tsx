@@ -18,13 +18,13 @@ interface ProductCardProps {
 export default function ProductCard({ product }: ProductCardProps) {
   return (
     <div className="overflow-hidden rounded-lg bg-white shadow transition-all hover:border hover:border-blue-500 hover:shadow-md">
-      <div className="relative h-[400px] w-full">
+      <div className="relative aspect-square">
         <Image
           src={product.image}
           alt={product.name}
           fill
           className="object-contain"
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
         />
       </div>
 

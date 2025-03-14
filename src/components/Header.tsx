@@ -9,18 +9,15 @@ const Header = async () => {
     data: { user },
   } = await supabase.auth.getUser();
 
+  console.log(user);
   return (
     <header className="flex">
       <aside className="ml-24 w-80 rounded">
         <Link href={'/'}>
-          <div className="relative h-[40px] w-[120px]">
-            <Image 
-              src="/images/logo-lg.png" 
-              alt="logo" 
-              fill 
-              className="object-contain"
-              sizes="120px"
-            />
+          <div className="relative h-48 w-auto overflow-hidden">
+            {' '}
+            {/* Aumenté la altura a h-32 */}
+            <Image src="/images/logo-lg.png" alt="logo" fill className="object-contain" />
           </div>
         </Link>
       </aside>

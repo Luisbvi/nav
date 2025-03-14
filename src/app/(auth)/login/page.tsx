@@ -49,7 +49,6 @@ export default function LoginPage() {
                 alt="logo" 
                 fill 
                 className="object-contain"
-                sizes="180px"
                 priority
               />
             </div>

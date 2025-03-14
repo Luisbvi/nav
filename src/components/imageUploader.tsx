@@ -31,17 +31,13 @@ export default function ImageUploader({
       return;
     }
 
-    // Recommend WebP format
-    if (!file.type.includes('webp')) {
-      console.warn('Consider using WebP format for better performance');
-    }
-
     setIsUploading(true);
     setError(null);
 
     try {
-      // Generate unique name with WebP extension if possible
-      const fileName = `${Date.now()}.webp`;
+      // Generate unique name with original file extension
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
 
       // Upload file
       const { publicUrl } = await upload(file, bucket, fileName);
@@ -56,15 +52,7 @@ export default function ImageUploader({
 
   return (
     <div className={className}>
-      <Input 
-        type="file" 
-        accept="image/webp,image/png,image/jpeg" 
-        onChange={handleFileChange} 
-        disabled={isUploading} 
-      />
-      <p className="mt-1 text-xs text-gray-500">
-        Recommended: WebP format, max 5MB. Images will be displayed using object-contain to maintain aspect ratio.
-      </p>
+      <Input type="file" accept="image/*" onChange={handleFileChange} disabled={isUploading} />
       {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
       {isUploading && <p className="mt-1 text-sm text-gray-500">Uploading image...</p>}
     </div>
