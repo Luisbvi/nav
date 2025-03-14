@@ -1,14 +1,14 @@
 'use client';
 
 import type React from 'react';
-
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { Lock, Eye, EyeOff, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { resetPassword } from '../actions/auth';
 
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const code = searchParams.get('code');
@@ -76,6 +76,19 @@ export default function ResetPasswordPage() {
     <div className="flex min-h-screen bg-gray-100">
       <div className="flex flex-1 flex-col justify-center px-4 py-12 sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
+          <Link href="/" className="mb-8 block">
+            <div className="relative mx-auto h-[60px] w-[180px]">
+              <Image
+                src="/images/logo-lg.png"
+                alt="logo"
+                fill
+                className="object-contain"
+                sizes="180px"
+                priority
+              />
+            </div>
+          </Link>
+
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             {isSubmitted ? 'Password Updated!' : 'Set your new password'}
           </h2>
@@ -201,45 +214,12 @@ export default function ResetPasswordPage() {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="flex w-full justify-center rounded-md border border-transparent bg-[#0099ff] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#0088ee] focus:ring-2 focus:ring-[#0099ff] focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                    className={`flex w-full justify-center rounded-md border border-transparent bg-[#0099ff] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#0088ee] focus:ring-2 focus:ring-[#0099ff] focus:ring-offset-2 focus:outline-none ${
+                      isLoading ? 'cursor-not-allowed opacity-50' : ''
+                    }`}
                   >
-                    {isLoading ? (
-                      <>
-                        <svg
-                          className="mr-2 -ml-1 h-4 w-4 animate-spin text-white"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          ></circle>
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          ></path>
-                        </svg>
-                        Updating...
-                      </>
-                    ) : (
-                      'Update password'
-                    )}
+                    {isLoading ? 'Updating password...' : 'Update password'}
                   </button>
-                </div>
-
-                <div className="text-center">
-                  <Link
-                    href="/login"
-                    className="text-sm font-medium text-[#0099ff] hover:text-[#0088ee]"
-                  >
-                    Back to login
-                  </Link>
                 </div>
               </form>
             )}
@@ -247,5 +227,19 @@ export default function ResetPasswordPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="text-lg">Loading...</div>
+        </div>
+      }
+    >
+      <ResetPasswordForm />
+    </Suspense>
   );
 }
