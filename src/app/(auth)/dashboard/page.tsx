@@ -78,7 +78,6 @@ interface FormData {
   image_url?: string;
 }
 
-
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState('products');
   const [products, setProducts] = useState<Product[]>([]);
@@ -345,14 +344,9 @@ export default function DashboardPage() {
       {/* Sidebar */}
       <div className="w-64 bg-[#0099ff] text-white">
         <Link href="/" className="w-60">
-          <div className="relative h-[40px] w-[120px]">
-            <Image 
-              src="/images/logo-w-lg.png" 
-              alt="logo" 
-              fill 
-              className="object-contain"
-              sizes="120px"
-            />
+          <div className="relative h-32">
+            <Image src="/images/logo-w-lg.png" alt="logo" fill className="object-contain" />+
+            
           </div>
         </Link>
 
