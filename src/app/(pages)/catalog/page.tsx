@@ -2,7 +2,7 @@
 
 import type React from 'react';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { Filter, Search, SortDesc } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
@@ -20,7 +20,7 @@ import Image from 'next/image';
 import { createClient } from '@/utils/supabase/client';
 import type { Product, Category } from '@/utils/supabase/types';
 
-export default function CatalogPage() {
+function CatalogContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const category = searchParams.get('category') || 'All Categories';
@@ -416,5 +416,13 @@ export default function CatalogPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CatalogPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CatalogContent />
+    </Suspense>
   );
 }
