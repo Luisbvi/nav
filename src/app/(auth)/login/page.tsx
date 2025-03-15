@@ -43,14 +43,8 @@ export default function LoginPage() {
       <div className="mt-[-240px] flex flex-1 flex-col justify-center px-4 sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
           <Link href={'/'}>
-            <div className="relative h-[60px] w-[180px]">
-              <Image 
-                src="/images/logo-lg.png" 
-                alt="logo" 
-                fill 
-                className="object-contain"
-                priority
-              />
+            <div className="relative h-48 w-auto overflow-hidden">
+              <Image src="/images/logo-lg.png" alt="logo" fill className="object-contain" />
             </div>
           </Link>
 
