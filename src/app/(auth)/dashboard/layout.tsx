@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { LogOut } from 'lucide-react';
 import SearchInput from '@/components/dashboard/search';
 import { NavLink } from '@/components/dashboard/nav-link';
+import { Suspense } from 'react'; // Add this import
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -40,12 +41,13 @@ export default async function DashboardLayout({ children }: { children: React.Re
           </div>
         </nav>
       </div>
-      {/* Main Content */}
       <div className="flex-1 overflow-auto">
         <header className="flex items-center justify-between bg-white p-4 shadow">
           <h1 className="text-xl font-bold">Dashboard</h1>
           <div className="flex items-center gap-4">
-            <SearchInput />
+            <Suspense fallback={<div>Loading search...</div>}>
+              <SearchInput />
+            </Suspense>
           </div>
         </header>
         <div className="p-6">{children}</div>
