@@ -87,6 +87,20 @@ export default function RegisterPage() {
                     <Input id="password" name="password" type="password" required />
                   </div>
                 </div>
+
+                <div>
+                  <Label htmlFor="preferred-language">Preferred language</Label>
+                  <select
+                    id="preferred-language"
+                    name="preferred-language"
+                    className="border-input bg-background w-full rounded-md border px-3 py-2"
+                    required
+                  >
+                    <option value="en">English</option>
+                    <option value="es">Español</option>
+                    <option value="zh">中文 (Chinese)</option>
+                  </select>
+                </div>
               </div>
 
               <Separator />

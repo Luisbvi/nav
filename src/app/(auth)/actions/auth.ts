@@ -24,6 +24,7 @@ export const signUp = async (formData: FormData) => {
     password: formData.get('password') as string,
     vesselName: formData.get('vessel-name') as string,
     shippingCompany: formData.get('shipping-company') as string,
+    preferred_language: formData.get('preferred-language') as string,
   };
 
   const { error, data } = await supabase.auth.signUp({
@@ -35,6 +36,10 @@ export const signUp = async (formData: FormData) => {
         lastName: credentials.lastName,
         vesselName: credentials.vesselName,
         shippingCompany: credentials.shippingCompany,
+        email_verified: false,
+        role: 'user',
+        preferred_language: credentials.preferred_language,
+        status: 'active',
       },
     },
   });
@@ -146,6 +151,8 @@ export const signIn = async (formData: FormData) => {
         shipping_company: data.user.user_metadata?.shippingCompany,
         last_login: new Date().toISOString(),
         email_verified: true,
+        role: 'user',
+        preferred_language: data.user.user_metadata?.preferredLanguage,
       };
 
       console.log('New profile data:', newProfile);
