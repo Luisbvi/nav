@@ -1,3 +1,4 @@
+// /dashboard/customers/page.tsx
 import CustomersDashboard from '@/components/dashboard/customers/customer-dashboard.tsx';
 import { User } from '@/types';
 import { createClient } from '@/utils/supabase/client';
@@ -13,8 +14,10 @@ export default async function CustomersPage() {
   }
 
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <CustomersDashboard initialCustomers={(customers as User[]) || []} />;
-    </Suspense>
+    <div>
+      <Suspense fallback={<div>Loading customers dashboard...</div>}>
+        <CustomersDashboard initialCustomers={(customers as User[]) || []} />
+      </Suspense>
+    </div>
   );
 }

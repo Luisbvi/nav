@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { UserCircle } from 'lucide-react';
 import CustomerTable from './CustomerTable';
@@ -208,6 +208,7 @@ export default function CustomersDashboard({ initialCustomers }: { initialCustom
     }
   };
 
+  // Inside your CustomersDashboard component
   return (
     <div className="p-4">
       <div className="mb-6 flex items-center">
@@ -215,23 +216,27 @@ export default function CustomersDashboard({ initialCustomers }: { initialCustom
         <h1 className="text-2xl font-bold">Customers</h1>
       </div>
 
-      <CustomerTable
-        customers={customers}
-        openUserDetails={openUserDetails}
-        handleDeleteCustomer={handleDeleteCustomer}
-      />
+      <Suspense fallback={<div>Loading customer table...</div>}>
+        <CustomerTable
+          customers={customers}
+          openUserDetails={openUserDetails}
+          handleDeleteCustomer={handleDeleteCustomer}
+        />
+      </Suspense>
 
       {isModalOpen && selectedUser && (
-        <UserDetailsModal
-          selectedUser={selectedUser}
-          isEditing={isEditing}
-          editForm={editForm}
-          handleEditChange={handleEditChange}
-          toggleEditMode={toggleEditMode}
-          handleSaveChanges={handleSaveChanges}
-          handleDeleteCustomer={handleDeleteCustomer}
-          closeModal={closeModal}
-        />
+        <Suspense fallback={<div>Loading user details...</div>}>
+          <UserDetailsModal
+            selectedUser={selectedUser}
+            isEditing={isEditing}
+            editForm={editForm}
+            handleEditChange={handleEditChange}
+            toggleEditMode={toggleEditMode}
+            handleSaveChanges={handleSaveChanges}
+            handleDeleteCustomer={handleDeleteCustomer}
+            closeModal={closeModal}
+          />
+        </Suspense>
       )}
     </div>
   );
