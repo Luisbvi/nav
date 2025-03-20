@@ -3,7 +3,7 @@ import Image from 'next/image';
 import { LogOut } from 'lucide-react';
 import SearchInput from '@/components/dashboard/search';
 import { NavLink } from '@/components/dashboard/nav-link';
-import { Suspense } from 'react'; // Add this import
+import { Suspense } from 'react';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
