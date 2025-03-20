@@ -34,3 +34,20 @@ export interface FormData {
   status: 'active' | 'inactive' | 'pending' | 'archived';
   image_url?: string;
 }
+
+export interface User {
+  id: string;
+  firstName: string;
+  lastName: string;
+  vesselName: string;
+  shippingCompany: string;
+  role: string;
+  preferredLanguage: string;
+  status: string;
+  email: string;
+  email_confirmed_at: string | null;
+  email_verified: boolean;
+  created_at: string;
+  updated_at: string;
+  last_login: string | null;
+}

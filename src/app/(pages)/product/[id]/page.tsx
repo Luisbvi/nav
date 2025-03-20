@@ -7,6 +7,7 @@ import { useParams } from 'next/navigation';
 import { MinusCircle, PlusCircle, ShieldCheck, Truck } from 'lucide-react';
 import { createClient } from '@/utils/supabase/client';
 import { Product } from '@/types';
+import { useCart } from '@/contexts/cart-context';
 
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -16,6 +17,8 @@ export default function ProductPage() {
   const params = useParams();
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [quantity, setQuantity] = useState(1);
+  const { addItem } = useCart();
   const supabase = createClient();
 
   useEffect(() => {
@@ -120,16 +123,47 @@ export default function ProductPage() {
 
             <div className="mb-8 flex items-center gap-4">
               <div className="flex items-center">
-                <Button variant="outline" size="icon">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  disabled={quantity <= 1}
+                >
                   <MinusCircle className="h-4 w-4" />
                 </Button>
-                <span className="mx-4">1</span>
-                <Button variant="outline" size="icon">
+                <span className="mx-4">
+                  {quantity} <span className="text-sm text-gray-500">{product.unit}</span>
+                </span>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setQuantity(quantity + 1)}
+                  disabled={quantity >= (product?.stock || 0)}
+                >
                   <PlusCircle className="h-4 w-4" />
                 </Button>
               </div>
 
-              <Button className="bg-blue-500 px-8 hover:bg-blue-600">Add to Cart</Button>
+              <Link href="/cart">
+                <Button
+                  className="bg-blue-500 px-8 hover:bg-blue-600"
+                  onClick={() => {
+                    if (product) {
+                      addItem({
+                        id: product.id,
+                        name: product.name,
+                        price: product.price,
+                        image: product.image_url || '/images/img-placeholder.webp',
+                        quantity,
+                        unit: product.unit,
+                      });
+                    }
+                  }}
+                  disabled={!product?.stock}
+                >
+                  Add to Cart
+                </Button>
+              </Link>
             </div>
 
             <Separator className="my-6" />

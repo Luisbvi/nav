@@ -57,46 +57,150 @@ export const signUp = async (formData: FormData) => {
 export const signIn = async (formData: FormData) => {
   const supabase = await createClient();
 
-  const credentials = {
-    email: formData.get('email') as string,
-    password: formData.get('password') as string,
-  };
-
-  const { error, data } = await supabase.auth.signInWithPassword(credentials);
-
-  if (error) {
-    return {
-      status: error?.message,
-      user: null,
+  try {
+    // 1. Authentication
+    const credentials = {
+      email: formData.get('email') as string,
+      password: formData.get('password') as string,
     };
-  }
 
-  const { data: existingUser } = await supabase
-    .from('user_profiles')
-    .select('*')
-    .eq('email', credentials.email)
-    .limit(1)
-    .single();
+    console.log('Attempting to sign in user:', credentials.email);
+    const { error, data } = await supabase.auth.signInWithPassword(credentials);
 
-  if (!existingUser) {
-    const { error: inserError } = await supabase.from('user_profiles').insert({
-      email: data?.user.email,
-      firstName: data?.user.user_metadata.firstName,
-      lastName: data?.user.user_metadata.lastName,
-      vesselName: data?.user.user_metadata.vesselName,
-      shippingCompany: data?.user.user_metadata.shippingCompany,
-    });
-
-    if (inserError) {
+    if (error || !data.user) {
+      console.error('Authentication failed:', error?.message);
       return {
-        status: inserError?.message,
+        status: error?.message || 'Authentication failed',
         user: null,
       };
     }
-  }
 
-  revalidatePath('/', 'layout');
-  return { status: 'success', user: data.user };
+    console.log('Authentication successful for user:', data.user.email);
+
+    // 2. Check for existing profile with detailed logging
+    console.log('Checking for existing user profile...');
+    const { data: existingUser, error: profileError } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('email', data.user.email)
+      .maybeSingle();
+
+    if (profileError) {
+      console.error('Error checking existing profile:', profileError);
+    }
+
+    // If no direct match, try case-insensitive search
+    if (!existingUser) {
+      console.log(
+        'No exact match found, retrieving all profiles to find case-insensitive match...'
+      );
+      const { data: allProfiles } = await supabase.from('user_profiles').select('*');
+
+      console.log('Retrieved profiles:', allProfiles);
+
+      // Find a case-insensitive match
+      const matchingProfile = allProfiles?.find(
+        (profile) => profile.email?.toLowerCase() === data.user?.email?.toLowerCase()
+      );
+
+      console.log('Case-insensitive match found:', matchingProfile ? 'Yes' : 'No');
+
+      if (matchingProfile) {
+        // 3. Update using ID instead of email for found profile
+        console.log('Updating last_login for user ID:', matchingProfile.id);
+
+        const updateResult = await supabase
+          .from('user_profiles')
+          .update({
+            last_login: new Date().toISOString(),
+            email_verified: true,
+          })
+          .eq('id', matchingProfile.id) // Use ID instead of email
+          .select();
+
+        console.log('Update result:', updateResult);
+
+        if (updateResult.error) {
+          console.error('Error updating last login:', updateResult.error);
+        } else {
+          console.log('Last login updated successfully');
+        }
+
+        // Revalidate and return success
+        console.log('Sign-in process completed successfully');
+        revalidatePath('/', 'layout');
+        return {
+          status: 'success',
+          user: data.user,
+        };
+      }
+
+      // If no match at all, create new profile
+      console.log('Creating new user profile for:', data.user.email);
+
+      const newProfile = {
+        email: data.user.email,
+        first_name: data.user.user_metadata?.firstName,
+        last_name: data.user.user_metadata?.lastName,
+        vessel_name: data.user.user_metadata?.vesselName,
+        shipping_company: data.user.user_metadata?.shippingCompany,
+        last_login: new Date().toISOString(),
+        email_verified: true,
+      };
+
+      console.log('New profile data:', newProfile);
+
+      const { data: insertedProfile, error: insertError } = await supabase
+        .from('user_profiles')
+        .insert(newProfile)
+        .select();
+
+      if (insertError) {
+        console.error('Error creating profile:', insertError);
+        return {
+          status: insertError.message,
+          user: null,
+        };
+      }
+
+      console.log('New profile created successfully:', insertedProfile);
+    } else {
+      // Profile exists with exact email match, update using ID
+      console.log('Existing user profile found with ID:', existingUser.id);
+
+      const updateResult = await supabase
+        .from('user_profiles')
+        .update({ last_login: new Date().toISOString(), email_verified: true })
+        .eq('id', existingUser.id)
+        .select();
+
+      console.log('Update result:', updateResult);
+
+      if (updateResult.error) {
+        console.error('Error updating last login:', updateResult.error);
+      } else if (updateResult.data && updateResult.data.length === 0) {
+        console.warn(
+          'No rows were updated despite finding the profile. Check database constraints.'
+        );
+      } else {
+        console.log('Last login updated successfully');
+      }
+    }
+
+    // 4. Revalidate and return
+    console.log('Sign-in process completed successfully');
+    revalidatePath('/', 'layout');
+    return {
+      status: 'success',
+      user: data.user,
+    };
+  } catch (error) {
+    console.error('Unexpected error during sign in:', error);
+    return {
+      status: 'An unexpected error occurred',
+      user: null,
+    };
+  }
 };
 
 export const signOut = async () => {

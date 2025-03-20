@@ -9,12 +9,12 @@ export async function upload(
   fileName: string,
   options = { upsert: false }
 ) {
-  const supabase = await createClient();
+  const supabase = createClient();
   const { data, error } = await supabase.storage.from(bucket).upload(fileName, file, options);
 
   if (error) throw error;
 
-  const { data: publicUrl } = await supabase.storage.from(bucket).getPublicUrl(fileName);
+  const { data: publicUrl } = supabase.storage.from(bucket).getPublicUrl(fileName);
 
   return { data, publicUrl: publicUrl.publicUrl };
 }

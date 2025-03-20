@@ -221,7 +221,7 @@ function CatalogContent() {
               <div className="">
                 <h3 className="mb-2 text-sm font-medium">Category</h3>
                 <Select defaultValue={category} onValueChange={handleCategoryChange}>
-                  <SelectTrigger className="w-[200px]">
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -263,7 +263,7 @@ function CatalogContent() {
               <div>
                 <h3 className="mb-2 text-sm font-medium">Availability</h3>
                 <Select defaultValue={availability} onValueChange={handleAvailabilityChange}>
-                  <SelectTrigger className="w-[200px]">
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Availability" />
                   </SelectTrigger>
                   <SelectContent>
@@ -273,13 +273,13 @@ function CatalogContent() {
                 </Select>
               </div>
             </div>
-            
           </div>
+
           <div className="mt-12">
-            <div className="relative h-[650px] overflow-hidden rounded-xl bg-[#0099ff] text-white shadow-lg">
+            <div className="relative h-[650px] overflow-hidden rounded-xl text-white shadow-lg">
               <div className="relative h-full w-full">
                 <Image
-                  src="/images/BANNER.webp"
+                  src="/images/banner.webp"
                   alt="Support"
                   fill
                   className="object-cover object-[45%_55%]"

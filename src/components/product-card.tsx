@@ -39,9 +39,11 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         <div className="flex items-center justify-between">
           <div className="font-bold">${product.price.toFixed(2)}</div>
-          <Button size="sm" className="cursor-pointer bg-blue-400 text-white hover:bg-blue-500">
-            Add to Cart
-          </Button>
+          <Link href={`/product/${product.id}`}>
+            <Button size="sm" className="cursor-pointer bg-blue-400 text-white hover:bg-blue-500">
+              View Product
+            </Button>
+          </Link>
         </div>
       </div>
     </div>
