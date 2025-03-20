@@ -67,7 +67,7 @@ export function UserMenu({
           <div className="absolute right-0 z-50 mt-2 w-48 list-none divide-y divide-gray-100 rounded-lg bg-white text-base shadow-sm dark:divide-gray-600 dark:bg-gray-700">
             <div className="px-4 py-3">
               <span className="block text-sm text-gray-900 dark:text-white">
-                {user.email?.split('@')[0] || 'User'}
+                {user.user_metadata?.firstName} {user.user_metadata?.lastName}
               </span>
               <span className="block truncate text-sm text-gray-500 dark:text-gray-400">
                 {user.email || ''}
