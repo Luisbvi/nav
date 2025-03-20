@@ -1,6 +1,7 @@
 import CustomersDashboard from '@/components/dashboard/customers/customer-dashboard.tsx';
 import { User } from '@/types';
 import { createClient } from '@/utils/supabase/client';
+import { Suspense } from 'react';
 
 export default async function CustomersPage() {
   const supabase = createClient();
@@ -11,5 +12,9 @@ export default async function CustomersPage() {
     console.error('Error al obtener los clientes:', error);
   }
 
-  return <CustomersDashboard initialCustomers={(customers as User[]) || []} />;
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <CustomersDashboard initialCustomers={(customers as User[]) || []} />;
+    </Suspense>
+  );
 }
