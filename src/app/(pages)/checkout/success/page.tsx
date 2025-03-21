@@ -8,13 +8,13 @@ import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/cart-context';
 
 export default function CheckoutSuccessPage() {
+  const { clearCart } = useCart();
   const searchParams = useSearchParams();
   const sessionId = searchParams.get('session_id');
-  const { clearCart } = useCart();
 
   useEffect(() => {
     clearCart();
-  }, [sessionId]);
+  }, []);
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
