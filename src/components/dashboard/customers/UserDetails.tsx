@@ -8,6 +8,8 @@ import {
   Shield,
   AlertCircle,
   Globe,
+  Check,
+  X,
 } from 'lucide-react';
 import StatusBadge from '@/components/dashboard/customers/StatusBadge';
 import { User } from '@/types';
@@ -22,7 +24,17 @@ export default function UserDetails({ selectedUser }: { selectedUser: User }) {
             <p className="text-sm font-medium text-gray-500">Email</p>
             <p className="text-sm text-gray-900">{selectedUser.email}</p>
             <p className="mt-1 text-xs text-gray-500">
-              {selectedUser.email_confirmed_at ? 'Verified' : 'Not verified'}
+              {selectedUser.email_verified ? (
+                <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
+                  <Check size={10} className="mr-1" />
+                  Verified
+                </span>
+              ) : (
+                <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800">
+                  <X size={10} className="mr-1" />
+                  Not verified
+                </span>
+              )}
             </p>
           </div>
         </div>
@@ -31,7 +43,7 @@ export default function UserDetails({ selectedUser }: { selectedUser: User }) {
           <div>
             <p className="text-sm font-medium text-gray-500">Full Name</p>
             <p className="text-sm text-gray-900">
-              {`${selectedUser.firstName || ''} ${selectedUser.lastName || ''}`}
+              {`${selectedUser.first_name || ''} ${selectedUser.last_name || ''}`}
             </p>
           </div>
         </div>
@@ -42,14 +54,14 @@ export default function UserDetails({ selectedUser }: { selectedUser: User }) {
           <Ship className="mt-1 mr-2 text-gray-400" size={16} />
           <div>
             <p className="text-sm font-medium text-gray-500">Vessel Name</p>
-            <p className="text-sm text-gray-900">{selectedUser.vesselName || '-'}</p>
+            <p className="text-sm text-gray-900">{selectedUser.vessel_name || '-'}</p>
           </div>
         </div>
         <div className="flex items-start">
           <Building className="mt-1 mr-2 text-gray-400" size={16} />
           <div>
             <p className="text-sm font-medium text-gray-500">Shipping Company</p>
-            <p className="text-sm text-gray-900">{selectedUser.shippingCompany || '-'}</p>
+            <p className="text-sm text-gray-900">{selectedUser.shipping_company || '-'}</p>
           </div>
         </div>
       </div>
@@ -60,7 +72,7 @@ export default function UserDetails({ selectedUser }: { selectedUser: User }) {
           <div>
             <p className="text-sm font-medium text-gray-500">Registration Date</p>
             <p className="text-sm text-gray-900">
-              {selectedUser.created_at ? selectedUser.created_at : '-'}
+              {selectedUser.created_at ? new Date(selectedUser.created_at).toLocaleString() : '-'}
             </p>
           </div>
         </div>
@@ -69,9 +81,7 @@ export default function UserDetails({ selectedUser }: { selectedUser: User }) {
           <div>
             <p className="text-sm font-medium text-gray-500">Last Login</p>
             <p className="text-sm text-gray-900">
-              {selectedUser.last_login
-                ? new Date(selectedUser.last_login).toLocaleDateString()
-                : '-'}
+              {selectedUser.last_login ? new Date(selectedUser.last_login).toLocaleString() : '-'}
             </p>
           </div>
         </div>
@@ -83,11 +93,7 @@ export default function UserDetails({ selectedUser }: { selectedUser: User }) {
           <div>
             <p className="text-sm font-medium text-gray-500">Role</p>
             <p className="text-sm text-gray-900">
-              {selectedUser.role === 'admin'
-                ? 'Administrator'
-                : selectedUser.role === 'manager'
-                  ? 'Manager'
-                  : 'User'}
+              {selectedUser.role === 'admin' ? 'Administrator' : 'User'}
             </p>
           </div>
         </div>
@@ -107,15 +113,13 @@ export default function UserDetails({ selectedUser }: { selectedUser: User }) {
         <div>
           <p className="text-sm font-medium text-gray-500">Language</p>
           <p className="text-sm text-gray-900">
-            {selectedUser.preferredLanguage === 'es'
+            {selectedUser.preferred_language === 'es'
               ? 'Spanish'
-              : selectedUser.preferredLanguage === 'en'
+              : selectedUser.preferred_language === 'en'
                 ? 'English'
-                : selectedUser.preferredLanguage === 'fr'
-                  ? 'French'
-                  : selectedUser.preferredLanguage === 'de'
-                    ? 'German'
-                    : '-'}
+                : selectedUser.preferred_language === 'zh'
+                  ? '中文 (Chinese)'
+                  : '-'}
           </p>
         </div>
       </div>

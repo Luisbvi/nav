@@ -112,7 +112,7 @@ export default function CustomerTable({
                   {user.id.substring(0, 8)}...
                 </td>
                 <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-500">
-                  {`${user.firstName || ''} ${user.lastName || ''}`}
+                  {`${user.first_name || ''} ${user.last_name || ''}`}
                 </td>
                 <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-500">
                   {user.email}

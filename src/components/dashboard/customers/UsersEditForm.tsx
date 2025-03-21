@@ -19,8 +19,8 @@ export default function UserEditForm({
           <input
             type="text"
             id="firstName"
-            name="firstName"
-            value={editForm.firstName}
+            name="first_name"
+            value={editForm.first_name}
             onChange={handleEditChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
           />
@@ -32,8 +32,8 @@ export default function UserEditForm({
           <input
             type="text"
             id="lastName"
-            name="lastName"
-            value={editForm.lastName}
+            name="last_name"
+            value={editForm.last_name}
             onChange={handleEditChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
           />
@@ -48,8 +48,8 @@ export default function UserEditForm({
           <input
             type="text"
             id="vesselName"
-            name="vesselName"
-            value={editForm.vesselName}
+            name="vessel_name"
+            value={editForm.vessel_name}
             onChange={handleEditChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
           />
@@ -61,8 +61,8 @@ export default function UserEditForm({
           <input
             type="text"
             id="shippingCompany"
-            name="shippingCompany"
-            value={editForm.shippingCompany}
+            name="shipping_company"
+            value={editForm.shipping_company}
             onChange={handleEditChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
           />
@@ -111,15 +111,14 @@ export default function UserEditForm({
         </label>
         <select
           id="preferredLanguage"
-          name="preferredLanguage"
-          value={editForm.preferredLanguage}
+          name="preferred_language"
+          value={editForm.preferred_language}
           onChange={handleEditChange}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
         >
           <option value="es">Spanish</option>
           <option value="en">English</option>
-          <option value="fr">French</option>
-          <option value="de">German</option>
+          <option value="zh">中文 (Chinese)</option>
         </select>
       </div>
 

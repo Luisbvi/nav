@@ -16,12 +16,12 @@ export default function CustomersDashboard({ initialCustomers }: { initialCustom
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<User>({
     id: '',
-    firstName: '',
-    lastName: '',
-    vesselName: '',
-    shippingCompany: '',
+    first_name: '',
+    last_name: '',
+    vessel_name: '',
+    shipping_company: '',
     role: '',
-    preferredLanguage: '',
+    preferred_language: '',
     status: '',
     email: '',
     email_confirmed_at: null,
@@ -73,12 +73,12 @@ export default function CustomersDashboard({ initialCustomers }: { initialCustom
       email_verified: user.email_verified,
       created_at: user.created_at,
       updated_at: user.updated_at,
-      firstName: user.firstName || '',
-      lastName: user.lastName || '',
-      vesselName: user.vesselName || '',
-      shippingCompany: user.shippingCompany || '',
+      first_name: user.first_name || '',
+      last_name: user.last_name || '',
+      vessel_name: user.vessel_name || '',
+      shipping_company: user.shipping_company || '',
       role: user.role || 'user',
-      preferredLanguage: user.preferredLanguage || 'es',
+      preferred_language: user.preferred_language || 'es',
       status: user.status || 'pending',
       last_login: user.last_login,
     });
@@ -109,13 +109,15 @@ export default function CustomersDashboard({ initialCustomers }: { initialCustom
     if (!selectedUser) return;
 
     try {
-      // Update user_metadata
       const { error: userError } = await supabase.auth.updateUser({
         data: {
-          firstName: editForm.firstName,
-          lastName: editForm.lastName,
-          vesselName: editForm.vesselName,
-          shippingCompany: editForm.shippingCompany,
+          first_name: editForm.first_name,
+          last_name: editForm.last_name,
+          vessel_name: editForm.vessel_name,
+          shipping_company: editForm.shipping_company,
+          role: editForm.role,
+          preferred_language: editForm.preferred_language,
+          status: editForm.status,
         },
       });
 
@@ -129,9 +131,13 @@ export default function CustomersDashboard({ initialCustomers }: { initialCustom
         .from('user_profiles')
         .update({
           role: editForm.role,
-          preferred_language: editForm.preferredLanguage,
+          preferred_language: editForm.preferred_language,
           status: editForm.status,
           updated_at: new Date().toISOString(),
+          first_name: editForm.first_name,
+          last_name: editForm.last_name,
+          vessel_name: editForm.vessel_name,
+          shipping_company: editForm.shipping_company,
         })
         .eq('id', selectedUser.id);
 
@@ -140,36 +146,18 @@ export default function CustomersDashboard({ initialCustomers }: { initialCustom
         return;
       }
 
-      // Actualizar role en admin_user si es necesario
-      if (editForm.role === 'admin') {
-        // Verificar si ya existe en admin_user
-        const { data: existingAdmin } = await supabase
-          .from('admin_user')
-          .select('id')
-          .eq('id', selectedUser.id)
-          .single();
-
-        if (!existingAdmin) {
-          // Si no existe, insertarlo
-          await supabase.from('admin_user').insert({ id: selectedUser.id });
-        }
-      } else {
-        // Si ya no es admin, eliminarlo de admin_user
-        await supabase.from('admin_user').delete().eq('id', selectedUser.id);
-      }
-
       // Update local state
       setCustomers((prev) =>
         prev.map((user) =>
           user.id === selectedUser.id
             ? {
                 ...user,
-                firstName: editForm.firstName,
-                lastName: editForm.lastName,
-                vesselName: editForm.vesselName,
-                shippingCompany: editForm.shippingCompany,
+                first_name: editForm.first_name,
+                last_name: editForm.last_name,
+                vessel_name: editForm.vessel_name,
+                shipping_company: editForm.shipping_company,
                 role: editForm.role,
-                preferred_language: editForm.preferredLanguage,
+                preferred_language: editForm.preferred_language,
                 status: editForm.status,
                 updated_at: new Date().toISOString(),
               }
@@ -208,7 +196,6 @@ export default function CustomersDashboard({ initialCustomers }: { initialCustom
     }
   };
 
-  // Inside your CustomersDashboard component
   return (
     <div className="p-4">
       <div className="mb-6 flex items-center">

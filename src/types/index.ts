@@ -37,12 +37,12 @@ export interface FormData {
 
 export interface User {
   id: string;
-  firstName: string;
-  lastName: string;
-  vesselName: string;
-  shippingCompany: string;
+  first_name: string;
+  last_name: string;
+  vessel_name: string;
+  shipping_company: string;
   role: string;
-  preferredLanguage: string;
+  preferred_language: string;
   status: string;
   email: string;
   email_confirmed_at: string | null;

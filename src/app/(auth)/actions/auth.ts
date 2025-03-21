@@ -101,8 +101,6 @@ export const signIn = async (formData: FormData) => {
       );
       const { data: allProfiles } = await supabase.from('user_profiles').select('*');
 
-      console.log('Retrieved profiles:', allProfiles);
-
       // Find a case-insensitive match
       const matchingProfile = allProfiles?.find(
         (profile) => profile.email?.toLowerCase() === data.user?.email?.toLowerCase()
@@ -119,6 +117,7 @@ export const signIn = async (formData: FormData) => {
           .update({
             last_login: new Date().toISOString(),
             email_verified: true,
+            status: 'active',
           })
           .eq('id', matchingProfile.id) // Use ID instead of email
           .select();
@@ -145,14 +144,14 @@ export const signIn = async (formData: FormData) => {
 
       const newProfile = {
         email: data.user.email,
-        first_name: data.user.user_metadata?.firstName,
-        last_name: data.user.user_metadata?.lastName,
-        vessel_name: data.user.user_metadata?.vesselName,
-        shipping_company: data.user.user_metadata?.shippingCompany,
+        first_name: data.user.user_metadata?.first_name,
+        last_name: data.user.user_metadata?.last_name,
+        vessel_name: data.user.user_metadata?.vessel_name,
+        shipping_company: data.user.user_metadata?.shipping_company,
         last_login: new Date().toISOString(),
         email_verified: true,
         role: 'user',
-        preferred_language: data.user.user_metadata?.preferredLanguage,
+        preferred_language: data.user.user_metadata?.preferred_language,
       };
 
       console.log('New profile data:', newProfile);
@@ -177,7 +176,7 @@ export const signIn = async (formData: FormData) => {
 
       const updateResult = await supabase
         .from('user_profiles')
-        .update({ last_login: new Date().toISOString(), email_verified: true })
+        .update({ last_login: new Date().toISOString(), email_verified: true, status: 'active' })
         .eq('id', existingUser.id)
         .select();
 
