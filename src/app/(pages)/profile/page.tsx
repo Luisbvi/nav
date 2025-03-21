@@ -306,7 +306,7 @@ export default function ProfilePage() {
                 <div key={order.id} className="rounded-md border p-4 transition hover:bg-gray-50">
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="font-medium">Order #{order.id}</p>
+                      <p className="w-[100px] truncate font-medium">Order #{order.id}</p>
                       <p className="text-sm text-gray-500">{formatOrderDate(order.order_date)}</p>
                     </div>
                     <span
