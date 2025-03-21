@@ -17,7 +17,7 @@ export default function CheckoutSuccessPage() {
   }, []);
 
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div>Loading....</div>}>
       <div className="flex flex-1 flex-col items-center justify-center gap-6 px-4 py-16 text-center">
         <div className="rounded-full bg-green-100 p-3">
           <CheckCircle className="h-12 w-12 text-green-500" />
