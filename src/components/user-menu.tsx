@@ -87,15 +87,6 @@ export function UserMenu({
               )}
               <li>
                 <Link
-                  href="/profile"
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600 dark:hover:text-white"
-                  onClick={() => setIsDropdownOpen(false)}
-                >
-                  Profile
-                </Link>
-              </li>
-              <li>
-                <Link
                   href="/cart"
                   className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600 dark:hover:text-white"
                   onClick={() => setIsDropdownOpen(false)}
@@ -104,10 +95,28 @@ export function UserMenu({
                 </Link>
               </li>
               <li>
+                <Link
+                  href="/orders"
+                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600 dark:hover:text-white"
+                  onClick={() => setIsDropdownOpen(false)}
+                >
+                  Orders
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/profile"
+                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600 dark:hover:text-white"
+                  onClick={() => setIsDropdownOpen(false)}
+                >
+                  Profile
+                </Link>
+              </li>
+              <li>
                 <form action={signOutAction}>
                   <button
                     type="submit"
-                    className="block w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-600 dark:hover:text-white"
+                    className="block w-full cursor-pointer border-t border-gray-100 px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 dark:border-gray-600 dark:text-red-400 dark:hover:bg-red-600 dark:hover:text-white"
                   >
                     Sign out
                   </button>

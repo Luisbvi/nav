@@ -7,7 +7,7 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Also check session for other routes, but exclude static assets
-    '/((?!_next/static|_next/image|favicon.ico|images|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$|login|register|auth).*)',
+    // Also check session for other routes, but exclude static assets AND webhook
+    '/((?!_next/static|_next/image|favicon.ico|images|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$|login|register|auth|api/webhook).*)',
   ],
 };

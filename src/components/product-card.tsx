@@ -1,3 +1,6 @@
+'use client';
+
+import { memo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -15,7 +18,8 @@ interface ProductCardProps {
   product: Product;
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+// Aplicar memo para evitar re-renderizados innecesarios
+const ProductCard = memo(function ProductCard({ product }: ProductCardProps) {
   return (
     <div className="overflow-hidden rounded-lg bg-white shadow transition-all hover:border hover:border-blue-500 hover:shadow-md">
       <div className="relative aspect-square">
@@ -48,4 +52,6 @@ export default function ProductCard({ product }: ProductCardProps) {
       </div>
     </div>
   );
-}
+});
+
+export default ProductCard;
