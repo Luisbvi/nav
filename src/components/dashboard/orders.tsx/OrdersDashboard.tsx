@@ -2,40 +2,57 @@
 
 import { useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
-
-export interface Order {
-  id: string;
-  customerName: string;
-  orderDate: string;
-  total: number;
-  status: 'pending' | 'completed' | 'cancelled';
-}
-
-interface OrdersDashboardProps {
-  initialOrders: Order[];
-}
+import { Edit, Trash2, Copy, Check } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Order } from '@/types';
 
 const supabase = createClient();
 
-export default function OrdersDashboard({ initialOrders }: OrdersDashboardProps) {
+export default function OrdersDashboard({ initialOrders }: { initialOrders: Order[] }) {
   const [orders, setOrders] = useState<Order[]>(initialOrders);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [copiedText, setCopiedText] = useState<string | null>(null);
 
-  // Función para eliminar una orden
-  const handleDeleteOrder = async (id: string) => {
-    if (!confirm('¿Está seguro de que desea eliminar esta orden?')) return;
+  // Function to copy text to clipboard
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedText(text);
+    setTimeout(() => setCopiedText(null), 2000);
+  };
+
+  // Function to delete an order
+  const handleDeleteOrder = async (id: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+
+    if (!confirm('Are you sure you want to delete this order?')) return;
 
     const { error } = await supabase.from('orders').delete().eq('id', id);
     if (error) {
-      console.error('Error al eliminar la orden:', error);
+      console.error('Error deleting order:', error);
     } else {
       setOrders(orders.filter((order) => order.id !== id));
+      if (dialogOpen) setDialogOpen(false);
     }
   };
 
-  // Función para actualizar el estado de una orden
+  // Function to handle opening order details
+  const handleOpenOrderDetails = (order: Order) => {
+    setSelectedOrder(order);
+    setDialogOpen(true);
+  };
+
+  // Function to handle editing an order (placeholder)
+  const handleEditOrder = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Implement your edit functionality here
+    alert(`Edit order with ID: ${id}`);
+  };
+
+  // Function to update order status
   const handleUpdateOrderStatus = async (
     id: string,
-    newStatus: 'pending' | 'completed' | 'cancelled'
+    newStatus: 'pending' | 'completed' | 'cancelled' | 'paid'
   ) => {
     const { error, data } = await supabase
       .from('orders')
@@ -44,75 +61,307 @@ export default function OrdersDashboard({ initialOrders }: OrdersDashboardProps)
       .select();
 
     if (error) {
-      console.error('Error al actualizar el estado de la orden:', error);
+      console.error('Error updating order status:', error);
     } else if (data) {
       setOrders(orders.map((order) => (order.id === id ? { ...order, status: newStatus } : order)));
+      if (selectedOrder && selectedOrder.id === id) {
+        setSelectedOrder({ ...selectedOrder, status: newStatus });
+      }
     }
+  };
+
+  // Function to get status badge color
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return 'bg-green-100 text-green-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'cancelled':
+        return 'bg-red-100 text-red-800';
+      case 'paid':
+        return 'bg-blue-100 text-blue-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  // Function to format currency
+  const formatCurrency = (amount: number, currency: string = 'USD') => {
+    // Don't divide by 100 since the amounts in the UI example appear to already be in dollars
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currency,
+    }).format(amount);
   };
 
   return (
     <div className="p-4">
-      <h1 className="mb-4 text-2xl font-bold">Órdenes</h1>
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
-          <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-              ID
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-              Cliente
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-              Fecha
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-              Total
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
-              Estado
-            </th>
-            <th className="px-6 py-3 text-right text-xs font-medium tracking-wider text-gray-500 uppercase">
-              Acciones
-            </th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-200 bg-white">
-          {orders.map((order) => (
-            <tr key={order.id}>
-              <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">{order.id}</td>
-              <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
-                {order.customerName}
-              </td>
-              <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
-                {new Date(order.orderDate).toLocaleDateString()}
-              </td>
-              <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
-                ${order.total.toFixed(2)}
-              </td>
-              <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">{order.status}</td>
-              <td className="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
-                <button
-                  className="mr-2 text-blue-600 hover:text-blue-900"
-                  onClick={() =>
+      <h1 className="mb-4 text-2xl font-bold">Orders</h1>
+      {orders.length === 0 ? (
+        <div className="p-4 text-center">No orders found</div>
+      ) : (
+        <div className="overflow-x-auto rounded-lg border">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                  ID
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                  Customer
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                  Email
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                  Date
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                  Total
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-right text-xs font-medium tracking-wider text-gray-500 uppercase">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200 bg-white">
+              {orders.map((order) => (
+                <tr
+                  key={order.id}
+                  className="cursor-pointer hover:bg-gray-50"
+                  onClick={() => handleOpenOrderDetails(order)}
+                >
+                  <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
+                    <div className="flex items-center">
+                      <span className="max-w-[120px] truncate">{order.id}</span>
+                      <button
+                        className="ml-2 text-gray-500 hover:text-gray-700"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          copyToClipboard(order.id);
+                        }}
+                      >
+                        {copiedText === order.id ? (
+                          <Check className="h-4 w-4 text-green-500" />
+                        ) : (
+                          <Copy className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
+                    {order.customer_name}
+                  </td>
+                  <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
+                    {order.email}
+                  </td>
+                  <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
+                    {new Date(order.order_date).toLocaleDateString('en-US')}
+                  </td>
+                  <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
+                    {formatCurrency(order.total)}
+                  </td>
+                  <td className="px-6 py-4 text-sm whitespace-nowrap">
+                    <span
+                      className={`inline-flex rounded-full px-2 text-xs leading-5 font-semibold ${getStatusColor(
+                        order.status
+                      )}`}
+                    >
+                      {order.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
+                    <button
+                      className="mr-3 flex items-center text-blue-600 hover:text-blue-900"
+                      onClick={(e) => handleEditOrder(order.id, e)}
+                    >
+                      <Edit size={16} className="mr-1" />
+                      <span>Edit</span>
+                    </button>
+                    <button
+                      className="flex items-center text-red-600 hover:text-red-900"
+                      onClick={(e) => handleDeleteOrder(order.id, e)}
+                    >
+                      <Trash2 size={16} className="mr-1" />
+                      <span>Delete</span>
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Order Details Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Order Details</DialogTitle>
+          </DialogHeader>
+          {selectedOrder && (
+            <div className="mt-4 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">Order ID</h3>
+                  <div className="mt-1 flex items-center text-sm text-gray-900">
+                    <span className="mr-2 max-w-[180px] truncate">{selectedOrder.id}</span>
+                    <button
+                      className="text-gray-500 hover:text-gray-700"
+                      onClick={() => copyToClipboard(selectedOrder.id)}
+                    >
+                      {copiedText === selectedOrder.id ? (
+                        <Check className="h-4 w-4 text-green-500" />
+                      ) : (
+                        <Copy className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">Payment ID</h3>
+                  <div className="mt-1 flex items-center text-sm text-gray-900">
+                    <span className="mr-2 max-w-[180px] truncate">{selectedOrder.payment_id}</span>
+                    <button
+                      className="text-gray-500 hover:text-gray-700"
+                      onClick={() => copyToClipboard(selectedOrder.payment_id)}
+                    >
+                      {copiedText === selectedOrder.payment_id ? (
+                        <Check className="h-4 w-4 text-green-500" />
+                      ) : (
+                        <Copy className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">Customer</h3>
+                  <p className="mt-1 text-sm text-gray-900">{selectedOrder.customer_name}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">Email</h3>
+                  <p className="mt-1 text-sm text-gray-900">{selectedOrder.email}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">User ID</h3>
+                  <div className="mt-1 flex items-center text-sm text-gray-900">
+                    <span className="mr-2 max-w-[180px] truncate">{selectedOrder.user_id}</span>
+                    <button
+                      className="text-gray-500 hover:text-gray-700"
+                      onClick={() => copyToClipboard(selectedOrder.user_id)}
+                    >
+                      {copiedText === selectedOrder.user_id ? (
+                        <Check className="h-4 w-4 text-green-500" />
+                      ) : (
+                        <Copy className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">Total</h3>
+                  <p className="mt-1 text-sm text-gray-900">
+                    {formatCurrency(selectedOrder.total)}
+                  </p>
+                </div>
+              </div>
+
+              {selectedOrder.shipping_address && (
+                <div>
+                  <h3 className="text-sm font-medium text-gray-500">Shipping Address</h3>
+                  <p className="mt-1 text-sm text-gray-900">
+                    {selectedOrder.shipping_address.line1}
+                    {selectedOrder.shipping_address.line2 &&
+                      `, ${selectedOrder.shipping_address.line2}`}
+                  </p>
+                  <p className="text-sm text-gray-900">
+                    {selectedOrder.shipping_address.city}, {selectedOrder.shipping_address.state}{' '}
+                    {selectedOrder.shipping_address.postal_code}
+                  </p>
+                  <p className="text-sm text-gray-900">{selectedOrder.shipping_address.country}</p>
+                </div>
+              )}
+
+              <div>
+                <h3 className="text-sm font-medium text-gray-500">Items</h3>
+                <div className="mt-2 max-h-60 overflow-y-auto rounded border">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">
+                          Product
+                        </th>
+                        <th className="px-4 py-2 text-center text-xs font-medium text-gray-500">
+                          Quantity
+                        </th>
+                        <th className="px-4 py-2 text-right text-xs font-medium text-gray-500">
+                          Unit Price
+                        </th>
+                        <th className="px-4 py-2 text-right text-xs font-medium text-gray-500">
+                          Total
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200 bg-white">
+                      {selectedOrder.items.map((item) => {
+                        // Extract description and format currency values correctly
+                        const description = item.description || 'Product';
+                        const unitPrice = item.price?.unit_amount
+                          ? item.price.unit_amount / 100
+                          : 0;
+                        const totalPrice = item.amount_total ? item.amount_total / 100 : 0;
+
+                        return (
+                          <tr key={item.id}>
+                            <td className="px-4 py-2 text-sm text-gray-900">{description}</td>
+                            <td className="px-4 py-2 text-center text-sm text-gray-900">
+                              {item.quantity}
+                            </td>
+                            <td className="px-4 py-2 text-right text-sm text-gray-900">
+                              {formatCurrency(unitPrice, item.currency)}
+                            </td>
+                            <td className="px-4 py-2 text-right text-sm text-gray-900">
+                              {formatCurrency(totalPrice, item.currency)}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div className="flex justify-end space-x-2">
+                <select
+                  className="rounded border p-2 text-sm"
+                  value={selectedOrder.status}
+                  onChange={(e) =>
                     handleUpdateOrderStatus(
-                      order.id,
-                      order.status === 'pending' ? 'completed' : 'pending'
+                      selectedOrder.id,
+                      e.target.value as 'pending' | 'completed' | 'cancelled' | 'paid'
                     )
                   }
                 >
-                  {order.status === 'pending' ? 'Completar' : 'Marcar como pendiente'}
-                </button>
+                  <option value="pending">Pending</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                  <option value="paid">Paid</option>
+                </select>
                 <button
-                  className="text-red-600 hover:text-red-900"
-                  onClick={() => handleDeleteOrder(order.id)}
+                  className="rounded bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700"
+                  onClick={() => handleDeleteOrder(selectedOrder.id)}
                 >
-                  Eliminar
+                  Delete
                 </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

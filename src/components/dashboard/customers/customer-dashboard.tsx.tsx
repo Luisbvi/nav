@@ -6,6 +6,7 @@ import { UserCircle } from 'lucide-react';
 import CustomerTable from './CustomerTable';
 import UserDetailsModal from './UserDetailsModal';
 import { User } from '@/types';
+import DeleteConfirmationModal from './DeleteConfirmationModal';
 
 const supabase = createClient();
 
@@ -30,6 +31,11 @@ export default function CustomersDashboard({ initialCustomers }: { initialCustom
     updated_at: '',
     last_login: null,
   });
+
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [customerToDelete, setCustomerToDelete] = useState<{ id: string; name?: string } | null>(
+    null
+  );
 
   // Verificar si el usuario es administrador al cargar los datos
   useEffect(() => {
@@ -88,9 +94,14 @@ export default function CustomersDashboard({ initialCustomers }: { initialCustom
 
   // Close modal
   const closeModal = () => {
+    // First, set the modal to closed to trigger the exit animation
     setIsModalOpen(false);
-    setSelectedUser(null);
-    setIsEditing(false);
+
+    // After animation completes, clear the user data
+    setTimeout(() => {
+      setSelectedUser(null);
+      setIsEditing(false);
+    }, 300); // Match this with the animation duration in UserDetailsModal
   };
 
   // Toggle edit mode
@@ -101,13 +112,26 @@ export default function CustomersDashboard({ initialCustomers }: { initialCustom
   // Handle changes in the edit form
   const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setEditForm((prev) => ({ ...prev, [name]: value }));
+
+    // Map field names to the correct state properties
+    const fieldMappings: Record<string, string> = {
+      firstName: 'first_name',
+      lastName: 'last_name',
+      vesselName: 'vessel_name',
+      shippingCompany: 'shipping_company',
+      preferredLanguage: 'preferred_language',
+      // role and status are the same in both
+    };
+
+    const stateProperty = fieldMappings[name] || name;
+    setEditForm((prev) => ({ ...prev, [stateProperty]: value }));
   };
 
   // Save edit changes
   const handleSaveChanges = async () => {
     if (!selectedUser) return;
 
+    // Update user metadata
     try {
       const { error: userError } = await supabase.auth.updateUser({
         data: {
@@ -146,6 +170,8 @@ export default function CustomersDashboard({ initialCustomers }: { initialCustom
         return;
       }
 
+      console.log('User and profile updated successfully');
+
       // Update local state
       setCustomers((prev) =>
         prev.map((user) =>
@@ -172,12 +198,18 @@ export default function CustomersDashboard({ initialCustomers }: { initialCustom
   };
 
   // Function to delete a customer
-  const handleDeleteCustomer = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this customer?')) return;
+  const handleDeleteCustomer = (id: string, name?: string) => {
+    // Open the modal and set the customer to delete
+    setCustomerToDelete({ id, name });
+    setDeleteModalOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!customerToDelete) return;
 
     try {
       // Delete the user from Supabase Auth
-      const { error } = await supabase.auth.admin.deleteUser(id);
+      const { error } = await supabase.auth.admin.deleteUser(customerToDelete.id);
 
       if (error) {
         console.error('Error deleting customer:', error);
@@ -185,14 +217,18 @@ export default function CustomersDashboard({ initialCustomers }: { initialCustom
       }
 
       // Update local state
-      setCustomers(customers.filter((customer) => customer.id !== id));
+      setCustomers(customers.filter((customer) => customer.id !== customerToDelete.id));
 
       // If the modal is open and we're deleting the selected user, close it
-      if (selectedUser && selectedUser.id === id) {
+      if (selectedUser && selectedUser.id === customerToDelete.id) {
         closeModal();
       }
     } catch (error) {
       console.error('Error deleting customer:', error);
+    } finally {
+      // Close the delete confirmation modal
+      setDeleteModalOpen(false);
+      setCustomerToDelete(null);
     }
   };
 
@@ -211,7 +247,8 @@ export default function CustomersDashboard({ initialCustomers }: { initialCustom
         />
       </Suspense>
 
-      {isModalOpen && selectedUser && (
+      {/* Always render the modal if selectedUser exists, but control visibility with isOpen prop */}
+      {selectedUser && (
         <Suspense fallback={<div>Loading user details...</div>}>
           <UserDetailsModal
             selectedUser={selectedUser}
@@ -222,9 +259,17 @@ export default function CustomersDashboard({ initialCustomers }: { initialCustom
             handleSaveChanges={handleSaveChanges}
             handleDeleteCustomer={handleDeleteCustomer}
             closeModal={closeModal}
+            isOpen={isModalOpen}
           />
         </Suspense>
       )}
+
+      <DeleteConfirmationModal
+        isOpen={deleteModalOpen}
+        onClose={() => setDeleteModalOpen(false)}
+        onConfirm={confirmDelete}
+        customerName={customerToDelete?.name}
+      />
     </div>
   );
 }

@@ -8,7 +8,7 @@ export default async function Home() {
   return (
     <>
       <Header />
-      <main className="flex-1">
+      <div className="flex-1">
         <section className="bg-blue-400 px-6 py-20 text-white">
           <div className="mx-auto max-w-4xl text-center">
             <h2 className="mb-6 text-4xl font-bold">
@@ -98,7 +98,7 @@ export default async function Home() {
             </div>
           </div>
         </section>
-      </main>
+      </div>
       <Footer />
     </>
   );

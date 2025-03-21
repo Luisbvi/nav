@@ -51,3 +51,44 @@ export interface User {
   updated_at: string;
   last_login: string | null;
 }
+
+interface OrderItem {
+  id: string;
+  description: string;
+  quantity: number;
+  amount_total: number;
+  price: {
+    id: string;
+    currency: string;
+    unit_amount: number;
+    product: string;
+  };
+  currency: string;
+  amount_subtotal: number;
+  amount_discount: number;
+  amount_tax: number;
+}
+
+// Updated Order interface with all fields
+export interface Order {
+  id: string;
+  customer_name: string;
+  order_date: string;
+  total: number;
+  status: 'pending' | 'completed' | 'cancelled' | 'paid';
+  user_id: string;
+  email: string;
+  payment_id: string;
+  shipping_address: ShippingAddress | null;
+  items: OrderItem[];
+}
+
+// Define types for the shipping address
+interface ShippingAddress {
+  city?: string;
+  country?: string;
+  line1?: string;
+  line2?: string;
+  postal_code?: string;
+  state?: string;
+}
