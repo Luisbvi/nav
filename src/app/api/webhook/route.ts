@@ -87,19 +87,20 @@ export async function POST(request: Request) {
       console.log('🔐 Attempting to verify event with secret length:', endpointSecret.length);
       event = stripe.webhooks.constructEvent(rawBody, signature, endpointSecret);
       console.log('✅ Event verified:', event.id, 'Type:', event.type);
-    } catch (err: any) {
-      console.error(`❌ Webhook signature verification failed:`, err.message || err);
-      console.error('Signature received:', signature);
-      console.error('Raw body length:', rawBody.length);
-
-      return NextResponse.json(
-        {
-          error: `Webhook signature verification failed: ${err.message || err}`,
-          signatureLength: signature?.length,
-          rawBodyLength: rawBody.length,
-        },
-        { status: 400 }
-      );
+    } catch (err: Error | unknown) {
+      if (err instanceof Error) {
+        console.error(`❌ Webhook signature verification failed:`, err.message);
+        return NextResponse.json(
+          { error: `Webhook signature verification failed: ${err.message}` },
+          { status: 400 }
+        );
+      } else {
+        console.error(`❌ Webhook signature verification failed:`, err);
+        return NextResponse.json(
+          { error: `Webhook signature verification failed: ${err}` },
+          { status: 400 }
+        );
+      }
     }
 
     // Handle the event
