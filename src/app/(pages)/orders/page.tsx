@@ -46,7 +46,6 @@ export default function OrdersPage() {
         }
       } catch (error) {
         console.error('Error loading orders:', error);
-        alert('Error loading orders!');
       } finally {
         setLoading(false);
       }
