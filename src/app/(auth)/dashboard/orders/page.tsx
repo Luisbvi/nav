@@ -1,8 +1,8 @@
 import OrdersDashboard from '@/components/dashboard/orders.tsx/OrdersDashboard';
-import { createClient } from '@/utils/supabase/client';
+import { createClient } from '@/utils/supabase/server';
 
 export default async function OrdersPage() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { data: orders, error } = await supabase
     .from('orders')
@@ -13,5 +13,9 @@ export default async function OrdersPage() {
     console.error('Error al obtener las órdenes:', error);
   }
 
-  return <OrdersDashboard initialOrders={orders || []} />;
+  if (!orders) {
+    return <div>No orders found</div>;
+  }
+
+  return <OrdersDashboard initialOrders={orders} />;
 }
