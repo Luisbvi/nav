@@ -2,7 +2,7 @@
 
 import { createClient } from '@/utils/supabase/server';
 import { revalidatePath } from 'next/cache';
-import { headers } from 'next/headers';
+import { headers } from 'next/dist/server/request/headers';
 import { redirect } from 'next/navigation';
 
 export const getUserSession = async () => {
