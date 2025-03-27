@@ -4,11 +4,17 @@ import { useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { Edit, Trash2, Copy, Check } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Order } from '@/types';
+import { Order, User } from '@/types';
 
 const supabase = createClient();
 
-export default function OrdersDashboard({ initialOrders }: { initialOrders: Order[] }) {
+export default function OrdersDashboard({
+  initialOrders,
+  user,
+}: {
+  initialOrders: Order[];
+  user: User;
+}) {
   const [orders, setOrders] = useState<Order[]>(initialOrders);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -52,7 +58,7 @@ export default function OrdersDashboard({ initialOrders }: { initialOrders: Orde
   // Function to update order status
   const handleUpdateOrderStatus = async (
     id: string,
-    newStatus: 'pending' | 'completed' | 'cancelled' | 'paid'
+    newStatus: 'pending' | 'processing' | 'shipped' | 'delivered' | 'completed' | 'cancelled'
   ) => {
     const { error, data } = await supabase
       .from('orders')
@@ -153,11 +159,9 @@ export default function OrdersDashboard({ initialOrders }: { initialOrders: Orde
                       </button>
                     </div>
                   </td>
+                  <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">{order.id}</td>
                   <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
-                    {order.customer_name}
-                  </td>
-                  <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
-                    {order.email}
+                    {user.email}
                   </td>
                   <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
                     {new Date(order.order_date).toLocaleDateString('en-US')}
@@ -225,12 +229,12 @@ export default function OrdersDashboard({ initialOrders }: { initialOrders: Orde
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">Payment ID</h3>
                   <div className="mt-1 flex items-center text-sm text-gray-900">
-                    <span className="mr-2 max-w-[180px] truncate">{selectedOrder.payment_id}</span>
+                    <span className="mr-2 max-w-[180px] truncate">{selectedOrder.id}</span>
                     <button
                       className="text-gray-500 hover:text-gray-700"
-                      onClick={() => copyToClipboard(selectedOrder.payment_id)}
+                      onClick={() => copyToClipboard(selectedOrder.id)}
                     >
-                      {copiedText === selectedOrder.payment_id ? (
+                      {copiedText === selectedOrder.id ? (
                         <Check className="h-4 w-4 text-green-500" />
                       ) : (
                         <Copy className="h-4 w-4" />
@@ -240,11 +244,13 @@ export default function OrdersDashboard({ initialOrders }: { initialOrders: Orde
                 </div>
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">Customer</h3>
-                  <p className="mt-1 text-sm text-gray-900">{selectedOrder.customer_name}</p>
+                  <p className="mt-1 text-sm text-gray-900">
+                    {user.first_name} {user.last_name}
+                  </p>
                 </div>
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">Email</h3>
-                  <p className="mt-1 text-sm text-gray-900">{selectedOrder.email}</p>
+                  <p className="mt-1 text-sm text-gray-900">{user.email}</p>
                 </div>
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">User ID</h3>
@@ -270,22 +276,6 @@ export default function OrdersDashboard({ initialOrders }: { initialOrders: Orde
                 </div>
               </div>
 
-              {selectedOrder.shipping_address && (
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500">Shipping Address</h3>
-                  <p className="mt-1 text-sm text-gray-900">
-                    {selectedOrder.shipping_address.line1}
-                    {selectedOrder.shipping_address.line2 &&
-                      `, ${selectedOrder.shipping_address.line2}`}
-                  </p>
-                  <p className="text-sm text-gray-900">
-                    {selectedOrder.shipping_address.city}, {selectedOrder.shipping_address.state}{' '}
-                    {selectedOrder.shipping_address.postal_code}
-                  </p>
-                  <p className="text-sm text-gray-900">{selectedOrder.shipping_address.country}</p>
-                </div>
-              )}
-
               <div>
                 <h3 className="text-sm font-medium text-gray-500">Items</h3>
                 <div className="mt-2 max-h-60 overflow-y-auto rounded border">
@@ -307,7 +297,7 @@ export default function OrdersDashboard({ initialOrders }: { initialOrders: Orde
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 bg-white">
-                      {selectedOrder.items.map((item) => {
+                      {selectedOrder.items?.map((item) => {
                         // Extract description and format currency values correctly
                         const description = item.description || 'Product';
                         const unitPrice = item.price?.unit_amount
@@ -342,7 +332,13 @@ export default function OrdersDashboard({ initialOrders }: { initialOrders: Orde
                   onChange={(e) =>
                     handleUpdateOrderStatus(
                       selectedOrder.id,
-                      e.target.value as 'pending' | 'completed' | 'cancelled' | 'paid'
+                      e.target.value as
+                        | 'pending'
+                        | 'processing'
+                        | 'shipped'
+                        | 'delivered'
+                        | 'completed'
+                        | 'cancelled'
                     )
                   }
                 >

@@ -3,10 +3,10 @@
 import { useState, useEffect, Suspense } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { UserCircle } from 'lucide-react';
-import CustomerTable from './CustomerTable';
-import UserDetailsModal from './UserDetailsModal';
+import CustomerTable from './customer-table';
+import UserDetailsModal from './user-details-modal';
 import { User } from '@/types';
-import DeleteConfirmationModal from './DeleteConfirmationModal';
+import DeleteConfirmationModal from './delete-confirmation-modal';
 
 const supabase = createClient();
 

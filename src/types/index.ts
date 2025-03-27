@@ -11,6 +11,16 @@ export interface Product {
   updated_at?: string;
 }
 
+export interface CartItem {
+  id: string;
+  name: string;
+  price: number;
+  image: string;
+  quantity: number;
+  unit?: string;
+  stock?: number;
+}
+
 export interface ProductResponse {
   success?: boolean;
   error?: string;
@@ -52,7 +62,7 @@ export interface User {
   last_login: string | null;
 }
 
-interface OrderItem {
+export interface OrderItem {
   id: string;
   description: string;
   quantity: number;
@@ -69,22 +79,27 @@ interface OrderItem {
   amount_tax: number;
 }
 
-// Updated Order interface with all fields
 export interface Order {
   id: string;
-  customer_name: string;
-  order_date: string;
-  total: number;
-  status: 'pending' | 'completed' | 'cancelled' | 'paid';
   user_id: string;
-  email: string;
-  payment_id: string;
-  shipping_address: ShippingAddress | null;
-  items: OrderItem[];
+  order_number?: string;
+  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'completed' | 'cancelled';
+  total: number;
+  subtotal?: number;
+  tax?: number;
+  shipping_cost?: number;
+  created_at?: string;
+  order_date: string;
+  processing_date?: string;
+  shipped_date?: string;
+  delivered_date?: string;
+  shipping_address_id?: string;
+  shipping_method?: string;
+  payment_method?: string;
+  items?: OrderItem[];
 }
 
-// Define types for the shipping address
-interface ShippingAddress {
+export interface ShippingAddress {
   city?: string;
   country?: string;
   line1?: string;

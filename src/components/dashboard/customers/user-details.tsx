@@ -11,7 +11,7 @@ import {
   Check,
   X,
 } from 'lucide-react';
-import StatusBadge from '@/components/dashboard/customers/StatusBadge';
+import StatusBadge from '@/components/dashboard/customers/status-badge';
 import { User } from '@/types';
 
 export default function UserDetails({ selectedUser }: { selectedUser: User }) {

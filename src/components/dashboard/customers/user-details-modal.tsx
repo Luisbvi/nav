@@ -1,7 +1,7 @@
 import { Edit, Trash2, X } from 'lucide-react';
 import { User } from '@/types';
-import UserDetails from '@/components/dashboard/customers/UserDetails';
-import UserEditForm from '@/components/dashboard/customers/UsersEditForm';
+import UserDetails from '@/components/dashboard/customers/user-details';
+import UserEditForm from '@/components/dashboard/customers/users-edit-form';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function UserDetailsModal({

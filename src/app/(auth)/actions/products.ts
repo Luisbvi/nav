@@ -42,9 +42,9 @@ export async function addProduct(formData: FormData): Promise<ProductResponse> {
     return { success: true, products: data };
   } catch (error) {
     console.error('Error adding product:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Failed to add product' 
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to add product',
     };
   }
 }
@@ -76,9 +76,9 @@ export async function deleteProduct(id: string): Promise<ProductResponse> {
     return { success: true };
   } catch (error) {
     console.error('Error deleting product:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Failed to delete product' 
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to delete product',
     };
   }
 }
@@ -122,9 +122,9 @@ export async function updateProduct(id: string, formData: FormData): Promise<Pro
     return { success: true, products: data };
   } catch (error) {
     console.error('Error updating product:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Failed to update product' 
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to update product',
     };
   }
 }
@@ -146,8 +146,8 @@ export async function getCategories(): Promise<CategoryResponse> {
     return { categories };
   } catch (error) {
     console.error('Error fetching categories:', error);
-    return { 
-      error: error instanceof Error ? error.message : 'Failed to fetch categories' 
+    return {
+      error: error instanceof Error ? error.message : 'Failed to fetch categories',
     };
   }
 }

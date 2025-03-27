@@ -1,54 +1,15 @@
-'use client';
+import { Suspense } from 'react';
+import CheckoutSuccess from '@/components/checkout/checkout-success';
 
-import { Suspense, useEffect } from 'react';
-import Link from 'next/link';
-import { CheckCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useCart } from '@/contexts/cart-context';
-import { useSearchParams } from 'next/navigation';
-
-// Create a separate component that uses useSearchParams
-function CheckoutSuccess() {
-  const { clearCart } = useCart();
-  const searchParams = useSearchParams();
-  const sessionId = searchParams.get('session_id');
-
-  useEffect(() => {
-    clearCart();
-  }, []);
-
-  return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-6 px-4 py-16 text-center">
-      <div className="rounded-full bg-green-100 p-3">
-        <CheckCircle className="h-12 w-12 text-green-500" />
-      </div>
-
-      <h1 className="text-3xl font-bold">Thank You for Your Order!</h1>
-      <p className="max-w-md text-gray-600">
-        Your payment was successful and your order is being processed. You will receive a
-        confirmation email shortly.
-      </p>
-
-      {sessionId && (
-        <p className="text-sm text-gray-500">Order Reference: {sessionId.substring(0, 8)}...</p>
-      )}
-
-      <div className="mt-6 flex gap-4">
-        <Link href="/">
-          <Button variant="outline">Return Home</Button>
-        </Link>
-        <Link href="/catalog">
-          <Button className="bg-blue-500 text-white hover:bg-blue-600">Continue Shopping</Button>
-        </Link>
-      </div>
-    </div>
-  );
-}
-
-// Main component that includes the import and Suspense
 export default function CheckoutSuccessPage() {
   return (
-    <Suspense fallback={<div>Loading....</div>}>
+    <Suspense
+      fallback={
+        <div className="flex min-h-[70vh] items-center justify-center">
+          <div className="border-primary h-8 w-8 animate-spin rounded-full border-4 border-t-transparent"></div>
+        </div>
+      }
+    >
       <CheckoutSuccess />
     </Suspense>
   );

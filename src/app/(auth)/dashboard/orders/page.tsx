@@ -1,12 +1,23 @@
-import OrdersDashboard from '@/components/dashboard/orders.tsx/OrdersDashboard';
+import OrdersDashboard from '@/components/dashboard/orders.tsx/orders-dashboard';
+import { User } from '@/types';
 import { createClient } from '@/utils/supabase/server';
+import { redirect } from 'next/navigation';
 
 export default async function OrdersPage() {
   const supabase = await createClient();
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect('/login');
+  }
+
   const { data: orders, error } = await supabase
     .from('orders')
     .select('*')
+    .eq('user_id', user?.id)
     .order('order_date', { ascending: false });
 
   if (error) {
@@ -17,5 +28,5 @@ export default async function OrdersPage() {
     return <div>No orders found</div>;
   }
 
-  return <OrdersDashboard initialOrders={orders} />;
+  return <OrdersDashboard user={user.user_metadata as User} initialOrders={orders} />;
 }

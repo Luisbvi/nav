@@ -1,7 +1,7 @@
 'use client';
 
 import { Product } from '@/types';
-import { ProductRow } from './ProductRow';
+import { ProductRow } from './product-row';
 import { useSearchParams } from 'next/navigation';
 
 interface RecentProductsTableProps {

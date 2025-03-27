@@ -1,6 +1,6 @@
 import { User } from '@/types';
 import { UserCircle, Mail, Shield, Clock, Edit, Trash2, Check, X, AlertCircle } from 'lucide-react';
-import UserRoleBadge from '@/components/dashboard/customers/UserRoleBadge';
+import UserRoleBadge from '@/components/dashboard/customers/user-role-badge';
 
 export default function CustomerTable({
   customers,

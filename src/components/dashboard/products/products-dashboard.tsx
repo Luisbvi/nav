@@ -3,11 +3,11 @@
 import { useState, useRef } from 'react';
 import { FileSpreadsheet, PlusCircle } from 'lucide-react';
 import { type FormData, Product } from '@/types';
-import ProductTable from '@/components/dashboard/ProductTable';
+import ProductTable from '@/components/dashboard/product-table';
 import { createClient } from '@/utils/supabase/client';
 import { deleteProduct, updateProduct, addProduct } from '@/app/(auth)/actions/products';
-import AddEditProductModal from './AddEditProductModal';
-import ImportExcelModal from './ImportExcelModal';
+import AddEditProductModal from './add-edit-product-modal';
+import ImportExcelModal from './import-excel-modal';
 
 interface ProductsDashboardProps {
   initialProducts: Product[];

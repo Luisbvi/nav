@@ -11,7 +11,7 @@ import {
   SelectContent,
   SelectItem,
 } from '@radix-ui/react-select';
-import ImageUploader from '@/components/imageUploader';
+import ImageUploader from '@/components/image-uploader';
 import { FormEvent } from 'react';
 
 export interface FormData {

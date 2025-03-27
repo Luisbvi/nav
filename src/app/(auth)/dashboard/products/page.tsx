@@ -1,6 +1,6 @@
 import { createClient } from '@/utils/supabase/client';
 import { getCategories } from '@/app/(auth)/actions/products';
-import ProductsDashboard from '@/components/dashboard/products/ProductsDashboard';
+import ProductsDashboard from '@/components/dashboard/products/products-dashboard';
 
 // Add this export to mark the page as dynamic
 export const dynamic = 'force-dynamic';
