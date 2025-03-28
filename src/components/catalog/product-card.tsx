@@ -1,7 +1,7 @@
 'use client';
 
 import { Product } from '@/utils/supabase/types';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Minus, Plus, ShoppingCart, Star } from 'lucide-react';
 import Image from 'next/image';
@@ -21,8 +21,30 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const { addItem } = useCart();
 
+  // Effect to load favorite status from localStorage
+  useEffect(() => {
+    const favoriteProducts = JSON.parse(localStorage.getItem('favoriteProducts') || '[]');
+    setIsFavorite(favoriteProducts.includes(product.id));
+  }, [product.id]);
+
   const handleFavorite = () => {
-    setIsFavorite((prev) => !prev);
+    const newFavoriteStatus = !isFavorite;
+    setIsFavorite(newFavoriteStatus);
+
+    const favoriteProducts = JSON.parse(localStorage.getItem('favoriteProducts') || '[]');
+
+    if (newFavoriteStatus) {
+      if (!favoriteProducts.includes(product.id)) {
+        favoriteProducts.push(product.id);
+      }
+    } else {
+      const index = favoriteProducts.indexOf(product.id);
+      if (index > -1) {
+        favoriteProducts.splice(index, 1);
+      }
+    }
+
+    localStorage.setItem('favoriteProducts', JSON.stringify(favoriteProducts));
   };
 
   const handleAddToCart = () => {
@@ -68,7 +90,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
       <motion.button
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
-        className="absolute top-3 left-3 z-10 rounded-full bg-white/80 p-1.5 not-dark:shadow-sm dark:bg-gray-700"
+        className="absolute top-3 left-3 z-10 cursor-pointer rounded-full bg-white/80 p-1.5 not-dark:shadow-sm dark:bg-gray-700"
         onClick={handleFavorite}
         aria-label={
           isFavorite
@@ -86,6 +108,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
         />
       </motion.button>
 
+      {/* Rest of the component remains the same */}
       <div className="p-6">
         {/* Image */}
         <Link href={`/product/${product.id}`} className="relative block pb-[100%]">

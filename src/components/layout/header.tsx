@@ -7,8 +7,10 @@ import LanguageSelector from '@/components/layout/language-selector';
 import UserComponent from '@/components/user-component';
 import { CartButton } from '@/components/cart-button';
 import HamburguerButton from '@/components/home/hamburguer-button';
+import { useLanguage } from '@/contexts/language-context';
 
 const Header = ({ user }: { user: User | null }) => {
+  const { t } = useLanguage();
   // Variants for the main container
   const containerVariants = {
     hidden: {
@@ -72,14 +74,14 @@ const Header = ({ user }: { user: User | null }) => {
         ) : (
           <motion.div variants={componentVariants} className="hidden items-center gap-4 md:flex">
             <Link href="/login">
-              <button className="cursor-pointer rounded-sm px-4 py-2 text-white transition-all dark:text-black">
-                Log In
+              <button className="cursor-pointer rounded-sm px-4 py-2 text-white transition-all">
+                {t('log_in') || 'Log In'}
               </button>
             </Link>
-            <div className="h-4 w-0.5 bg-blue-400 dark:bg-blue-500"></div>
+            <div className="h-4 w-0.5 bg-blue-400 dark:bg-blue-400"></div>
             <Link href="/register">
-              <button className="cursor-pointer rounded-sm px-4 py-2 text-white transition-all dark:text-black">
-                Create Account
+              <button className="cursor-pointer rounded-sm px-4 py-2 text-white transition-all">
+                {t('create_account') || 'Create Account'}
               </button>
             </Link>
           </motion.div>

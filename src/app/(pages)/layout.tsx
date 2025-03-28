@@ -2,7 +2,7 @@ import Footer from '@/components/layout/footer';
 import Navbar from '@/components/layout/Navbar';
 import Image from 'next/image';
 import Link from 'next/link';
-import Banner from '@/components/home/Banner';
+import Banner from '@/components/layout/Banner';
 import Logo from '@/components/Logo';
 import { FilterProvider } from '@/components/catalog/filter-context';
 

@@ -39,6 +39,7 @@ export async function updateSession(request: NextRequest) {
       !request.nextUrl.pathname.startsWith('/forgot-password') &&
       !request.nextUrl.pathname.startsWith('/reset-password') &&
       !request.nextUrl.pathname.startsWith('/catalog') &&
+      !request.nextUrl.pathname.startsWith('/home') &&
       !request.nextUrl.pathname.startsWith('/auth') &&
       request.nextUrl.pathname !== '/'
     ) {

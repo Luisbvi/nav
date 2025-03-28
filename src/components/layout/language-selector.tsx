@@ -12,7 +12,7 @@ interface LanguageOption {
   flag: string;
 }
 
-export default function LanguageSelector() {
+export default function LanguageSelector({ darkText }: { darkText?: boolean }) {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { language, setLanguage } = useLanguage();
@@ -90,7 +90,9 @@ export default function LanguageSelector() {
           />
         </motion.div>
 
-        <span className="text-sm font-medium">{selectedLanguage.name}</span>
+        <span className={`text-sm font-medium ${darkText && 'not-dark:text-gray-900'}`}>
+          {selectedLanguage.name}
+        </span>
 
         <motion.svg
           className="h-4 w-4"

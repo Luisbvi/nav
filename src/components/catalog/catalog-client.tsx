@@ -57,7 +57,7 @@ const CatalogClient = ({
       searchParams.set('search', currentSearch);
     }
 
-    if (currentSort !== 'featured' && !params.hasOwnProperty('sort')) {
+    if (currentSort !== 'name-asc' && !params.hasOwnProperty('sort')) {
       searchParams.set('sort', currentSort);
     }
 

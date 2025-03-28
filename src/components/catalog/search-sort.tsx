@@ -58,17 +58,20 @@ const SearchSort = ({
               <SelectValue placeholder={t('sort_by') || 'Sort by'} />
             </SelectTrigger>
             <SelectContent className="cursor-pointer dark:bg-gray-700 dark:focus:bg-gray-600">
-              <SelectItem className="cursor-pointer dark:focus:bg-gray-600" value="featured">
-                {t('featured') || 'Featured'}
+              <SelectItem className="cursor-pointer dark:focus:bg-gray-600" value="name-asc">
+                {t('name_a_to_z') || 'Name: A to Z'}
               </SelectItem>
-              <SelectItem className="cursor-pointer dark:focus:bg-gray-600" value="price-low">
-                {t('price_low_to_high') || 'Price: Low to High'}
+              <SelectItem className="cursor-pointer dark:focus:bg-gray-600" value="name-desc">
+                {t('name_z_to_a') || 'Name: Z to A'}
+              </SelectItem>
+              <SelectItem className="cursor-pointer dark:focus:bg-gray-600" value="favorites">
+                {t('favorites') || 'Favorites'}
               </SelectItem>
               <SelectItem className="cursor-pointer dark:focus:bg-gray-600" value="price-high">
                 {t('price_high_to_low') || 'Price: High to Low'}
               </SelectItem>
-              <SelectItem className="cursor-pointer dark:focus:bg-gray-600" value="name-asc">
-                {t('name_a_to_z') || 'Name: A to Z'}
+              <SelectItem className="cursor-pointer dark:focus:bg-gray-600" value="price-low">
+                {t('price_low_to_high') || 'Price: Low to High'}
               </SelectItem>
             </SelectContent>
           </Select>

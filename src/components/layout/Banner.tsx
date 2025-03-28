@@ -22,7 +22,7 @@ const Banner = () => {
 
       {/* Content */}
       <div className="absolute inset-0 flex flex-col items-center justify-end p-6 text-center">
-        <h3 className="mb-4 text-2xl font-bold text-white drop-shadow-lg md:text-4xl">
+        <h3 className="drop-shadow-3 mb-4 text-2xl font-bold text-white md:text-[26px]">
           {t('optimize_supply') || 'Optimize your supply'}
         </h3>
       </div>

@@ -21,7 +21,7 @@ const CatalogPage = () => {
   // Extract search parameters
   const category = searchParams.get('category') || 'All';
   const search = searchParams.get('search') || '';
-  const sort = searchParams.get('sort') || 'featured';
+  const sort = searchParams.get('sort') || 'name-asc';
   const minPrice = searchParams.get('minPrice') || '';
   const maxPrice = searchParams.get('maxPrice') || '';
   const availability = searchParams.get('availability') || 'In Stock';

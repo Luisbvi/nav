@@ -18,12 +18,12 @@ export const signUp = async (formData: FormData) => {
   const supabase = await createClient();
 
   const credentials = {
-    firstName: formData.get('first-name') as string,
-    lastName: formData.get('last-name') as string,
+    first_name: formData.get('first-name') as string,
+    last_name: formData.get('last-name') as string,
     email: formData.get('email') as string,
     password: formData.get('password') as string,
-    vesselName: formData.get('vessel-name') as string,
-    shippingCompany: formData.get('shipping-company') as string,
+    vessel_name: formData.get('vessel-name') as string,
+    shipping_company: formData.get('shipping-company') as string,
     preferred_language: formData.get('preferred-language') as string,
   };
 
@@ -32,10 +32,10 @@ export const signUp = async (formData: FormData) => {
     password: credentials.password,
     options: {
       data: {
-        firstName: credentials.firstName,
-        lastName: credentials.lastName,
-        vesselName: credentials.vesselName,
-        shippingCompany: credentials.shippingCompany,
+        first_name: credentials.first_name,
+        last_name: credentials.last_name,
+        vessel_name: credentials.vessel_name,
+        shipping_company: credentials.shipping_company,
         email_verified: false,
         role: 'user',
         preferred_language: credentials.preferred_language,
