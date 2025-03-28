@@ -1,4 +1,4 @@
-import CustomersDashboard from '@/components/dashboard/customers/customer-dashboard.tsx';
+import CustomersDashboard from '@/components/dashboard/customers/customer-dashboard';
 import { User } from '@/types';
 import { createClient } from '@/utils/supabase/client';
 

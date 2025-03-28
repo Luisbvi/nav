@@ -1,131 +1,154 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { createClient } from '@/utils/supabase/client';
+import { Category, Product } from '@/utils/supabase/types';
 import CatalogClient from '@/components/catalog/catalog-client';
-import { createClient } from '@/utils/supabase/server';
-import { Category } from '@/utils/supabase/types';
 
-interface CatalogPageProps {
-  searchParams: { [key: string]: string | string[] | undefined };
-}
+const CatalogPage = () => {
+  const supabase = createClient();
+  const searchParams = useSearchParams();
 
-const CatalogPage = async ({ searchParams }: CatalogPageProps) => {
-  // Params
-  const searchParam = await searchParams;
+  // State for managing catalog data
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const supabase = await createClient();
-
-  const category = typeof searchParam.category === 'string' ? searchParam.category : 'All';
-  const search = typeof searchParam.search === 'string' ? searchParam.search : '';
-  const sort = typeof searchParam.sort === 'string' ? searchParam.sort : 'featured';
-  const minPrice = typeof searchParam.minPrice === 'string' ? searchParam.minPrice : '';
-  const maxPrice = typeof searchParam.maxPrice === 'string' ? searchParam.maxPrice : '';
-  const availability =
-    typeof searchParam.availability === 'string' ? searchParam.availability : 'In Stock';
-  const page = typeof searchParam.page === 'string' ? Number.parseInt(searchParam.page, 10) : 1;
+  // Extract search parameters
+  const category = searchParams.get('category') || 'All';
+  const search = searchParams.get('search') || '';
+  const sort = searchParams.get('sort') || 'featured';
+  const minPrice = searchParams.get('minPrice') || '';
+  const maxPrice = searchParams.get('maxPrice') || '';
+  const availability = searchParams.get('availability') || 'In Stock';
+  const page = parseInt(searchParams.get('page') || '1', 10);
   const pageSize = 9;
 
-  const { data: categoriesData, error: categoryError } = await supabase
-    .from('products')
-    .select('category')
-    .order('category');
+  // Fetch products and categories
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
 
-  if (!categoriesData || categoryError) {
-    console.error('Error fetching categories:', categoryError);
-    return <div>Failed to load categories</div>;
+      try {
+        // Fetch categories
+        const { data: categoriesData, error: categoryError } = await supabase
+          .from('products')
+          .select('category')
+          .order('category');
+
+        if (categoryError) throw categoryError;
+
+        // Calculate category counts
+        const categoryCounts: Record<string, number> = {};
+        categoriesData.forEach((item) => {
+          const cat = item.category;
+          categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
+        });
+
+        const categoryList: Category[] = Object.entries(categoryCounts).map(([name, count]) => ({
+          name,
+          count,
+        }));
+
+        // Add 'All' category
+        const totalProducts = categoryList.reduce((acc, cat) => acc + cat.count, 0);
+        categoryList.unshift({ name: 'All', count: totalProducts });
+        setCategories(categoryList);
+
+        // Prepare products query
+        let query = supabase.from('products').select('*', { count: 'exact' });
+
+        // Apply filters
+        if (category !== 'All') {
+          query = query.eq('category', category);
+        }
+
+        if (search) {
+          query = query.ilike('name', `%${search}%`);
+        }
+
+        if (minPrice) {
+          query = query.gte('price', Number.parseFloat(minPrice));
+        }
+
+        if (maxPrice) {
+          query = query.lte('price', Number.parseFloat(maxPrice));
+        }
+
+        if (availability === 'In Stock') {
+          query = query.gt('stock', 0);
+        }
+
+        // Apply sorting
+        switch (sort) {
+          case 'price-low':
+            query = query.order('price', { ascending: true });
+            break;
+          case 'price-high':
+            query = query.order('price', { ascending: false });
+            break;
+          case 'name-asc':
+            query = query.order('name', { ascending: true });
+            break;
+          case 'name-desc':
+            query = query.order('name', { ascending: false });
+            break;
+          default:
+            query = query.order('created_at', { ascending: false });
+            break;
+        }
+
+        // Pagination
+        const from = (page - 1) * pageSize;
+        const to = from + pageSize - 1;
+
+        // Fetch products with count
+        const { data, count, error: productError } = await query.range(from, to);
+
+        if (productError) throw productError;
+
+        setProducts(data || []);
+        setTotalCount(count || 0);
+        setTotalPages(Math.ceil((count || 0) / pageSize));
+      } catch (err) {
+        console.error('Error fetching catalog data:', err);
+        setError('Failed to load catalog');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [category, search, sort, minPrice, maxPrice, availability, page]);
+
+  // Handle loading and error states
+  if (loading) {
+    return <div>Loading...</div>;
   }
 
-  const categoryCounts: Record<string, number> = {};
-  categoriesData.forEach((item) => {
-    const category = item.category;
-    if (categoryCounts[category]) {
-      categoryCounts[category]++;
-    } else {
-      categoryCounts[category] = 1;
-    }
-  });
-
-  const categoryList: Category[] = Object.entries(categoryCounts).map(([name, count]) => ({
-    name,
-    count,
-  }));
-
-  const totalProducts = categoryList.reduce((acc, cat) => acc + cat.count, 0);
-
-  categoryList.unshift({ name: 'All', count: totalProducts });
-
-  let query = supabase.from('products').select('*', { count: 'exact' });
-
-  if (category !== 'All') {
-    query = query.eq('category', category);
+  if (error) {
+    return <div>{error}</div>;
   }
-
-  if (search) {
-    query = query.ilike('name', `%${search}%`);
-  }
-
-  if (minPrice) {
-    query = query.gte('price', Number.parseFloat(minPrice));
-  }
-
-  if (maxPrice) {
-    query = query.lte('price', Number.parseFloat(maxPrice));
-  }
-
-  if (availability !== 'In Stock') {
-    query = query.gt('stock', 0);
-  }
-
-  switch (sort) {
-    case 'price-low':
-      query = query.order('price', { ascending: true });
-      break;
-
-    case 'price-high':
-      query = query.order('price', { ascending: false });
-      break;
-
-    case 'name-asc':
-      query = query.order('name', { ascending: true });
-      break;
-
-    case 'name-desc':
-      query = query.order('name', { ascending: false });
-      break;
-
-    default:
-      query = query.order('created_at', { ascending: false });
-      break;
-  }
-
-  const { count } = await query;
-
-  const from = (page - 1) * pageSize;
-  const to = from + pageSize - 1;
-  query = query.range(from, to);
-
-  const { data: products, error: productsError } = await query;
-
-  if (productsError) {
-    console.error('Error fetching products:', productsError);
-    return <div>Failed to load products</div>;
-  }
-
-  const totalPages = Math.ceil((count || 0) / pageSize);
 
   return (
-    <div>
-      <CatalogClient
-        initialProducts={products || []}
-        categories={categoryList}
-        totalCount={count || 0}
-        totalPages={totalPages}
-        currentPage={page}
-        currentCategory={category}
-        currentSearch={search}
-        currentSort={sort}
-        currentMinPrice={minPrice}
-        currentMaxPrice={maxPrice}
-        currentAvailability={availability}
-      />
-    </div>
+    <CatalogClient
+      initialProducts={products}
+      categories={categories}
+      totalCount={totalCount}
+      totalPages={totalPages}
+      currentPage={page}
+      currentCategory={category}
+      currentSearch={search}
+      currentSort={sort}
+      currentMinPrice={minPrice}
+      currentMaxPrice={maxPrice}
+      currentAvailability={availability}
+    />
   );
 };
 

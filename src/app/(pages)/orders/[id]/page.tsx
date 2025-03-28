@@ -1,78 +1,88 @@
-import { createClient } from '@/utils/supabase/server';
-import { notFound, redirect } from 'next/navigation';
-import type { Metadata } from 'next';
+'use client';
 
+import { useState, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { createClient } from '@/utils/supabase/client';
 import OrderDetail from '@/components/orders/order-details';
+import { Order, ShippingAddress } from '@/types';
 
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const supabase = await createClient();
+export default function OrderDetailPage() {
+  const supabase = createClient();
+  const router = useRouter();
+  const params = useParams();
+  const orderId = params.id as string;
 
-  // Check if user is authenticated
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const [order, setOrder] = useState<Order | null>(null);
+  const [shippingAddress, setShippingAddress] = useState<ShippingAddress>();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!session) {
-    return {
-      title: 'Order Not Found',
+  useEffect(() => {
+    const fetchOrderDetails = async () => {
+      try {
+        // Check authentication
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        if (!session) {
+          router.push('/login');
+          return;
+        }
+
+        // Fetch order
+        const { data: orderData, error: orderError } = await supabase
+          .from('orders')
+          .select('*')
+          .eq('id', orderId)
+          .eq('user_id', session.user.id)
+          .single();
+
+        if (orderError || !orderData) {
+          router.push('/not-found');
+          return;
+        }
+
+        setOrder(orderData);
+
+        // Fetch shipping address if available
+        if (orderData.shipping_address_id) {
+          const { data: addressData } = await supabase
+            .from('user')
+            .select('*')
+            .eq('id', orderData.shipping_address_id)
+            .single();
+
+          setShippingAddress(addressData);
+        }
+      } catch (err) {
+        console.error('Error fetching order details:', err);
+        setError('Failed to load order details');
+      } finally {
+        setLoading(false);
+      }
     };
+
+    fetchOrderDetails();
+  }, [orderId, router]);
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <p>Loading order details...</p>
+      </div>
+    );
   }
 
-  // Fetch order
-  const { data: order } = await supabase
-    .from('orders')
-    .select('*')
-    .eq('id', params.id)
-    .eq('user_id', session.user.id)
-    .single();
-
-  if (!order) {
-    return {
-      title: 'Order Not Found',
-    };
-  }
-
-  return {
-    title: `Order #${order.order_number || order.id}`,
-    description: `Details for your order placed on ${new Date(order.created_at || order.order_date).toLocaleDateString()}`,
-  };
-}
-
-export default async function OrderDetailPage({ params }: { params: { id: string } }) {
-  const supabase = await createClient();
-
-  // Check if user is authenticated
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (!session) {
-    redirect('/login');
-  }
-
-  // Fetch order with items
-  const { data: order, error } = await supabase
-    .from('orders')
-    .select('*')
-    .eq('id', params.id)
-    .eq('user_id', session.user.id)
-    .single();
-
+  // Error state
   if (error || !order) {
-    notFound();
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <p className="text-red-500">{error || 'Order not found'}</p>
+      </div>
+    );
   }
 
-  // Fetch shipping address if available
-  let shippingAddress = null;
-  if (order.shipping_address_id) {
-    const { data: address } = await supabase
-      .from('user')
-      .select('*')
-      .eq('id', order.shipping_address_id)
-      .single();
-
-    shippingAddress = address;
-  }
-
-  return <OrderDetail order={order} shippingAddress={shippingAddress} />;
+  return <OrderDetail order={order} shippingAddress={shippingAddress || {}} />;
 }

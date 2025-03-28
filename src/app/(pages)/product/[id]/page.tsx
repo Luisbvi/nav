@@ -1,27 +1,63 @@
-import { createClient } from '@/utils/supabase/server';
-import React from 'react';
+'use client';
+
+import { createClient } from '@/utils/supabase/client';
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
 import NotFound from '../not-found';
 import Breadcrumb from '@/components/product/breadcrumb';
 import ProductGallery from '@/components/product/product-gallery';
 import ProductDetails from '@/components/product/product-details';
 import ProductTab from '@/components/product/product-tab';
+import { Product } from '@/types';
 
-interface pageProps {
-  params: {
-    id: string;
-  };
-}
+const ProductPage = () => {
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-const ProductPage = async ({ params }: pageProps) => {
-  const supabase = await createClient();
-  const searchParams = await params;
-  const { data: product, error } = await supabase
-    .from('products')
-    .select('*')
-    .eq('id', searchParams.id)
-    .single();
+  const params = useParams();
+  const supabase = createClient();
 
-  if (error || !product) return <NotFound />;
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        // Use params.id instead of searchParams
+        const productId = params.id;
+
+        if (!productId) {
+          throw new Error('No product ID provided');
+        }
+
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('id', productId)
+          .single();
+
+        if (error) throw error;
+
+        setProduct(data);
+      } catch (err) {
+        console.error('Error fetching product:', err);
+        setError('Failed to load product');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [params.id]);
+
+  // Loading state
+  if (loading) {
+    return <div className="container mx-auto px-4 py-8">Loading...</div>;
+  }
+
+  // Error or not found state
+  if (error || !product) {
+    return <NotFound />;
+  }
 
   const breadcrumbItems = [
     { label: 'Home', href: '/' },
@@ -38,22 +74,26 @@ const ProductPage = async ({ params }: pageProps) => {
 
   return (
     <div className="flex flex-col">
-      <div className="container mx-auto flex-1 px-4 py-8"></div>
-      <Breadcrumb items={breadcrumbItems} />
+      <div className="container mx-auto px-4 py-8">
+        <Breadcrumb items={breadcrumbItems} />
 
-      <div className="grid gap-10 md:grid-cols-2">
-        <ProductGallery imageUrl={product.image_url} productName={product.name} />
-        <ProductDetails product={product} />
-      </div>
+        <div className="mt-8 grid gap-10 md:grid-cols-2">
+          <ProductGallery
+            imageUrl={product.image_url || '/images/img-placeholder.webp'}
+            productName={product.name}
+          />
+          <ProductDetails product={product} />
+        </div>
 
-      <div className="mt-16">
-        <ProductTab product={product} specifications={specifications}></ProductTab>
-      </div>
+        <div className="mt-16">
+          <ProductTab product={product} specifications={specifications} />
+        </div>
 
-      <div className="mt-4">
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          If you need more information in this product, please contact us.
-        </p>
+        <div className="mt-4">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            If you need more information about this product, please contact us.
+          </p>
+        </div>
       </div>
     </div>
   );
