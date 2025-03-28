@@ -99,6 +99,9 @@ export async function POST(request: Request) {
         },
       ],
       customer_email: user?.email,
+      metadata: {
+        userId: user?.id || null,
+      },
     });
 
     return NextResponse.json({ sessionId: session.id, url: session.url });
