@@ -43,7 +43,6 @@ const CatalogPage = () => {
 
         if (categoryError) throw categoryError;
 
-        // Calculate category counts
         const categoryCounts: Record<string, number> = {};
         categoriesData.forEach((item) => {
           const cat = item.category;
@@ -84,6 +83,14 @@ const CatalogPage = () => {
           query = query.gt('stock', 0);
         }
 
+        const getFavorites = () => {
+          if (typeof window !== 'undefined') {
+            const favorites = localStorage.getItem('favoriteProducts');
+            return favorites ? JSON.parse(favorites) : [];
+          }
+          return [];
+        };
+
         // Apply sorting
         switch (sort) {
           case 'price-low':
@@ -97,6 +104,14 @@ const CatalogPage = () => {
             break;
           case 'name-desc':
             query = query.order('name', { ascending: false });
+            break;
+          case 'favorites':
+            const favoriteIds = getFavorites();
+            if (favoriteIds.length > 0) {
+              query = query.in('id', favoriteIds);
+            } else {
+              query = query.eq('id', null);
+            }
             break;
           default:
             query = query.order('created_at', { ascending: false });
@@ -126,14 +141,20 @@ const CatalogPage = () => {
     fetchData();
   }, [category, search, sort, minPrice, maxPrice, availability, page]);
 
-  // Handle loading and error states
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
   if (error) {
     return <div>{error}</div>;
   }
+
+  const LoadingSkeleton = () => (
+    <div className="grid min-h-[300px] w-full place-items-center">
+      <div className="flex flex-col items-center gap-2">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
+        <p className="text-sm text-gray-600 dark:text-gray-400"></p>
+      </div>
+    </div>
+  );
+
+  if (loading) return <LoadingSkeleton />;
 
   return (
     <CatalogClient

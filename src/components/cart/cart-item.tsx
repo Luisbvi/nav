@@ -77,7 +77,7 @@ export default function CartItem({ item }: CartItemProps) {
         </div>
 
         <div className="mt-2 flex items-center">
-          <div className="w-20">
+          <div className="flex w-20 items-center gap-2">
             <Select
               value={item.quantity?.toString()}
               onValueChange={(value) => updateQuantity(item.id, Number.parseInt(value))}
@@ -94,6 +94,7 @@ export default function CartItem({ item }: CartItemProps) {
                 ))}
               </SelectContent>
             </Select>
+            <span className="text-gray-400 dark:text-gray-500">{item.unit}</span>
           </div>
         </div>
       </div>

@@ -138,7 +138,7 @@ const CatalogClient = ({
 
   return (
     <div className="flex-1">
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
+      <div className="mb-6 grid grid-cols-1 gap-8 lg:grid-cols-4">
         <FilterSideBar
           categories={categories}
           currentCategory={currentCategory}

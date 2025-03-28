@@ -12,6 +12,7 @@ export interface Product {
   image_url?: string;
   created_at: Date;
   updated_at: Date;
+  discount: number;
 }
 
 export interface Category {

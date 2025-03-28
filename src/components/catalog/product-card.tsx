@@ -64,8 +64,8 @@ const ProductCard = ({ product }: ProductCardProps) => {
     }, 2000);
   };
 
-  const discount = 10;
-  const finalPrice = discount ? (1 - discount / 100) * product.price : product.price;
+  const discount = product.discount;
+  const finalPrice = discount > 0 ? (1 - discount / 100) * product.price : product.price;
 
   return (
     <motion.div
@@ -76,7 +76,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
       className="group relative overflow-hidden rounded-lg bg-white not-dark:shadow-md dark:bg-gray-800"
     >
       {/* Discount */}
-      {discount && (
+      {discount > 0 && (
         <motion.div
           initial={{ x: 50 }}
           animate={{ x: 0 }}
@@ -141,7 +141,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
           <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
             {finalPrice.toFixed(2)}$
           </span>
-          {discount && (
+          {discount > 0 && (
             <span className="ml-2 text-sm text-gray-500 line-through dark:text-gray-300">
               {product.price.toFixed(2)}$
             </span>
@@ -182,7 +182,10 @@ const ProductCard = ({ product }: ProductCardProps) => {
             >
               <Minus className="size-4" />
             </motion.button>
-            <span className="min-w-[30px] px-2 py-1 text-center">{quantity}</span>
+            <span className="min-w-[30px] px-2 py-1 text-center">
+              {quantity}
+              <span className="mx-2 text-gray-400 dark:text-gray-500">{product.unit}</span>
+            </span>
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={() => setQuantity((prev) => prev + 1)}
