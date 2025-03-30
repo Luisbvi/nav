@@ -29,3 +29,37 @@ export interface SearchParams {
   page?: string;
   availability?: Availability;
 }
+
+export interface USDRes {
+  datetime: Datetime;
+  monitors: { [key: string]: Monitor };
+}
+
+export interface Datetime {
+  date: string;
+  time: string;
+}
+
+export interface Monitor {
+  change: number;
+  color: Color;
+  image: null | string;
+  last_update: string;
+  percent: number;
+  price: number;
+  price_old: number;
+  symbol: Symbol;
+  title: string;
+}
+
+export enum Color {
+  Green = 'green',
+  Neutral = 'neutral',
+  Red = 'red',
+}
+
+export enum Symbol {
+  Empty = '▲',
+  Purple = '',
+  Symbol = '▼',
+}

@@ -25,11 +25,11 @@ export default function OrderItems({ order }: OrderItemsProps) {
       const supabase = createClient();
 
       try {
-        const uniqueProductIds = [...new Set(order.items?.map((item) => item.description))];
+        const uniqueProductIds = [...new Set(order.items?.map((item) => item.id))];
         const { data: productData, error } = await supabase
           .from('products')
           .select('*')
-          .in('name', uniqueProductIds);
+          .in('id', uniqueProductIds);
 
         if (error) throw error;
         if (productData) setProducts(productData);
@@ -40,6 +40,8 @@ export default function OrderItems({ order }: OrderItemsProps) {
 
     fetchProducts();
   }, [order.items]);
+
+  console.log({ products });
 
   const handleBuyAgain = (item: Product) => {
     setBuyingAgain((prev) => ({ ...prev, [item.id]: true }));

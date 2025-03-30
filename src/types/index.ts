@@ -66,24 +66,21 @@ export interface OrderItem {
   id: string;
   description: string;
   quantity: number;
-  amount_total: number;
-  price: {
-    id: string;
-    currency: string;
-    unit_amount: number;
-    product: string;
-  };
-  currency: string;
-  amount_subtotal: number;
-  amount_discount: number;
-  amount_tax: number;
 }
+
+export type OrderStatus =
+  | 'paid'
+  | 'processing'
+  | 'shipped'
+  | 'delivered'
+  | 'completed'
+  | 'cancelled';
 
 export interface Order {
   id: string;
   user_id: string;
   order_number?: string;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'completed' | 'cancelled';
+  status: OrderStatus;
   total: number;
   subtotal?: number;
   tax?: number;
@@ -106,4 +103,26 @@ export interface ShippingAddress {
   line2?: string;
   postal_code?: string;
   state?: string;
+}
+
+export type PaymentMethod = 'card' | 'cash' | 'pagomovil';
+
+export interface OrderData {
+  id?: number;
+  customer_name: string;
+  total: number;
+  status: OrderStatus;
+  user_id: string;
+  email: string;
+  payment_id: string;
+  shipping_address?: string;
+  items: {
+    id: string;
+    name: string;
+    quantity: number;
+  }[];
+  created_at: string;
+  shipped_date?: string;
+  delivered_date?: string;
+  payment_method: PaymentMethod;
 }

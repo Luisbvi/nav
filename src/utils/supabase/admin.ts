@@ -93,3 +93,9 @@ export async function removeAdminUser(userId: string): Promise<boolean> {
 
   return true;
 }
+
+export async function getOrderCount() {
+  const supabase = await createClient();
+  const { count } = await supabase.from('orders').select('id', { count: 'exact' });
+  return (count || 0) + 1;
+}

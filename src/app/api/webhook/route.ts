@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { headers } from 'next/headers';
 import { createClient } from '@supabase/supabase-js';
-import { Order } from '@/types';
+import { Order, OrderData } from '@/types';
 
 // Inicializar Stripe con más información de depuración
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
@@ -165,30 +165,37 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
     console.log(`📋 Found ${lineItems.length} line items`);
 
     // Get customer email
-    const customerEmail = session.customer_details?.email;
+    const customerEmail = session.customer_details!.email;
     console.log('📧 Customer email:', customerEmail || 'Not provided');
 
     // Get user ID from metadata
-    const userId = session.metadata?.userId || null;
+    const userId = session.metadata!.userId;
     console.log('👤 User ID from metadata:', userId || 'Not provided');
 
     console.log('Metadata:', session.metadata);
 
+    const items = lineItems.map((i) => {
+      return {
+        id: i.id!,
+        name: i.description!,
+        quantity: i.quantity!,
+      };
+    });
+
     // Prepare order data
-    const orderData = {
-      id: session.id,
+    const orderData: OrderData = {
       customer_name: session.customer_details?.name || 'Cliente',
-      order_date: new Date().toISOString(),
       total: session.amount_total ? session.amount_total / 100 : 0,
       status: 'paid',
       user_id: userId,
-      email: customerEmail,
+      email: customerEmail!,
       payment_id: session.payment_intent as string,
-      shipping_address: session.shipping_details || null,
-      items: lineItems,
+      payment_method: 'card',
+      items: items!,
+      created_at: new Date().toISOString(),
     };
 
-    console.log('💾 Saving order to database:', orderData.id);
+    console.log('💾 Saving order to database:');
 
     // Save to Supabase
     const { data, error } = await supabase.from('orders').insert(orderData).select();
