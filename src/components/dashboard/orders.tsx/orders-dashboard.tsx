@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { Edit, Trash2, Copy, Check } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Order, User } from '@/types';
+import { Order, OrderStatus, User } from '@/types';
 
 const supabase = createClient();
 
@@ -56,10 +56,7 @@ export default function OrdersDashboard({
   };
 
   // Function to update order status
-  const handleUpdateOrderStatus = async (
-    id: string,
-    newStatus: 'pending' | 'processing' | 'shipped' | 'delivered' | 'completed' | 'cancelled'
-  ) => {
+  const handleUpdateOrderStatus = async (id: string, newStatus: OrderStatus) => {
     const { error, data } = await supabase
       .from('orders')
       .update({ status: newStatus })
@@ -297,13 +294,14 @@ export default function OrdersDashboard({
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 bg-white">
-                      {selectedOrder.items?.map((item) => {
+                      {selectedOrder.items?.map(async (item) => {
+                        const { data: product } = await supabase
+                          .from('products')
+                          .select('*')
+                          .eq('id', item.id);
+
                         // Extract description and format currency values correctly
                         const description = item.description || 'Product';
-                        const unitPrice = item.price?.unit_amount
-                          ? item.price.unit_amount / 100
-                          : 0;
-                        const totalPrice = item.amount_total ? item.amount_total / 100 : 0;
 
                         return (
                           <tr key={item.id}>
@@ -312,10 +310,10 @@ export default function OrdersDashboard({
                               {item.quantity}
                             </td>
                             <td className="px-4 py-2 text-right text-sm text-gray-900">
-                              {formatCurrency(unitPrice, item.currency)}
+                              {product || 0}
                             </td>
                             <td className="px-4 py-2 text-right text-sm text-gray-900">
-                              {formatCurrency(totalPrice, item.currency)}
+                              {'formatCurrency(totalPrice)'}
                             </td>
                           </tr>
                         );
@@ -330,16 +328,7 @@ export default function OrdersDashboard({
                   className="rounded border p-2 text-sm"
                   value={selectedOrder.status}
                   onChange={(e) =>
-                    handleUpdateOrderStatus(
-                      selectedOrder.id,
-                      e.target.value as
-                        | 'pending'
-                        | 'processing'
-                        | 'shipped'
-                        | 'delivered'
-                        | 'completed'
-                        | 'cancelled'
-                    )
+                    handleUpdateOrderStatus(selectedOrder.id, e.target.value as OrderStatus)
                   }
                 >
                   <option value="pending">Pending</option>

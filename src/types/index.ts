@@ -70,6 +70,7 @@ export interface OrderItem {
 
 export type OrderStatus =
   | 'paid'
+  | 'pending'
   | 'processing'
   | 'shipped'
   | 'delivered'

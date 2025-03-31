@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { createClient } from '@/utils/supabase/client';
-import { Order } from '@/types';
+import { Order, OrderStatus } from '@/types';
 import { User } from '@supabase/supabase-js';
 
 export default function ProfilePage() {
@@ -26,6 +26,16 @@ export default function ProfilePage() {
     email: '',
     avatar_url: null,
   });
+
+  const statusStyles: Record<OrderStatus, { class: string; label: string }> = {
+    pending: { class: 'bg-blue-100 text-blue-800', label: 'Pending' },
+    paid: { class: 'bg-blue-green-100 text-green-800', label: 'Paid' },
+    processing: { class: 'bg-yellow-100 text-yellow-800', label: 'Processing' },
+    completed: { class: 'bg-green-100 text-green-800', label: 'Completed' },
+    cancelled: { class: 'bg-red-100 text-red-800', label: 'Cancelled' },
+    shipped: { class: 'bg-purple-100 text-purple-800', label: 'Shipped' },
+    delivered: { class: 'bg-indigo-100 text-indigo-800', label: 'Delivered' },
+  };
 
   useEffect(() => {
     const getProfile = async () => {
@@ -310,23 +320,9 @@ export default function ProfilePage() {
                       <p className="text-sm text-gray-500">{formatOrderDate(order.order_date)}</p>
                     </div>
                     <span
-                      className={`rounded-full px-2 py-1 text-xs ${
-                        order.status === 'completed'
-                          ? 'bg-green-100 text-green-800'
-                          : order.status === 'pending'
-                            ? 'bg-blue-100 text-blue-800'
-                            : order.status === 'cancelled'
-                              ? 'bg-red-100 text-red-800'
-                              : 'bg-yellow-100 text-yellow-800'
-                      }`}
+                      className={`rounded-full px-2 py-1 text-xs ${statusStyles[order.status].class}`}
                     >
-                      {order.status === 'completed'
-                        ? 'Completed'
-                        : order.status === 'pending'
-                          ? 'Pending'
-                          : order.status === 'cancelled'
-                            ? 'Cancelled'
-                            : 'Processing'}
+                      {statusStyles[order.status].label}
                     </span>
                   </div>
 

@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
+import { CartItem } from '@/types';
 
 export async function POST(request: Request) {
   try {
-    const { items, shippingMethod, shippingPrice, user, total } = await request.json();
+    const { items, shippingMethod, user, total } = await request.json();
 
     const supabase = await createClient();
 
@@ -11,7 +12,7 @@ export async function POST(request: Request) {
     const orderId = crypto.randomUUID();
 
     // Create the order with pending status
-    const { data: orderData, error: orderError } = await supabase
+    const { error: orderError } = await supabase
       .from('orders')
       .insert({
         id: orderId,
@@ -33,7 +34,7 @@ export async function POST(request: Request) {
     }
 
     // Save order items
-    const orderItems = items.map((item: any) => ({
+    const orderItems = items.map((item: CartItem) => ({
       order_id: orderId,
       product_id: item.id,
       quantity: item.quantity,

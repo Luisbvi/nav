@@ -18,7 +18,7 @@ export default async function OrdersPage() {
     .from('orders')
     .select('*')
     .eq('user_id', user?.id)
-    .order('order_date', { ascending: false });
+    .order('created_at', { ascending: false });
 
   if (error) {
     console.error('Error al obtener las órdenes:', error);
