@@ -4,10 +4,10 @@ import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useCart } from '@/contexts/cart-context';
-import { User } from '@supabase/supabase-js';
 import { signOut } from '@/app/(auth)/actions/auth';
 import ToggleSwitch from '@/components/toggel-switch';
 import { handleMenuItemClick } from '@/lib/utils';
+import { User } from '@/types';
 
 const HamburguerButton = ({ user }: { user: User | null }) => {
   const [active, setActive] = useState(false);
@@ -130,10 +130,10 @@ const HamburguerButton = ({ user }: { user: User | null }) => {
                   {user ? (
                     <div>
                       <span className="block text-sm text-gray-900 dark:text-white">
-                        {user?.user_metadata?.first_name} {user?.user_metadata?.last_name}
+                        {user?.first_name} {user?.last_name}
                       </span>
                       <span className="block text-sm text-gray-500 dark:text-gray-400">
-                        {user?.user_metadata?.email}
+                        {user?.email}
                       </span>
                     </div>
                   ) : (
@@ -147,7 +147,7 @@ const HamburguerButton = ({ user }: { user: User | null }) => {
                 </motion.div>
 
                 {/* Admin Dashboard Section */}
-                {user && user.user_metadata.role === 'admin' && (
+                {user && user.role === 'admin' && (
                   <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}

@@ -80,7 +80,6 @@ export type OrderStatus =
 export interface Order {
   id: string;
   user_id: string;
-  order_number?: string;
   status: OrderStatus;
   total: number;
   subtotal?: number;
@@ -122,7 +121,7 @@ export interface OrderData {
     name: string;
     quantity: number;
   }[];
-  created_at: string;
+  created_at?: string;
   shipped_date?: string;
   delivered_date?: string;
   payment_method: PaymentMethod;

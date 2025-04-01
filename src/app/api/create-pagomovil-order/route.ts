@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
+import { OrderData } from '@/types';
 
 export async function POST(request: Request) {
   try {
@@ -7,19 +8,21 @@ export async function POST(request: Request) {
 
     const supabase = await createClient();
 
-    const orderData = {
+    const orderData: OrderData = {
       customer_name:
         user?.user_metadata?.first_name + ' ' + user?.user_metadata?.last_name || paymentData.name,
-      create_at: new Date().toISOString(),
+      created_at: new Date().toISOString(),
       total: total,
       status: 'pending',
       user_id: user?.id || null,
       email: user?.email || null,
+      shipping_address: shipping_details,
       payment_id: paymentData.reference,
-      shipping_address: shipping_details || null,
       payment_method: 'pagomovil',
       items,
     };
+
+    console.log({ items });
 
     const { error: orderError } = await supabase.from('orders').insert(orderData).select();
 

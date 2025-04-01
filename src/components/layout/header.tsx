@@ -2,12 +2,12 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { User } from '@supabase/supabase-js';
 import LanguageSelector from '@/components/layout/language-selector';
 import UserComponent from '@/components/user-component';
 import { CartButton } from '@/components/cart-button';
 import HamburguerButton from '@/components/home/hamburguer-button';
 import { useLanguage } from '@/contexts/language-context';
+import { User } from '@/types';
 
 const Header = ({ user }: { user: User | null }) => {
   const { t } = useLanguage();
@@ -69,7 +69,7 @@ const Header = ({ user }: { user: User | null }) => {
         {/*User*/}
         {user ? (
           <motion.div variants={componentVariants}>
-            <UserComponent user={user} role={user.user_metadata.role || 'user'} />
+            <UserComponent user={user} role={user.role} />
           </motion.div>
         ) : (
           <motion.div variants={componentVariants} className="hidden items-center gap-4 md:flex">

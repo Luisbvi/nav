@@ -7,7 +7,13 @@ const Navbar = async () => {
     data: { user },
   } = await supabase.auth.getUser();
 
-  return <Header user={user} />;
+  const { data: userData } = await supabase
+    .from('user_profiles')
+    .select('*')
+    .eq('id', user?.id)
+    .single();
+
+  return <Header user={userData} />;
 };
 
 export default Navbar;

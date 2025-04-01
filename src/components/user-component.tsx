@@ -4,11 +4,11 @@ import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
-import { User } from '@supabase/supabase-js';
 import { signOut } from '@/app/(auth)/actions/auth';
 import { useCart } from '@/contexts/cart-context';
 import { useLanguage } from '@/contexts/language-context';
 import ToggleSwitch from '@/components/toggel-switch';
+import { User } from '@/types';
 
 const UserComponent = ({ user, role }: { user: User; role: string }) => {
   const { t } = useLanguage();
@@ -78,7 +78,7 @@ const UserComponent = ({ user, role }: { user: User; role: string }) => {
           </div>
 
           <span className="text-sm font-medium">
-            {user.user_metadata?.first_name} {user.user_metadata?.last_name}
+            {user?.first_name} {user?.last_name}
           </span>
         </motion.button>
 
@@ -98,7 +98,7 @@ const UserComponent = ({ user, role }: { user: User; role: string }) => {
               <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3 dark:border-gray-600">
                 <div>
                   <span className="block text-sm text-gray-900 dark:text-white">
-                    {user.user_metadata?.first_name} {user.user_metadata?.last_name}
+                    {user?.first_name} {user?.last_name}
                   </span>
                   <span className="block text-sm text-gray-500 dark:text-gray-400">
                     {user.email}

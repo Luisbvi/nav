@@ -11,7 +11,7 @@ export default async function Home() {
     .from('products')
     .select('*')
     .order('created_at', { ascending: false })
-    .limit(4);
+    .limit(3);
 
   // Fetch categories
   const { data: categoriesData } = await supabase
