@@ -161,7 +161,7 @@ export default function OrdersDashboard({
                     {user.email}
                   </td>
                   <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
-                    {new Date(order.order_date).toLocaleDateString('en-US')}
+                    {new Date(order.created_at).toLocaleDateString('en-US')}
                   </td>
                   <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
                     {formatCurrency(order.total)}

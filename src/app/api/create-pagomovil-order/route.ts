@@ -18,7 +18,7 @@ export async function POST(request: Request) {
       email: user?.email || null,
       shipping_address: shipping_details,
       payment_id: paymentData.reference,
-      payment_method: 'pagomovil',
+      payment_method: 'Pago movil',
       items,
     };
 

@@ -85,15 +85,17 @@ export interface Order {
   subtotal?: number;
   tax?: number;
   shipping_cost?: number;
-  created_at?: string;
-  order_date: string;
+  created_at: string;
   processing_date?: string;
   shipped_date?: string;
   delivered_date?: string;
   shipping_address_id?: string;
   shipping_method?: string;
-  payment_method?: string;
+  completed_date?: string;
+  payment_method?: PaymentMethod;
   items?: OrderItem[];
+  cancelled_date?: string;
+  payment_confirmation_date?: string;
 }
 
 export interface ShippingAddress {
@@ -105,7 +107,7 @@ export interface ShippingAddress {
   state?: string;
 }
 
-export type PaymentMethod = 'card' | 'cash' | 'pagomovil';
+export type PaymentMethod = 'card' | 'cash' | 'Pago movil';
 
 export interface OrderData {
   id?: number;

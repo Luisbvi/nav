@@ -1,16 +1,19 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/language-context';
 import { Search } from 'lucide-react';
+import { useState } from 'react';
+import { Input } from '../ui/input';
+import { useRouter } from 'next/navigation';
 
 export default function HeroSection() {
   const { t } = useLanguage();
+  const [search, setSearch] = useState('');
+  const router = useRouter();
 
   return (
-    <section className="relative md:py-24">
+    <section className="relative md:mt-24">
       <div className="mx-auto max-w-4xl text-center">
         <motion.h1
           initial={{ opacity: 0, y: -20 }}
@@ -37,19 +40,26 @@ export default function HeroSection() {
           className="mx-auto max-w-md"
         >
           <div className="relative">
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-              <Search className="h-5 w-5 text-gray-400" />
-            </div>
-            <input
-              type="search"
-              className="block w-full rounded-lg border border-gray-300 bg-white p-4 pl-10 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500"
-              placeholder={t('search_products') || 'Search for products...'}
-            />
-            <Link href="/#">
-              <Button className="absolute right-2.5 bottom-2.5 cursor-pointer rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 focus:outline-none dark:bg-blue-500 dark:hover:bg-blue-600">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                router.push(`catalog?search=${search}&page=1`);
+              }}
+              className="relative flex-1"
+            >
+              <Search className="absolute top-1/2 left-3 -translate-y-1/2 transform text-gray-400" />
+              <Input
+                type="search"
+                name="search"
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={t('search_products') || 'Search products...'}
+                className="pl-10 dark:bg-gray-700"
+                defaultValue={''}
+              />
+              <button type="submit" className="sr-only">
                 {t('search') || 'Search'}
-              </Button>
-            </Link>
+              </button>
+            </form>
           </div>
         </motion.div>
       </div>

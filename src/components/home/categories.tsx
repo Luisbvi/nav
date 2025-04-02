@@ -5,6 +5,15 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useLanguage } from '@/contexts/language-context';
 import type { Category } from '@/utils/supabase/types';
+import { createClient } from '@/utils/supabase/client';
+import { useEffect, useState } from 'react';
+
+type CategoryWithProduct = Category & {
+  randomProduct?: {
+    image_url: string;
+    name: string;
+  } | null;
+};
 
 interface CategoryGridProps {
   categories: Category[];
@@ -12,17 +21,32 @@ interface CategoryGridProps {
 
 export default function CategoryGrid({ categories }: CategoryGridProps) {
   const { t } = useLanguage();
+  const [categoriesWithProducts, setCategoriesWithProducts] = useState<CategoryWithProduct[]>([]);
+  const supabase = createClient();
 
-  // Default categories if none are provided
-  const displayCategories =
-    categories.length > 0
-      ? categories
-      : [
-          { name: 'Food & Provisions', count: 0 },
-          { name: 'Safety Equipment', count: 0 },
-          { name: 'Medical Supplies', count: 0 },
-          { name: 'Technical Parts', count: 0 },
-        ];
+  useEffect(() => {
+    async function loadCategoriesWithProducts() {
+      const result: CategoryWithProduct[] = [];
+
+      for (const category of categories) {
+        const { data: products } = await supabase
+          .from('products')
+          .select('image_url, name')
+          .eq('category', category.name)
+          .limit(1)
+          .order('created_at', { ascending: false });
+
+        result.push({
+          ...category,
+          randomProduct: products?.[0] || null,
+        });
+      }
+
+      setCategoriesWithProducts(result);
+    }
+
+    loadCategoriesWithProducts();
+  }, [categories]);
 
   return (
     <section className="px-6 py-12 md:py-16">
@@ -38,7 +62,7 @@ export default function CategoryGrid({ categories }: CategoryGridProps) {
         </motion.h2>
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {displayCategories.map((category, index) => (
+          {categoriesWithProducts.map((category, index) => (
             <motion.div
               key={category.name}
               initial={{ opacity: 0, y: 20 }}
@@ -51,10 +75,11 @@ export default function CategoryGrid({ categories }: CategoryGridProps) {
               <Link href={`/catalog?category=${encodeURIComponent(category.name)}`}>
                 <div className="relative h-40 w-full overflow-hidden bg-gray-200 dark:bg-gray-600">
                   <Image
-                    src={`/images/img-placeholder.webp`}
-                    alt={category.name}
+                    src={category.randomProduct?.image_url || '/images/img-placeholder.webp'}
+                    alt={category.randomProduct?.name || category.name}
                     fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="object-contain transition-transform duration-300 group-hover:scale-105"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                   />
                 </div>
                 <div className="p-4">

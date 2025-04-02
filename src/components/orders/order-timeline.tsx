@@ -1,9 +1,10 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { CheckCircle, Package, Truck, CreditCard } from 'lucide-react';
+import { CheckCircle, Package, Truck, CreditCard, Clock, XCircle, Loader2 } from 'lucide-react';
 import type { Order } from '@/types';
 import { useLanguage } from '@/contexts/language-context';
+import { formatDate } from '@/utils/orders';
 
 interface OrderTimelineProps {
   order: Order;
@@ -12,31 +13,42 @@ interface OrderTimelineProps {
 export default function OrderTimeline({ order }: OrderTimelineProps) {
   const { t } = useLanguage();
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
-
-  // Define timeline steps based on order status
   const steps = [
     {
       id: 'ordered',
       title: t('order_placed'),
       description: t('order_received'),
-      date: order.order_date,
+      date: order.created_at,
       icon: <CreditCard className="h-6 w-6" />,
       completed: true,
+    },
+    {
+      id: 'payment',
+      title: t('payment_confirmation'),
+      description: order.payment_method === 'card' ? t('payment_received') : t('awaiting_payment'),
+      date: order.payment_confirmation_date,
+      icon:
+        order.status === 'paid' ? (
+          <CheckCircle className="h-6 w-6" />
+        ) : (
+          <Clock className="h-6 w-6" />
+        ),
+      completed: ['paid', 'processing', 'shipped', 'delivered', 'completed'].includes(order.status),
+      active: order.status === 'pending',
     },
     {
       id: 'processing',
       title: t('processing'),
       description: t('preparing_order'),
       date: order.processing_date,
-      icon: <Package className="h-6 w-6" />,
+      icon:
+        order.status === 'processing' ? (
+          <Loader2 className="h-6 w-6 animate-spin" />
+        ) : (
+          <Package className="h-6 w-6" />
+        ),
       completed: ['processing', 'shipped', 'delivered', 'completed'].includes(order.status),
+      active: order.status === 'processing',
     },
     {
       id: 'shipped',
@@ -51,10 +63,40 @@ export default function OrderTimeline({ order }: OrderTimelineProps) {
       title: t('delivered'),
       description: t('order_delivered'),
       date: order.delivered_date,
-      icon: <CheckCircle className="h-6 w-6" />,
+      icon: <Package className="h-6 w-6" />,
       completed: ['delivered', 'completed'].includes(order.status),
     },
+    {
+      id: 'completed',
+      title: t('completed'),
+      description: t('order_completed'),
+      date: order.completed_date,
+      icon: <CheckCircle className="h-6 w-6" />,
+      completed: order.status === 'completed',
+    },
   ];
+
+  if (order.status === 'cancelled') {
+    return (
+      <div className="rounded-lg border border-red-200 bg-white p-6 dark:border-red-900 dark:bg-gray-800">
+        <h2 className="mb-6 text-lg font-semibold text-gray-900 dark:text-gray-100">
+          {t('order_timeline')}
+        </h2>
+        <div className="flex items-center gap-3 text-red-600 dark:text-red-400">
+          <XCircle className="h-6 w-6" />
+          <div>
+            <h3 className="text-lg font-medium">{t('order_cancelled')}</h3>
+            <p className="text-sm">{t('order_cancelled_description')}</p>
+            {order.cancelled_date && (
+              <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
+                {formatDate(order.cancelled_date)}
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
@@ -63,7 +105,6 @@ export default function OrderTimeline({ order }: OrderTimelineProps) {
       </h2>
 
       <div className="relative">
-        {/* Vertical line */}
         <div className="absolute top-0 left-6 h-full w-0.5 bg-gray-200 dark:bg-gray-700"></div>
 
         {steps.map((step, index) => (
@@ -80,7 +121,7 @@ export default function OrderTimeline({ order }: OrderTimelineProps) {
                 step.completed
                   ? 'border-indigo-600 bg-indigo-100 text-indigo-600 dark:border-indigo-400 dark:bg-indigo-900/30 dark:text-indigo-400'
                   : 'border-gray-300 bg-white text-gray-400 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-500'
-              }`}
+              } ${step.active ? 'animate-pulse' : ''}`}
             >
               {step.icon}
             </div>

@@ -42,8 +42,18 @@ export default function FeaturedProducts({ products }: FeaturedProductsProps) {
           </motion.div>
         </div>
 
+        {products.length === 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="py-10 text-center"
+          >
+            <p className="text-gray-500">{t('no_products') || 'No products available'}</p>
+          </motion.div>
+        )}
+
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {products.map((product, index) => (
+          {products.slice(0, 3).map((product, index) => (
             <motion.div
               key={product.id}
               initial={{ opacity: 0, y: 20 }}
@@ -55,16 +65,6 @@ export default function FeaturedProducts({ products }: FeaturedProductsProps) {
             </motion.div>
           ))}
         </div>
-
-        {products.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="py-10 text-center"
-          >
-            <p className="text-gray-500">{t('no_products') || 'No products available'}</p>
-          </motion.div>
-        )}
       </div>
     </section>
   );

@@ -540,10 +540,10 @@ const translations = {
     zh: '选择数量',
   },
   price_format: {
-    en: '${price}',
-    es: '${price}',
-    fr: '${price}',
-    zh: '${price}',
+    en: '{price}',
+    es: '{price}',
+    fr: '{price}',
+    zh: '{price}',
   },
   shipping_estimate: {
     en: 'Shipping estimate',
@@ -1454,6 +1454,30 @@ const translations = {
     es: 'Este campo es obligatorio',
     fr: 'Ce champ est obligatoire',
     zh: '此字段为必填项',
+  },
+  order_completed: {
+    en: 'Order completed',
+    es: 'Pedido completado',
+    fr: 'Commande terminée',
+    zh: '订单已完成',
+  },
+  payment_confirmation: {
+    en: 'Payment Confirmation',
+    es: 'Confirmación de pago',
+    fr: 'Confirmation de paiement',
+    zh: '付款确认',
+  },
+  payment_received: {
+    en: 'Payment received',
+    es: 'Pago recibido',
+    fr: 'Paiement reçu',
+    zh: '已收到付款',
+  },
+  awaiting_payment: {
+    en: 'Awaiting payment confirmation',
+    es: 'Esperando confirmación de pago',
+    fr: 'En attente de confirmation de paiement',
+    zh: '等待付款确认',
   },
 };
 

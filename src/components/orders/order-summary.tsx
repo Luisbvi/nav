@@ -21,6 +21,8 @@ export default function OrderSummary({ order }: OrderSummaryProps) {
     });
   };
 
+  console.log(order.payment_method);
+
   return (
     <div className="border-b border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/50">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
@@ -28,8 +30,8 @@ export default function OrderSummary({ order }: OrderSummaryProps) {
           <div className="text-sm text-gray-500 dark:text-gray-400">
             {t('order_number') || 'Order number'}
           </div>
-          <div className="w-24 truncate font-medium text-gray-900 dark:text-gray-100">
-            {order.id}
+          <div className="w-24 items-center truncate font-medium text-gray-900 dark:text-gray-100">
+            #{order.id}
           </div>
         </div>
 
@@ -38,7 +40,7 @@ export default function OrderSummary({ order }: OrderSummaryProps) {
             {t('date_placed') || 'Date placed'}
           </div>
           <div className="font-medium text-gray-900 dark:text-gray-100">
-            {formatDate(order.order_date)}
+            {formatDate(order.created_at!)}
           </div>
         </div>
 
@@ -47,7 +49,7 @@ export default function OrderSummary({ order }: OrderSummaryProps) {
             {t('total_amount') || 'Total amount'}
           </div>
           <div className="font-medium text-gray-900 dark:text-gray-100">
-            {t('price_format', { price: order.total.toFixed(2) }) || `$${order.total.toFixed(2)}`}
+            {`${order.payment_method === 'card' ? '$' : 'Bs.'}  ${order.total.toFixed(2)}`}
           </div>
         </div>
 

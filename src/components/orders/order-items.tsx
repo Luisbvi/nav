@@ -41,8 +41,6 @@ export default function OrderItems({ order }: OrderItemsProps) {
     fetchProducts();
   }, [order.items]);
 
-  console.log({ products });
-
   const handleBuyAgain = (item: Product) => {
     setBuyingAgain((prev) => ({ ...prev, [item.id]: true }));
     addItem({
@@ -61,75 +59,74 @@ export default function OrderItems({ order }: OrderItemsProps) {
 
   return (
     <div className="divide-y divide-gray-200 dark:divide-gray-700">
-      {products.map((product) => (
-        <div key={product.id} className="p-4 sm:p-6">
-          <div className="flex flex-col gap-4 sm:flex-row">
-            <div className="relative h-32 w-32 flex-shrink-0 overflow-hidden rounded-md bg-gray-100 dark:bg-gray-700">
-              <Image
-                src={product.image_url || '/images/img-placeholder.webp'}
-                alt={product.name}
-                fill
-                className="object-contain p-2"
-                sizes="128px"
-              />
-            </div>
-
-            <div className="flex flex-1 flex-col justify-between">
-              <div className="space-y-2">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                  {product.name}
-                </h3>
-                <p className="line-clamp-3 text-sm text-gray-500 dark:text-gray-400">
-                  {product.description ||
-                    t('no_description') ||
-                    'No description available for this product.'}
-                </p>
+      {products.map((product) => {
+        const price = `${order.payment_method === 'card' ? '$' : 'Bs.'}  ${order.total.toFixed(2)}`;
+        return (
+          <div key={product.id} className="p-4 sm:p-6">
+            <div className="flex flex-col gap-4 sm:flex-row">
+              <div className="relative h-32 w-32 flex-shrink-0 overflow-hidden rounded-md bg-gray-100 dark:bg-gray-700">
+                <Image
+                  src={product.image_url || '/images/img-placeholder.webp'}
+                  alt={product.name}
+                  fill
+                  className="object-contain p-2"
+                  sizes="128px"
+                />
               </div>
 
-              <div className="mt-4 flex items-center justify-between">
-                <span className="font-medium text-gray-900 dark:text-gray-100">
-                  {t('price_format', { price: product.price.toFixed(2) }) ||
-                    `$${product.price.toFixed(2)}`}
+              <div className="flex flex-1 flex-col justify-between">
+                <div className="space-y-2">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                    {product.name}
+                  </h3>
+                  <p className="line-clamp-3 text-sm text-gray-500 dark:text-gray-400">
+                    {product.description ||
+                      t('no_description') ||
+                      'No description available for this product.'}
+                  </p>
+                </div>
+
+                <div className="mt-4 flex items-center justify-between">
+                  <span className="font-medium text-gray-900 dark:text-gray-100">{price}</span>
+                </div>
+              </div>
+
+              <div className="flex flex-col items-end justify-between">
+                <span className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                  {price}
                 </span>
-              </div>
-            </div>
 
-            <div className="flex flex-col items-end justify-between">
-              <span className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                {t('price_format', { price: product.price.toFixed(2) }) ||
-                  `$${product.price.toFixed(2)}`}
-              </span>
+                <div className="mt-4 flex flex-col gap-2">
+                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                    <Link href={`/product/${product.id}`}>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full cursor-pointer dark:bg-gray-700 dark:hover:bg-gray-600"
+                      >
+                        {t('view_product') || 'View product'}
+                      </Button>
+                    </Link>
+                  </motion.div>
 
-              <div className="mt-4 flex flex-col gap-2">
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Link href={`/product/${product.id}`}>
+                  <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                     <Button
-                      variant="outline"
                       size="sm"
-                      className="w-full cursor-pointer dark:bg-gray-700 dark:hover:bg-gray-600"
+                      className="w-full cursor-pointer bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:text-gray-100 dark:hover:bg-blue-600"
+                      onClick={() => handleBuyAgain(product)}
+                      disabled={buyingAgain[product.id]}
                     >
-                      {t('view_product') || 'View product'}
+                      {buyingAgain[product.id]
+                        ? t('added_to_cart') || 'Added to cart'
+                        : t('buy_again') || 'Buy again'}
                     </Button>
-                  </Link>
-                </motion.div>
-
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Button
-                    size="sm"
-                    className="w-full cursor-pointer bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:text-gray-100 dark:hover:bg-blue-600"
-                    onClick={() => handleBuyAgain(product)}
-                    disabled={buyingAgain[product.id]}
-                  >
-                    {buyingAgain[product.id]
-                      ? t('added_to_cart') || 'Added to cart'
-                      : t('buy_again') || 'Buy again'}
-                  </Button>
-                </motion.div>
+                  </motion.div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

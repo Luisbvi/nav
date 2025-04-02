@@ -6,20 +6,16 @@ import { createClient } from '@/utils/supabase/server';
 export default async function Home() {
   const supabase = await createClient();
 
-  // Fetch featured products
   const { data: featuredProducts } = await supabase
     .from('products')
     .select('*')
-    .order('created_at', { ascending: false })
-    .limit(3);
+    .order('created_at', { ascending: false });
 
-  // Fetch categories
   const { data: categoriesData } = await supabase
     .from('products')
     .select('category')
     .order('category');
 
-  // Count products per category
   const categoryCounts: Record<string, number> = {};
   categoriesData?.forEach((item) => {
     const category = item.category;
@@ -30,10 +26,9 @@ export default async function Home() {
     }
   });
 
-  // Format categories for display
   const categories = Object.entries(categoryCounts || {})
     .map(([name, count]) => ({ name, count }))
-    .slice(0, 4); // Limit to 4 categories
+    .slice(0, 4);
 
   return (
     <>

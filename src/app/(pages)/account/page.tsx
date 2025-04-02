@@ -317,7 +317,7 @@ export default function ProfilePage() {
                   <div className="flex items-start justify-between">
                     <div>
                       <p className="w-[100px] truncate font-medium">Order #{order.id}</p>
-                      <p className="text-sm text-gray-500">{formatOrderDate(order.order_date)}</p>
+                      <p className="text-sm text-gray-500">{formatOrderDate(order.created_at)}</p>
                     </div>
                     <span
                       className={`rounded-full px-2 py-1 text-xs ${statusStyles[order.status].class}`}
