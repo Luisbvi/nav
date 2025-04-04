@@ -2,9 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import LanguageSelector from '@/components/layout/language-selector';
 import UserComponent from '@/components/user-component';
-import { CartButton } from '@/components/cart-button';
 import HamburguerButton from '@/components/home/hamburguer-button';
 import { useLanguage } from '@/contexts/language-context';
 import { User } from '@/types';

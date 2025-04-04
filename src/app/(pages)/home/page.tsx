@@ -32,9 +32,9 @@ export default async function Home() {
 
   return (
     <>
+      <CategoryGrid categories={categories} />
       <HeroSection />
       <FeaturedProducts products={featuredProducts || []} />
-      <CategoryGrid categories={categories} />
     </>
   );
 }
