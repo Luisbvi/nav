@@ -76,56 +76,60 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <motion.div
+    <motion.main
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.5 }}
-      className="flex"
+      className="flex min-h-screen w-full"
     >
       {/* Language and Theme Controls */}
-      <motion.div
+      <motion.header
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
-        className="absolute top-4 right-4 flex items-center gap-4"
+        className="absolute top-4 right-4 z-10 flex items-center gap-4"
       >
         <LanguageSelector darkText />
         <ToggleSwitch />
-      </motion.div>
+      </motion.header>
 
-      <motion.div
+      <motion.section
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="flex flex-1 flex-col items-center justify-center px-4 py-12 sm:px-6 lg:px-8"
+        className="flex flex-1 flex-col items-center justify-center px-4 py-8 md:py-12"
       >
-        <motion.div variants={itemVariants} className="sm:mx-auto sm:w-full sm:max-w-md">
-          <Link href={'/'}>
-            <motion.div className="relative h-48 w-auto overflow-hidden">
+        <motion.div variants={itemVariants} className="w-full max-w-md">
+          <Link href="/" aria-label="Go to homepage">
+            <motion.div className="relative h-32 w-auto overflow-hidden md:h-48">
               <Image
                 src="/images/logo-lg.png"
-                alt="logo"
+                alt="Company logo"
                 fill
+                sizes="(max-width: 768px) 100vw, 384px"
+                priority
                 className="object-contain dark:hidden"
               />
               <Image
                 src="/images/logo-w-lg.png"
-                alt="logo"
+                alt="Company logo"
                 fill
+                sizes="(max-width: 768px) 100vw, 384px"
+                priority
                 className="hidden object-contain dark:block"
               />
             </motion.div>
           </Link>
 
-          <motion.h2
+          <motion.h1
             variants={itemVariants}
-            className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-gray-100"
+            className="mt-6 text-center text-2xl font-extrabold text-gray-900 md:text-3xl dark:text-gray-100"
           >
             {isSubmitted
               ? t('forgot_password_check_email') || 'Check your email'
               : t('forgot_password_title') || 'Recover your password'}
-          </motion.h2>
+          </motion.h1>
 
           <motion.p
             variants={itemVariants}
@@ -139,10 +143,10 @@ export default function ForgotPasswordPage() {
           </motion.p>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <motion.div variants={itemVariants} className="mt-8 w-full max-w-md">
           <motion.div
             layout
-            className="bg-white px-4 py-8 shadow sm:rounded-lg sm:px-10 dark:bg-gray-800"
+            className="rounded-lg bg-white px-4 py-6 shadow md:px-10 md:py-8 dark:bg-gray-800"
           >
             <AnimatePresence mode="wait">
               {isSubmitted ? (
@@ -158,6 +162,7 @@ export default function ForgotPasswordPage() {
                     animate={{ scale: 1 }}
                     transition={{ delay: 0.2 }}
                     className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900"
+                    aria-hidden="true"
                   >
                     <Mail className="h-6 w-6 text-green-600 dark:text-green-400" />
                   </motion.div>
@@ -188,8 +193,8 @@ export default function ForgotPasswordPage() {
                       href="/login"
                       className="flex items-center justify-center gap-2 text-sm font-medium text-[#0099ff] hover:text-[#0088ee] dark:text-blue-400 dark:hover:text-blue-300"
                     >
-                      <ArrowLeft className="h-4 w-4" />
-                      {t('back_to_login') || 'Back to login'}
+                      <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+                      <span>{t('back_to_login') || 'Back to login'}</span>
                     </Link>
                   </motion.div>
                 </motion.div>
@@ -201,6 +206,7 @@ export default function ForgotPasswordPage() {
                   exit={{ opacity: 0 }}
                   className="space-y-6"
                   onSubmit={handleSubmit}
+                  noValidate
                 >
                   <AnimatePresence>
                     {error && (
@@ -209,9 +215,10 @@ export default function ForgotPasswordPage() {
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
                         className="overflow-hidden border-l-4 border-red-500 bg-red-50 p-4 dark:border-red-400 dark:bg-red-900/20"
+                        role="alert"
                       >
                         <div className="flex">
-                          <div className="flex-shrink-0">
+                          <div className="flex-shrink-0" aria-hidden="true">
                             <svg
                               className="h-5 w-5 text-red-500 dark:text-red-400"
                               xmlns="http://www.w3.org/2000/svg"
@@ -241,7 +248,10 @@ export default function ForgotPasswordPage() {
                       {t('email_address') || 'Email address'}
                     </label>
                     <div className="relative mt-1">
-                      <Mail className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400 dark:text-gray-500" />
+                      <Mail
+                        className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400 dark:text-gray-500"
+                        aria-hidden="true"
+                      />
                       <motion.input
                         whileFocus={{ scale: 1.02 }}
                         id="email"
@@ -253,6 +263,7 @@ export default function ForgotPasswordPage() {
                         onChange={(e) => setEmail(e.target.value)}
                         className="block w-full rounded-md border border-gray-300 py-2 pr-4 pl-10 shadow-sm focus:border-[#0099ff] focus:ring-[#0099ff] dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 dark:focus:border-blue-500 dark:focus:ring-blue-500"
                         placeholder={t('email_placeholder') || 'captain@example.com'}
+                        aria-describedby={error ? 'email-error' : undefined}
                       />
                     </div>
                   </motion.div>
@@ -275,6 +286,7 @@ export default function ForgotPasswordPage() {
                               ease: 'linear',
                             }}
                             className="h-4 w-4"
+                            aria-hidden="true"
                           >
                             <svg
                               className="h-4 w-4 text-white"
@@ -297,7 +309,9 @@ export default function ForgotPasswordPage() {
                               ></path>
                             </svg>
                           </motion.div>
-                          <span className="ml-2">{t('sending') || 'Sending...'}</span>
+                          <span className="ml-2" aria-live="polite">
+                            {t('sending') || 'Sending...'}
+                          </span>
                         </div>
                       ) : (
                         t('send_recovery_link') || 'Send Recovery Link'
@@ -318,7 +332,7 @@ export default function ForgotPasswordPage() {
             </AnimatePresence>
           </motion.div>
         </motion.div>
-      </motion.div>
-    </motion.div>
+      </motion.section>
+    </motion.main>
   );
 }

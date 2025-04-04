@@ -11,7 +11,7 @@ import { User } from '@/types';
 
 const Header = ({ user }: { user: User | null }) => {
   const { t } = useLanguage();
-  // Variants for the main container
+
   const containerVariants = {
     hidden: {
       opacity: 0,
@@ -29,7 +29,6 @@ const Header = ({ user }: { user: User | null }) => {
     },
   };
 
-  // Variants for individual components
   const componentVariants = {
     hidden: {
       opacity: 0,
@@ -54,18 +53,8 @@ const Header = ({ user }: { user: User | null }) => {
     >
       <motion.nav
         variants={containerVariants}
-        className="flex h-14 w-full flex-1 items-center justify-end gap-8 rounded-bl-lg bg-blue-600 pl-10 dark:bg-blue-500"
+        className="flex h-14 w-full flex-1 items-center justify-end gap-8 rounded-bl-lg bg-blue-600 dark:bg-blue-500"
       >
-        {/*Cart*/}
-        <motion.div variants={componentVariants}>
-          <CartButton />
-        </motion.div>
-
-        {/*Selector*/}
-        <motion.div variants={componentVariants}>
-          <LanguageSelector />
-        </motion.div>
-
         {/*User*/}
         {user ? (
           <motion.div variants={componentVariants}>

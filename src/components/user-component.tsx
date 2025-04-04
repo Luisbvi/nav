@@ -18,7 +18,6 @@ const UserComponent = ({ user, role }: { user: User; role: string }) => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -39,7 +38,6 @@ const UserComponent = ({ user, role }: { user: User; role: string }) => {
     setIsLoggingOut(true);
   };
 
-  // Animation variants for menu items
   const itemVariants = {
     open: {
       y: 0,
