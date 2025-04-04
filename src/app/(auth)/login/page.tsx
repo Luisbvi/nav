@@ -112,19 +112,24 @@ export default function LoginPage() {
         </motion.div>
 
         <header className="mx-auto w-full max-w-md">
-          <Link href="/" aria-label="Home">
-            <motion.div variants={itemVariants} className="relative mx-auto h-48 w-auto">
+          <Link href={'/'} aria-label="Home">
+            <motion.div
+              variants={itemVariants}
+              className="relative h-32 w-auto overflow-hidden md:h-48"
+            >
               <Image
                 src="/images/logo-lg.png"
-                alt="Logo"
+                alt="Company logo"
                 fill
+                sizes="(max-width: 768px) 100vw, 384px"
                 className="object-contain dark:hidden"
                 priority
               />
               <Image
                 src="/images/logo-w-lg.png"
-                alt="Logo"
+                alt="Company logo"
                 fill
+                sizes="(max-width: 768px) 100vw, 384px"
                 className="hidden object-contain dark:block"
                 priority
               />

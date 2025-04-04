@@ -126,7 +126,7 @@ export default function RegisterPage() {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="flex flex-1 flex-col justify-center px-4 py-8 md:px-6 md:py-12"
+        className="flex flex-1 flex-col justify-center px-4 py-16 md:px-6 md:py-12"
         aria-labelledby="register-heading"
       >
         <header className="mx-auto w-full max-w-md">
