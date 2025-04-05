@@ -56,7 +56,7 @@ export default function CategoryGrid({ categories }: CategoryGridProps) {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="mb-8 text-center text-2xl font-bold md:text-3xl"
+          className="mb-8 text-center text-3xl font-bold md:text-5xl"
         >
           {t('browse_categories') || 'Browse Categories'}
         </motion.h2>

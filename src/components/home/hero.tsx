@@ -13,7 +13,7 @@ export default function HeroSection() {
   const router = useRouter();
 
   return (
-    <section className="relative">
+    <section className="relative mt-4">
       <div className="mx-auto max-w-4xl text-center">
         <motion.h1
           initial={{ opacity: 0, y: -20 }}

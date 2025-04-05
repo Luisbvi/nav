@@ -6,6 +6,8 @@ import UserComponent from '@/components/user-component';
 import HamburguerButton from '@/components/home/hamburguer-button';
 import { useLanguage } from '@/contexts/language-context';
 import { User } from '@/types';
+import LanguageSelector from './language-selector';
+import { CartButton } from '../cart-button';
 
 const Header = ({ user }: { user: User | null }) => {
   const { t } = useLanguage();
@@ -51,15 +53,19 @@ const Header = ({ user }: { user: User | null }) => {
     >
       <motion.nav
         variants={containerVariants}
-        className="flex h-14 w-full flex-1 items-center justify-end gap-8 rounded-bl-lg bg-blue-600 dark:bg-blue-500"
+        className="flex h-14 w-full flex-1 items-center justify-end gap-4 rounded-bl-lg bg-blue-600 dark:bg-blue-500"
       >
+        <motion.div className="hidden items-center md:flex" variants={componentVariants}>
+          <CartButton />
+          <LanguageSelector />
+        </motion.div>
         {/*User*/}
         {user ? (
           <motion.div variants={componentVariants}>
             <UserComponent user={user} role={user.role} />
           </motion.div>
         ) : (
-          <motion.div variants={componentVariants} className="hidden items-center gap-4 md:flex">
+          <motion.div variants={componentVariants} className="hidden items-center md:flex">
             <Link href="/login">
               <button className="cursor-pointer rounded-sm px-4 py-2 text-white transition-all">
                 {t('log_in') || 'Log In'}

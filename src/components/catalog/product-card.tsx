@@ -169,8 +169,8 @@ const ProductCard = ({ product }: ProductCardProps) => {
         </div>
 
         {/* Quantity and Add to Cart */}
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2">
-          <div className="flex items-center rounded-md border dark:border-gray-300">
+        <div className="flex flex-col gap-2">
+          <div className="flex justify-between rounded-md border dark:border-gray-300">
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}

@@ -7,7 +7,7 @@ import { useCart } from '@/contexts/cart-context';
 export function CartButton() {
   const { itemCount } = useCart();
   return (
-    <Link href="/cart" className="relative">
+    <Link href="/cart" className="relative mx-6">
       <div className="flex h-10 items-center gap-2 rounded-md bg-white px-4 text-blue-500 transition-colors hover:bg-gray-100">
         <ShoppingCart className="h-5 w-5" />
         {itemCount > 0 && (
