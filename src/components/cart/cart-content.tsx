@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import type { User } from '@supabase/supabase-js';
-
 import CartItemList from './cart-item-list';
 import CartSummary from './cart-summary';
 import { useCart } from '@/contexts/cart-context';
@@ -56,39 +55,32 @@ export default function CartContent({ user }: CartContentProps) {
   const selectedShipping = shippingOptions[shippingMethod];
   const finalTotal = total + selectedShipping.price;
 
-  const taxRate = 0.16;
-  const taxAmount = total * taxRate;
-  const grandTotal = finalTotal + taxAmount;
-
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="container mx-auto px-4 py-8 md:px-6"
+      className="px-4 py-8 md:py-6"
     >
       <motion.h1
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.1 }}
-        className="mb-8 text-3xl font-bold text-gray-900 dark:text-gray-100"
+        className="mb-8 text-3xl font-bold text-gray-900 md:mb-6 md:text-2xl dark:text-gray-100"
       >
         {t('shopping_cart') || 'Shopping Cart'}
       </motion.h1>
-
-      <div className="grid gap-8 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+      <div className="flex flex-col gap-8 lg:flex-row lg:gap-4">
+        <div className="w-full">
           <CartItemList items={items} />
         </div>
-
-        <div className="lg:col-span-1">
+        <div className="w-full">
           <CartSummary
             subtotal={total}
             shippingMethod={shippingMethod}
             setShippingMethod={setShippingMethod}
             shippingOptions={shippingOptions}
-            taxAmount={taxAmount}
-            total={grandTotal}
+            total={finalTotal}
             user={user}
             items={items}
           />

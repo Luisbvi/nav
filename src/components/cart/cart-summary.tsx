@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import type { User } from '@supabase/supabase-js';
-import { HelpCircle } from 'lucide-react';
+import { HelpCircle, Truck, MapPin, Package } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -14,6 +14,7 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/contexts/language-context';
 import { useRouter } from 'next/navigation';
 import type { CartItem } from '@/types';
@@ -27,7 +28,6 @@ interface CartSummaryProps {
   shippingMethod: ShippingMethodType;
   setShippingMethod: (value: ShippingMethodType) => void;
   shippingOptions: Record<ShippingMethodType, ShippingOption>;
-  taxAmount: number;
   total: number;
   user: User | null;
   items: CartItem[];
@@ -38,7 +38,6 @@ export default function CartSummary({
   shippingMethod,
   setShippingMethod,
   shippingOptions,
-  taxAmount,
   total,
   user,
   items,
@@ -55,10 +54,26 @@ export default function CartSummary({
       .then((res) => res.json())
       .then(({ monitors }: USDRes) => {
         setRate(monitors.usd.price);
+      })
+      .catch((error) => {
+        console.error('Error fetching exchange rate:', error);
       });
   }, []);
 
   const selectedShipping = shippingOptions[shippingMethod];
+
+  const getShippingIcon = (method: string) => {
+    switch (method) {
+      case 'standard':
+        return <Truck className="mr-1.5 h-4 w-4" />;
+      case 'express':
+        return <Package className="mr-1.5 h-4 w-4" />;
+      case 'pickup':
+        return <MapPin className="mr-1.5 h-4 w-4" />;
+      default:
+        return <Truck className="mr-1.5 h-4 w-4" />;
+    }
+  };
 
   const handleCheckout = async () => {
     try {
@@ -119,7 +134,6 @@ export default function CartSummary({
 
       const data = await response.json();
 
-      // Redirect to Stripe Checkout
       if (data.url) {
         window.location.href = data.url;
       } else {
@@ -174,11 +188,11 @@ export default function CartSummary({
       initial={{ y: 20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.4, delay: 0.2 }}
-      className="rounded-lg bg-white p-6 shadow dark:bg-gray-800"
+      className="rounded-lg bg-white p-6 shadow-md md:p-5 dark:bg-gray-800"
     >
       <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">{t('order_summary')}</h2>
 
-      <div className="mt-6 space-y-4">
+      <div className="mt-6 space-y-4 md:mt-5 md:space-y-3">
         <div className="flex justify-between">
           <span className="text-gray-600 dark:text-gray-400">{t('subtotal')}</span>
           <span className="font-medium text-gray-900 dark:text-gray-100">
@@ -186,66 +200,96 @@ export default function CartSummary({
           </span>
         </div>
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1">
-            <span className="text-gray-600 dark:text-gray-400">{t('shipping')}</span>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <HelpCircle className="h-4 w-4 text-gray-400" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p className="w-56 text-xs">{t('shipping_costs_calculated')}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-          <div className="flex items-center gap-2">
-            <Select
-              value={shippingMethod}
-              onValueChange={(value) => setShippingMethod(value as ShippingMethodType)}
-            >
-              <SelectTrigger className="h-8 w-auto min-w-32 cursor-pointer border-gray-200 dark:border-gray-700 dark:hover:bg-gray-700">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="dark:bg-gray-700">
-                <SelectItem
-                  className="cursor-pointer dark:hover:bg-gray-500 dark:focus:bg-gray-600"
-                  value="free"
-                >
-                  {shippingOptions.free.displayName}
-                </SelectItem>
-                <SelectItem value="express" className="cursor-pointer dark:hover:bg-gray-600">
-                  {shippingOptions.express.displayName}
-                </SelectItem>
-                <SelectItem value="overnight" className="cursor-pointer dark:hover:bg-gray-600">
-                  {shippingOptions.overnight.displayName}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-            <span className="font-medium text-gray-900 dark:text-gray-100">
-              {selectedShipping.price === 0 ? 'Free' : `$${selectedShipping.price.toFixed(2)}`}
-            </span>
-          </div>
-        </div>
+        {/* Shipping section with enhanced design */}
+        <div className="w-full rounded-lg bg-gray-50 px-4 py-4 dark:bg-gray-800/50">
+          <div className="flex flex-col space-y-3">
+            {/* Header with label and tooltip */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="font-medium text-gray-700 dark:text-gray-300">
+                  {t('shipping')}
+                </span>
+                <TooltipProvider delayDuration={200}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+                        <HelpCircle className="h-4 w-4" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent
+                      side="top"
+                      className="max-w-xs border bg-white px-3 py-2 text-sm shadow-lg dark:border-gray-700 dark:bg-gray-800"
+                    >
+                      {t('shipping_costs_calculated')}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1">
-            <span className="text-gray-600 dark:text-gray-400">{t('tax')}</span>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <HelpCircle className="h-4 w-4 text-gray-400" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p className="w-56 text-xs">{t('tax_calculated')}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+              {/* Mobile price display */}
+              <span className="text-sm font-semibold text-gray-900 md:hidden dark:text-gray-100">
+                {selectedShipping.price === 0 ? (
+                  <Badge
+                    variant="outline"
+                    className="border-green-200 bg-green-50 text-green-600 dark:border-green-800 dark:bg-green-900/20 dark:text-green-400"
+                  >
+                    Free
+                  </Badge>
+                ) : (
+                  `$${selectedShipping.price.toFixed(2)}`
+                )}
+              </span>
+            </div>
+
+            {/* Shipping selector with fixed responsive layout */}
+            <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="w-full sm:max-w-[calc(100%-100px)]">
+                <Select
+                  value={shippingMethod}
+                  onValueChange={(value) => setShippingMethod(value as ShippingMethodType)}
+                >
+                  <SelectTrigger className="h-10 w-full border-gray-300 text-sm shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700">
+                    <SelectValue className="flex items-center truncate" />
+                  </SelectTrigger>
+                  <SelectContent
+                    className="max-w-sm border-gray-300 dark:border-gray-600 dark:bg-gray-800"
+                    align="start"
+                  >
+                    {Object.entries(shippingOptions).map(([key, option]) => (
+                      <SelectItem
+                        key={key}
+                        value={key}
+                        className="cursor-pointer text-sm hover:bg-gray-100 data-[state=checked]:bg-gray-100 dark:hover:bg-gray-700 dark:data-[state=checked]:bg-gray-700"
+                      >
+                        <div className="flex items-center truncate">
+                          {getShippingIcon(key)}
+                          <span className="max-w-[150px] truncate sm:max-w-[200px] md:max-w-[250px]">
+                            {option.displayName}
+                          </span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Desktop price display - con ancho fijo y alineación correcta */}
+              <div className="hidden sm:block sm:w-20 sm:flex-shrink-0 sm:text-right">
+                <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                  {selectedShipping.price === 0 ? (
+                    <Badge
+                      variant="outline"
+                      className="border-green-200 bg-green-50 text-green-600 dark:border-green-800 dark:bg-green-900/20 dark:text-green-400"
+                    >
+                      Free
+                    </Badge>
+                  ) : (
+                    `$${selectedShipping.price.toFixed(2)}`
+                  )}
+                </span>
+              </div>
+            </div>
           </div>
-          <span className="font-medium text-gray-900 dark:text-gray-100">
-            ${taxAmount.toFixed(2)}
-          </span>
         </div>
 
         <Separator className="my-2 dark:bg-gray-700" />
@@ -269,14 +313,14 @@ export default function CartSummary({
         />
       </div>
 
-      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="mt-6">
+      <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} className="mt-6">
         <Button
           onClick={handleCheckout}
           disabled={isSubmitting || items.length === 0}
-          className="w-full cursor-pointer bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+          className="w-full cursor-pointer bg-blue-600 py-2.5 text-white transition-colors hover:bg-blue-700 md:text-sm dark:bg-blue-500 dark:hover:bg-blue-600"
         >
           {isSubmitting ? (
-            <div className="flex items-center">
+            <div className="flex items-center justify-center">
               <svg
                 className="mr-2 h-4 w-4 animate-spin text-white"
                 xmlns="http://www.w3.org/2000/svg"
@@ -305,7 +349,6 @@ export default function CartSummary({
         </Button>
       </motion.div>
 
-      {/* Pagomovil Modal */}
       {showPagomovilModal && (
         <PagomovilModal
           isOpen={showPagomovilModal}

@@ -3,7 +3,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { useLanguage } from '@/contexts/language-context';
-
 import CartItem from './cart-item';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -41,23 +40,26 @@ export default function CartItemList({ items }: CartItemListProps) {
           ))}
         </AnimatePresence>
       </div>
-
-      <div className="flex justify-between border-t border-gray-100 p-4 dark:border-gray-700">
-        <Link href="/catalog">
+      <div className="grid grid-cols-1 border-t border-gray-100 p-4 sm:grid-cols-2 dark:border-gray-700">
+        <div className="sm:pr-2">
+          <Link href="/catalog" className="block w-full">
+            <Button
+              variant="outline"
+              className="w-full cursor-pointer dark:border-gray-600 dark:text-gray-300"
+            >
+              {t('continue_shopping') || 'Continue Shopping'}
+            </Button>
+          </Link>
+        </div>
+        <div className="sm:pl-2">
           <Button
-            variant="outline"
-            className="cursor-pointer dark:border-gray-600 dark:text-gray-300"
+            variant="ghost"
+            className="w-full cursor-pointer text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400"
+            onClick={clearCart}
           >
-            {t('continue_shopping') || 'Continue Shopping'}
+            {t('clear_cart') || 'Clear Cart'}
           </Button>
-        </Link>
-        <Button
-          variant="ghost"
-          className="cursor-pointer text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400"
-          onClick={clearCart}
-        >
-          {t('clear_cart') || 'Clear Cart'}
-        </Button>
+        </div>
       </div>
     </motion.div>
   );
