@@ -28,13 +28,34 @@ export default function ProfilePage() {
   });
 
   const statusStyles: Record<OrderStatus, { class: string; label: string }> = {
-    pending: { class: 'bg-blue-100 text-blue-800', label: 'Pending' },
-    paid: { class: 'bg-blue-green-100 text-green-800', label: 'Paid' },
-    processing: { class: 'bg-yellow-100 text-yellow-800', label: 'Processing' },
-    completed: { class: 'bg-green-100 text-green-800', label: 'Completed' },
-    cancelled: { class: 'bg-red-100 text-red-800', label: 'Cancelled' },
-    shipped: { class: 'bg-purple-100 text-purple-800', label: 'Shipped' },
-    delivered: { class: 'bg-indigo-100 text-indigo-800', label: 'Delivered' },
+    pending: {
+      class: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
+      label: 'Pending',
+    },
+    paid: {
+      class: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+      label: 'Paid',
+    },
+    processing: {
+      class: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+      label: 'Processing',
+    },
+    completed: {
+      class: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+      label: 'Completed',
+    },
+    cancelled: {
+      class: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+      label: 'Cancelled',
+    },
+    shipped: {
+      class: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
+      label: 'Shipped',
+    },
+    delivered: {
+      class: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200',
+      label: 'Delivered',
+    },
   };
 
   useEffect(() => {
@@ -182,37 +203,39 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-white dark:bg-gray-900">
         <div className="text-center">
-          <div className="spinner"></div>
-          <p className="mt-4">Loading profile...</p>
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
+          <p className="mt-4 text-gray-700 dark:text-gray-300">Loading profile...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="mb-6 text-3xl font-bold">My Profile</h1>
+    <div className="container mx-auto min-h-screen bg-gray-50 px-4 py-8 dark:bg-gray-900">
+      <h1 className="mb-6 text-3xl font-bold text-gray-900 dark:text-white">My Profile</h1>
 
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         {/* Profile Information */}
-        <div className="col-span-2 rounded-lg bg-white p-6 shadow-md">
-          <h2 className="mb-4 text-xl font-semibold">Personal Information</h2>
+        <div className="rounded-lg bg-white p-6 shadow-md lg:col-span-2 dark:bg-gray-800">
+          <h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">
+            Personal Information
+          </h2>
 
-          <div className="mb-6 flex flex-col items-center md:items-start">
-            <div className="relative mb-4">
+          <div className="mb-6 flex flex-col items-center gap-6 sm:flex-row sm:items-start">
+            <div className="relative">
               {profile.avatar_url ? (
                 <Image
                   src={profile.avatar_url}
                   alt="Avatar"
                   width={100}
                   height={100}
-                  className="rounded-full object-cover"
+                  className="h-24 w-24 rounded-full object-cover"
                 />
               ) : (
-                <div className="flex h-24 w-24 items-center justify-center rounded-full bg-gray-200">
-                  <span className="text-2xl text-gray-500">
+                <div className="flex h-24 w-24 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-600">
+                  <span className="text-2xl text-gray-500 dark:text-gray-300">
                     {profile.username.charAt(0).toUpperCase()}
                   </span>
                 </div>
@@ -220,7 +243,7 @@ export default function ProfilePage() {
 
               <label
                 htmlFor="avatar"
-                className="absolute right-0 bottom-0 cursor-pointer rounded-full bg-blue-500 p-1 text-white"
+                className="absolute right-0 bottom-0 cursor-pointer rounded-full bg-blue-500 p-2 text-white transition-colors hover:bg-blue-600"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -245,13 +268,18 @@ export default function ProfilePage() {
                   disabled={uploading}
                 />
               </label>
-              {uploading && <p className="mt-2 text-sm text-gray-500">Uploading image...</p>}
             </div>
+            {uploading && (
+              <p className="text-sm text-gray-500 dark:text-gray-400">Uploading image...</p>
+            )}
           </div>
 
           <div className="space-y-4">
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="username"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 Username
               </label>
               <input
@@ -259,12 +287,15 @@ export default function ProfilePage() {
                 type="text"
                 value={profile.username}
                 onChange={(e) => setProfile({ ...profile, username: e.target.value })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
               />
             </div>
 
             <div>
-              <label htmlFor="full_name" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="full_name"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 Full Name
               </label>
               <input
@@ -272,12 +303,15 @@ export default function ProfilePage() {
                 type="text"
                 value={profile.full_name}
                 onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
               />
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 Email
               </label>
               <input
@@ -285,16 +319,18 @@ export default function ProfilePage() {
                 type="email"
                 value={profile.email}
                 disabled
-                className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm"
+                className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm dark:border-gray-600 dark:bg-gray-600 dark:text-gray-300"
               />
-              <p className="mt-1 text-xs text-gray-500">Email cannot be changed</p>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Email cannot be changed
+              </p>
             </div>
 
             <div className="pt-4">
               <button
                 onClick={handleUpdateProfile}
                 disabled={loading}
-                className="w-full rounded-md bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none md:w-auto"
+                className="w-full rounded-md bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50 md:w-auto dark:bg-blue-700 dark:hover:bg-blue-800 dark:focus:ring-blue-600 dark:focus:ring-offset-gray-800"
               >
                 {loading ? 'Saving...' : 'Save changes'}
               </button>
@@ -303,21 +339,28 @@ export default function ProfilePage() {
         </div>
 
         {/* Orders */}
-        <div className="col-span-1 rounded-lg bg-white p-6 shadow-md">
-          <h2 className="mb-4 text-xl font-semibold">My Orders</h2>
+        <div className="rounded-lg bg-white p-6 shadow-md dark:bg-gray-800">
+          <h2 className="mb-4 text-xl font-semibold text-gray-900 dark:text-white">My Orders</h2>
 
           {orders.length === 0 ? (
             <div className="py-8 text-center">
-              <p className="text-gray-500">You have no orders yet</p>
+              <p className="text-gray-500 dark:text-gray-400">You have no orders yet</p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="max-h-[600px] space-y-4 overflow-y-auto pr-2">
               {orders.map((order) => (
-                <div key={order.id} className="rounded-md border p-4 transition hover:bg-gray-50">
+                <div
+                  key={order.id}
+                  className="rounded-md border p-4 transition hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700/50"
+                >
                   <div className="flex items-start justify-between">
                     <div>
-                      <p className="w-[100px] truncate font-medium">Order #{order.id}</p>
-                      <p className="text-sm text-gray-500">{formatOrderDate(order.created_at)}</p>
+                      <p className="w-[100px] truncate font-medium text-gray-900 dark:text-white">
+                        Order #{order.id}
+                      </p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {formatOrderDate(order.created_at)}
+                      </p>
                     </div>
                     <span
                       className={`rounded-full px-2 py-1 text-xs ${statusStyles[order.status].class}`}
@@ -327,7 +370,7 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="mt-2">
-                    <p className="text-sm">
+                    <p className="text-sm text-gray-700 dark:text-gray-300">
                       <span className="font-medium">Total:</span> ${order.total.toFixed(2)}
                     </p>
                   </div>
@@ -335,7 +378,7 @@ export default function ProfilePage() {
                   <div className="mt-2">
                     <button
                       onClick={() => router.push(`/orders/${order.id}`)}
-                      className="text-sm font-medium text-blue-600 hover:text-blue-800"
+                      className="text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
                     >
                       View details
                     </button>
