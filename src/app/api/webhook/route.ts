@@ -4,21 +4,17 @@ import { headers } from 'next/headers';
 import { createClient } from '@supabase/supabase-js';
 import { Order, OrderData } from '@/types';
 
-// Inicializar Stripe con más información de depuración
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
   apiVersion: '2025-02-24.acacia',
   typescript: true,
 });
 
-// Inicializar Supabase
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY as string;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-// La clave secreta del webhook de Stripe para validar eventos
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET as string;
 
-// Función para verificar las credenciales de Supabase
 async function testSupabaseConnection() {
   try {
     const { error } = await supabase.from('orders').select('id').limit(1);
@@ -36,7 +32,6 @@ async function testSupabaseConnection() {
 export async function POST(request: Request) {
   console.log('🔔 Webhook endpoint hit!');
 
-  // Test Supabase connection first
   const supabaseConnected = await testSupabaseConnection();
   console.log('Supabase connection test:', supabaseConnected ? 'SUCCESS' : 'FAILED');
 
@@ -45,7 +40,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Database connection failed' }, { status: 500 });
   }
 
-  // Log environment variables (masked)
   console.log('Environment check:');
   console.log('- STRIPE_SECRET_KEY:', process.env.STRIPE_SECRET_KEY ? '✅ Set' : '❌ Missing');
   console.log(
@@ -62,12 +56,10 @@ export async function POST(request: Request) {
   );
 
   try {
-    // Importante: Obtener el cuerpo RAW antes de cualquier procesamiento
     const rawBody = await request.text();
     console.log('📦 Request body received, length:', rawBody.length);
     console.log('📦 Request body preview:', rawBody.substring(0, 100) + '...');
 
-    // Get Stripe signature
     const headersList = await headers();
     const signature = headersList.get('stripe-signature');
     console.log('🔑 Signature received:', signature ? '✅ Yes' : '❌ No');
@@ -81,7 +73,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing stripe signature' }, { status: 400 });
     }
 
-    // Verify the event
     let event: Stripe.Event;
     try {
       console.log('🔐 Attempting to verify event with secret length:', endpointSecret.length);
@@ -103,7 +94,6 @@ export async function POST(request: Request) {
       }
     }
 
-    // Handle the event
     console.log('🔄 Processing event:', event.type);
 
     try {
@@ -112,7 +102,6 @@ export async function POST(request: Request) {
           const session = event.data.object as Stripe.Checkout.Session;
           console.log('💰 Processing checkout session:', session.id);
 
-          // Log important session details
           console.log('Session details:');
           console.log('- Amount:', session.amount_total);
           console.log('- Customer:', session.customer_details?.email);
@@ -134,11 +123,8 @@ export async function POST(request: Request) {
       }
     } catch (err) {
       console.error('❌ Error processing event:', err);
-      // Don't return an error response here - we want to acknowledge receipt to Stripe
-      // even if our processing failed
     }
 
-    // Always return 200 OK for Stripe to know we received the webhook
     console.log('✅ Returning successful response to Stripe');
     return NextResponse.json({ received: true, success: true });
   } catch (err) {
@@ -157,33 +143,36 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
   try {
     console.log('📝 Starting to process payment for session:', session.id);
 
-    // Always get line items directly from the API to ensure we have the data
     console.log('🔍 Fetching line items for session:', session.id);
-    const lineItemsResponse = await stripe.checkout.sessions.listLineItems(session.id);
+    const lineItemsResponse = await stripe.checkout.sessions.listLineItems(session.id, {
+      expand: ['data.price.product'],
+    });
     const lineItems = lineItemsResponse.data;
 
     console.log(`📋 Found ${lineItems.length} line items`);
 
-    // Get customer email
     const customerEmail = session.customer_details!.email;
     console.log('📧 Customer email:', customerEmail || 'Not provided');
 
-    // Get user ID from metadata
     const userId = session.metadata!.userId;
     console.log('👤 User ID from metadata:', userId || 'Not provided');
 
     console.log('Metadata:', session.metadata);
 
+    const cartItems = session.metadata?.cartItems ? JSON.parse(session.metadata.cartItems) : [];
+
+    console.log('Original item IDs from metadata:', cartItems);
+
     const items = lineItems.map((i) => {
-      console.log(i);
+      const product = i.price?.product as Stripe.Product;
       return {
         id: i.id,
+        original_item_id: product.metadata?.item_id,
         name: i.description!,
         quantity: i.quantity!,
       };
     });
 
-    // Prepare order data
     const orderData: OrderData = {
       customer_name: session.customer_details?.name || 'Cliente',
       total: session.amount_total ? session.amount_total / 100 : 0,
@@ -198,7 +187,6 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
 
     console.log('💾 Saving order to database:');
 
-    // Save to Supabase
     const { data, error } = await supabase.from('orders').insert(orderData).select();
 
     if (error) {
@@ -209,7 +197,6 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
 
     console.log('✅ Order saved successfully:', data ? data[0]?.id : null);
 
-    // Send confirmation email if we have customer email
     if (customerEmail && data && data.length > 0) {
       console.log('📤 Sending confirmation email to:', customerEmail);
       await sendOrderConfirmationEmail(customerEmail, session.id, data[0]);
@@ -220,7 +207,6 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
     console.log('✅ Payment processing completed for session:', session.id);
   } catch (error) {
     console.error('❌ Error processing successful payment:', error);
-    // Log the full error for debugging
     console.error('Full error:', JSON.stringify(error, null, 2));
   }
 }
@@ -229,7 +215,6 @@ async function sendOrderConfirmationEmail(email: string, orderId: string, orderD
   try {
     console.log(`📧 Preparing to send confirmation email to ${email} for order ${orderId}`);
 
-    // Invoke Supabase Edge Function
     const { data, error } = await supabase.functions.invoke('send-order-confirmation', {
       body: {
         email,
