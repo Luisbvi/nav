@@ -60,6 +60,7 @@ export interface User {
   created_at: string;
   updated_at: string;
   last_login: string | null;
+  avatar_url?: string;
 }
 
 export interface OrderItem {
