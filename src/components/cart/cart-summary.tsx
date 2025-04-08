@@ -96,7 +96,7 @@ export default function CartSummary({
             shippingMethod,
             shippingPrice: selectedShipping.price,
             user,
-            total: total,
+            total: total * rate,
           }),
         });
 
