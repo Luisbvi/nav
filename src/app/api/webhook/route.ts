@@ -166,8 +166,7 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
     const items = lineItems.map((i) => {
       const product = i.price?.product as Stripe.Product;
       return {
-        id: i.id,
-        original_item_id: product.metadata?.item_id,
+        id: product.metadata?.item_id || i.id,
         name: i.description!,
         quantity: i.quantity!,
       };
