@@ -65,11 +65,11 @@ export async function POST(request: Request) {
           images: [item.image],
         },
         unit_amount: Math.round(item.price * 100),
-        metadata: {
-          product_id: item.id,
-        },
       },
       quantity: item.quantity,
+      metadata: {
+        product_id: item.id,
+      },
     }));
 
     // Create checkout session

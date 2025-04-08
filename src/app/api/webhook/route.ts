@@ -176,9 +176,8 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
 
     const items = lineItems.map((i) => {
       console.log(i);
-      const productId = i.price?.metadata?.product_id || i.price?.product;
       return {
-        id: (productId as string) || i.id,
+        id: i.id,
         name: i.description!,
         quantity: i.quantity!,
       };
