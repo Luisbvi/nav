@@ -63,11 +63,11 @@ export async function POST(request: Request) {
         product_data: {
           name: item.name,
           images: [item.image],
-          metadata: {
-            product_id: item.id,
-          },
         },
         unit_amount: Math.round(item.price * 100),
+        metadata: {
+          product_id: item.id,
+        },
       },
       quantity: item.quantity,
     }));
