@@ -176,7 +176,7 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
 
     const items = lineItems.map((i) => {
       return {
-        id: i.id!,
+        id: i.id,
         name: i.description!,
         quantity: i.quantity!,
       };
@@ -191,7 +191,7 @@ async function handleSuccessfulPayment(session: Stripe.Checkout.Session) {
       email: customerEmail!,
       payment_id: session.payment_intent as string,
       payment_method: 'card',
-      items: items!,
+      items: items,
       created_at: new Date().toISOString(),
     };
 

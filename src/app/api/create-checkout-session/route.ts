@@ -58,6 +58,7 @@ export async function POST(request: Request) {
 
     // Create line items for products
     const lineItems = items.map((item: CartItem) => ({
+      id: item.id,
       price_data: {
         currency: 'usd',
         product_data: {

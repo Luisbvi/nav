@@ -20,6 +20,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const [isFavorite, setIsFavorite] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const { addItem } = useCart();
+  console.log(product.image_url);
 
   useEffect(() => {
     const favoriteProducts = JSON.parse(localStorage.getItem('favoriteProducts') || '[]');

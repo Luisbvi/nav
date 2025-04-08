@@ -68,9 +68,10 @@ const UserComponent = ({ user, role }: { user: User; role: string }) => {
         >
           <div className="relative h-8 w-8 overflow-hidden rounded-full border border-gray-100 dark:border-gray-700">
             <Image
-              src={'/images/img-placeholder.webp'}
+              src={user?.avatar_url || '/images/user-placeholder.png'}
               alt={t('profile_picture') || 'Profile picture'}
               fill
+              sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
               className="rounded-full object-cover"
             />
           </div>
