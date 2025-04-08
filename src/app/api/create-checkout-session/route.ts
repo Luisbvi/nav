@@ -58,6 +58,9 @@ export async function POST(request: Request) {
 
     // Create line items for products
     const lineItems = items.map((item: CartItem) => ({
+      metadada: {
+        product_id: item.id,
+      },
       price_data: {
         currency: 'usd',
         product_data: {
@@ -67,9 +70,6 @@ export async function POST(request: Request) {
         unit_amount: Math.round(item.price * 100),
       },
       quantity: item.quantity,
-      metadata: {
-        product_id: item.id,
-      },
     }));
 
     // Create checkout session
