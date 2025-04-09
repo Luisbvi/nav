@@ -23,7 +23,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Bell, CreditCard, Edit, LogOut, Package, Settings, UserIcon } from 'lucide-react';
+import { CreditCard, Edit, Package, UserIcon } from 'lucide-react';
 
 export default function ProfilePage() {
   const { t } = useLanguage();
@@ -220,38 +220,6 @@ export default function ProfilePage() {
           <p className="text-sm text-gray-500 sm:text-base dark:text-gray-400">
             {t('manage_profile_info') || 'Manage your personal information and orders'}
           </p>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex-1 border-gray-300 sm:flex-none dark:border-gray-600"
-          >
-            <Bell className="mr-2 h-4 w-4" />
-            <span className="sr-only sm:not-sr-only">{t('notifications') || 'Notifications'}</span>
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex-1 border-gray-300 sm:flex-none dark:border-gray-600"
-          >
-            <Settings className="mr-2 h-4 w-4" />
-            <span className="sr-only sm:not-sr-only">{t('settings') || 'Settings'}</span>
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex-1 border-gray-300 sm:flex-none dark:border-gray-600"
-            onClick={async () => {
-              await supabase.auth.signOut();
-              router.push('/login');
-            }}
-          >
-            <LogOut className="mr-2 h-4 w-4" />
-            <span className="sr-only sm:not-sr-only">{t('sign_out') || 'Sign Out'}</span>
-          </Button>
         </div>
       </div>
 

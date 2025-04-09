@@ -1479,6 +1479,366 @@ const translations = {
     fr: 'En attente de confirmation de paiement',
     zh: '等待付款确认',
   },
+  fruits: {
+    en: 'Fruits',
+    es: 'Frutas',
+    zh: '水果',
+    fr: 'Fruits',
+  },
+  vegetables: {
+    en: 'Vegetables',
+    es: 'Verduras',
+    zh: '蔬菜',
+    fr: 'Légumes',
+  },
+  dairy: {
+    en: 'Dairy',
+    es: 'Lácteos',
+    zh: '乳制品',
+    fr: 'Produits laitiers',
+  },
+  meats: {
+    en: 'Meats',
+    es: 'Carnes',
+    zh: '肉类',
+    fr: 'Viandes',
+  },
+  bakery: {
+    en: 'Bakery',
+    es: 'Panadería',
+    zh: '烘焙食品',
+    fr: 'Boulangerie',
+  },
+  beverages: {
+    en: 'Beverages',
+    es: 'Bebidas',
+    zh: '饮料',
+    fr: 'Boissons',
+  },
+
+  invalid_quantity: {
+    en: 'Please enter a valid quantity',
+    es: 'Ingrese una cantidad válida',
+    zh: '请输入有效数量',
+    fr: 'Veuillez entrer une quantité valide',
+  },
+  max_stock: {
+    en: 'Maximum available: {max}',
+    es: 'Máximo disponible: {max}',
+    zh: '最大可用: {max}',
+    fr: 'Maximum disponible: {max}',
+  },
+  discount: {
+    en: 'Discount',
+    es: 'Descuento',
+    zh: '折扣',
+    fr: 'Réduction',
+  },
+
+  // Page Titles
+  my_profile: {
+    en: 'My Profile',
+    es: 'Mi Perfil',
+    zh: '我的资料',
+    fr: 'Mon Profil',
+  },
+  manage_profile_info: {
+    en: 'Manage your personal information and orders',
+    es: 'Administra tu información personal y pedidos',
+    zh: '管理您的个人信息和订单',
+    fr: 'Gérez vos informations personnelles et commandes',
+  },
+
+  // Status Labels
+  status_pending: {
+    en: 'Pending',
+    es: 'Pendiente',
+    zh: '待处理',
+    fr: 'En attente',
+  },
+  status_paid: {
+    en: 'Paid',
+    es: 'Pagado',
+    zh: '已支付',
+    fr: 'Payé',
+  },
+  status_processing: {
+    en: 'Processing',
+    es: 'Procesando',
+    zh: '处理中',
+    fr: 'En traitement',
+  },
+  status_completed: {
+    en: 'Completed',
+    es: 'Completado',
+    zh: '已完成',
+    fr: 'Terminé',
+  },
+  status_cancelled: {
+    en: 'Cancelled',
+    es: 'Cancelado',
+    zh: '已取消',
+    fr: 'Annulé',
+  },
+  status_shipped: {
+    en: 'Shipped',
+    es: 'Enviado',
+    zh: '已发货',
+    fr: 'Expédié',
+  },
+  status_delivered: {
+    en: 'Delivered',
+    es: 'Entregado',
+    zh: '已送达',
+    fr: 'Livré',
+  },
+
+  // Profile Section
+  customer: {
+    en: 'Customer',
+    es: 'Cliente',
+    zh: '客户',
+    fr: 'Client',
+  },
+  member_since: {
+    en: 'Member since',
+    es: 'Miembro desde',
+    zh: '会员自',
+    fr: 'Membre depuis',
+  },
+  orders_placed: {
+    en: 'orders placed',
+    es: 'pedidos realizados',
+    zh: '个已下订单',
+    fr: 'commandes passées',
+  },
+  account_information: {
+    en: 'Account Information',
+    es: 'Información de la cuenta',
+    zh: '账户信息',
+    fr: 'Informations du compte',
+  },
+  username: {
+    en: 'Username',
+    es: 'Nombre de usuario',
+    zh: '用户名',
+    fr: "Nom d'utilisateur",
+  },
+  full_name: {
+    en: 'Full Name',
+    es: 'Nombre completo',
+    zh: '全名',
+    fr: 'Nom complet',
+  },
+  save_changes: {
+    en: 'Save Changes',
+    es: 'Guardar cambios',
+    zh: '保存更改',
+    fr: 'Enregistrer les modifications',
+  },
+  saving: {
+    en: 'Saving',
+    es: 'Guardando',
+    zh: '保存中',
+    fr: 'Enregistrement',
+  },
+  edit_profile: {
+    en: 'Edit profile',
+    es: 'Editar perfil',
+    zh: '编辑资料',
+    fr: 'Modifier le profil',
+  },
+  avatar: {
+    en: 'Avatar',
+    es: 'Avatar',
+    zh: '头像',
+    fr: 'Avatar',
+  },
+  change_avatar: {
+    en: 'Change avatar',
+    es: 'Cambiar avatar',
+    zh: '更换头像',
+    fr: "Changer d'avatar",
+  },
+  uploading_image: {
+    en: 'Uploading image...',
+    es: 'Subiendo imagen...',
+    zh: '上传图片中...',
+    fr: "Téléchargement de l'image...",
+  },
+  addresses: {
+    en: 'Addresses',
+    es: 'Direcciones',
+    zh: '地址',
+    fr: 'Adresses',
+  },
+  payments: {
+    en: 'Payments',
+    es: 'Pagos',
+    zh: '支付',
+    fr: 'Paiements',
+  },
+
+  // Orders Tab
+  my_orders: {
+    en: 'My Orders',
+    es: 'Mis Pedidos',
+    zh: '我的订单',
+    fr: 'Mes Commandes',
+  },
+  view_order_history: {
+    en: 'View your order history',
+    es: 'Ver tu historial de pedidos',
+    zh: '查看您的订单历史',
+    fr: 'Voir votre historique de commandes',
+  },
+  no_orders_yet: {
+    en: 'You have no orders yet',
+    es: 'No tienes pedidos aún',
+    zh: '您还没有订单',
+    fr: "Vous n'avez pas encore de commandes",
+  },
+
+  view_details: {
+    en: 'View details',
+    es: 'Ver detalles',
+    zh: '查看详情',
+    fr: 'Voir les détails',
+  },
+  view_all_orders: {
+    en: 'View all orders',
+    es: 'Ver todos los pedidos',
+    zh: '查看所有订单',
+    fr: 'Voir toutes les commandes',
+  },
+
+  // Addresses Tab
+  my_addresses: {
+    en: 'My Addresses',
+    es: 'Mis Direcciones',
+    zh: '我的地址',
+    fr: 'Mes Adresses',
+  },
+  manage_shipping_addresses: {
+    en: 'Manage your shipping and billing addresses',
+    es: 'Administra tus direcciones de envío y facturación',
+    zh: '管理您的送货和账单地址',
+    fr: 'Gérez vos adresses de livraison et de facturation',
+  },
+
+  united_states: {
+    en: 'United States',
+    es: 'Estados Unidos',
+    zh: '美国',
+    fr: 'États-Unis',
+  },
+  default: {
+    en: 'Default',
+    es: 'Predeterminada',
+    zh: '默认',
+    fr: 'Par défaut',
+  },
+  edit: {
+    en: 'Edit',
+    es: 'Editar',
+    zh: '编辑',
+    fr: 'Modifier',
+  },
+  delete: {
+    en: 'Delete',
+    es: 'Eliminar',
+    zh: '删除',
+    fr: 'Supprimer',
+  },
+  add_new_address: {
+    en: 'Add New Address',
+    es: 'Agregar nueva dirección',
+    zh: '添加新地址',
+    fr: 'Ajouter une nouvelle adresse',
+  },
+
+  manage_payment_methods: {
+    en: 'Manage your payment methods',
+    es: 'Administra tus métodos de pago',
+    zh: '管理您的支付方式',
+    fr: 'Gérez vos méthodes de paiement',
+  },
+  visa_ending_in: {
+    en: 'Visa ending in',
+    es: 'Visa terminada en',
+    zh: 'Visa 尾号',
+    fr: 'Visa se terminant par',
+  },
+  expires: {
+    en: 'Expires',
+    es: 'Vence',
+    zh: '到期',
+    fr: 'Expire',
+  },
+  add_payment_method: {
+    en: 'Add Payment Method',
+    es: 'Agregar método de pago',
+    zh: '添加支付方式',
+    fr: 'Ajouter un moyen de paiement',
+  },
+
+  // Loading States
+  loading_profile: {
+    en: 'Loading profile...',
+    es: 'Cargando perfil...',
+    zh: '加载资料中...',
+    fr: 'Chargement du profil...',
+  },
+
+  // Error Messages
+  error_loading_profile: {
+    en: 'Error loading user data!',
+    es: '¡Error al cargar los datos del usuario!',
+    zh: '加载用户数据出错！',
+    fr: 'Erreur lors du chargement des données utilisateur !',
+  },
+  profile_updated: {
+    en: 'Profile updated!',
+    es: '¡Perfil actualizado!',
+    zh: '资料已更新！',
+    fr: 'Profil mis à jour !',
+  },
+  error_updating_profile: {
+    en: 'Error updating profile!',
+    es: '¡Error al actualizar el perfil!',
+    zh: '更新资料出错！',
+    fr: 'Erreur lors de la mise à jour du profil !',
+  },
+  select_image_to_upload: {
+    en: 'You must select an image to upload.',
+    es: 'Debes seleccionar una imagen para subir.',
+    zh: '您必须选择要上传的图片。',
+    fr: 'Vous devez sélectionner une image à télécharger.',
+  },
+  avatar_updated: {
+    en: 'Avatar updated!',
+    es: '¡Avatar actualizado!',
+    zh: '头像已更新！',
+    fr: 'Avatar mis à jour !',
+  },
+  error_uploading_avatar: {
+    en: 'Error uploading avatar!',
+    es: '¡Error al subir el avatar!',
+    zh: '上传头像出错！',
+    fr: "Erreur lors du téléchargement de l'avatar !",
+  },
+  company_description: {
+    en: 'Providing exceptional logistics services across the globe with reliability and efficiency.',
+    es: 'Brindando servicios logísticos excepcionales en todo el mundo con confiabilidad y eficiencia.',
+    zh: '在全球范围内提供可靠高效的卓越物流服务。',
+    fr: 'Fourniture de services logistiques exceptionnels à travers le monde avec fiabilité et efficacité.',
+  },
+  contact_us: {
+    en: 'Contact Us',
+    es: 'Contáctenos',
+    zh: '联系我们',
+    fr: 'Contactez-nous',
+  },
 };
 
 export async function GET() {
