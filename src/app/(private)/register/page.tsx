@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { signUp } from '@/app/(auth)/actions/auth';
+import { signUp } from '@/app/(private)/actions/auth';
 import { useLanguage } from '@/contexts/language-context';
 import LanguageSelector from '@/components/layout/language-selector';
 import ToggleSwitch from '@/components/toggel-switch';

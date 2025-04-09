@@ -150,7 +150,7 @@ export function LanguageProvider({
   // Translation function
   const t = (key: string, params?: Record<string, string | number>): string => {
     // Get the translation string
-    let translation = translations[key]?.[language] || translations[key]?.['en'] || key;
+    let translation = translations[key]?.[language] || translations[key]?.['en'];
 
     // If there are parameters, replace them in the translation string
     if (params) {

@@ -19,8 +19,9 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [isEditingQuantity, setIsEditingQuantity] = useState(false);
+  const [inputValue, setInputValue] = useState('1');
   const { addItem } = useCart();
-  console.log(product.image_url);
 
   useEffect(() => {
     const favoriteProducts = JSON.parse(localStorage.getItem('favoriteProducts') || '[]');
@@ -55,13 +56,37 @@ const ProductCard = ({ product }: ProductCardProps) => {
       name: product.name,
       price: product.price,
       image: product.image_url || '',
-      quantity,
+      quantity: quantity,
     });
 
     setTimeout(() => {
       setQuantity(1);
+      setInputValue('1');
       setIsAddingToCart(false);
     }, 2000);
+  };
+
+  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Permitir solo números y borrado
+    if (/^\d*$/.test(value)) {
+      setInputValue(value);
+      const numValue = parseInt(value) || 0;
+      if (numValue > 0 && numValue <= product.stock) {
+        setQuantity(numValue);
+      }
+    }
+  };
+
+  const handleQuantityBlur = () => {
+    if (!inputValue || parseInt(inputValue) < 1) {
+      setInputValue('1');
+      setQuantity(1);
+    } else if (parseInt(inputValue) > product.stock) {
+      setInputValue(product.stock.toString());
+      setQuantity(product.stock);
+    }
+    setIsEditingQuantity(false);
   };
 
   const discount = product.discount;
@@ -174,20 +199,49 @@ const ProductCard = ({ product }: ProductCardProps) => {
           <div className="flex justify-between rounded-md border dark:border-gray-300">
             <motion.button
               whileTap={{ scale: 0.9 }}
-              onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
+              onClick={() => {
+                const newQuantity = Math.max(1, quantity - 1);
+                setQuantity(newQuantity);
+                setInputValue(newQuantity.toString());
+              }}
               disabled={quantity <= 1}
               className="cursor-pointer px-2 py-1 text-gray-600 disabled:opacity-50 dark:text-gray-200"
               aria-label={t('decrease_quantity') || 'Decrease quantity'}
             >
               <Minus className="size-3 sm:size-4" />
             </motion.button>
-            <span className="min-w-[20px] px-1 py-1 text-center text-xs sm:min-w-[30px] sm:px-2 sm:text-sm">
-              {quantity}
-              <span className="mx-1 text-gray-400 sm:mx-2 dark:text-gray-500">{product.unit}</span>
-            </span>
+
+            {isEditingQuantity ? (
+              <input
+                type="text"
+                value={inputValue}
+                onChange={handleQuantityChange}
+                onBlur={handleQuantityBlur}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleQuantityBlur();
+                }}
+                className="w-12 border-0 bg-transparent p-0 text-center text-xs focus:ring-0 focus:outline-none sm:text-sm"
+                autoFocus
+              />
+            ) : (
+              <button
+                onClick={() => setIsEditingQuantity(true)}
+                className="min-w-[20px] px-1 py-1 text-center text-xs sm:min-w-[30px] sm:px-2 sm:text-sm"
+              >
+                {quantity}
+                <span className="mx-1 text-gray-400 sm:mx-2 dark:text-gray-500">
+                  {product.unit}
+                </span>
+              </button>
+            )}
+
             <motion.button
               whileTap={{ scale: 0.9 }}
-              onClick={() => setQuantity((prev) => prev + 1)}
+              onClick={() => {
+                const newQuantity = quantity + 1;
+                setQuantity(newQuantity);
+                setInputValue(newQuantity.toString());
+              }}
               disabled={product.stock <= quantity}
               className="cursor-pointer px-2 py-1 text-gray-600 disabled:opacity-50 dark:text-gray-200"
               aria-label={t('increase_quantity') || 'Increase quantity'}

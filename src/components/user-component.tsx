@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
-import { signOut } from '@/app/(auth)/actions/auth';
+import { signOut } from '@/app/(private)/actions/auth';
 import { useCart } from '@/contexts/cart-context';
 import { useLanguage } from '@/contexts/language-context';
 import ToggleSwitch from '@/components/toggel-switch';

@@ -4,7 +4,7 @@ import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useCart } from '@/contexts/cart-context';
-import { signOut } from '@/app/(auth)/actions/auth';
+import { signOut } from '@/app/(private)/actions/auth';
 import ToggleSwitch from '@/components/toggel-switch';
 import { handleMenuItemClick } from '@/lib/utils';
 import { User } from '@/types';
