@@ -4,9 +4,9 @@ import type React from 'react';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
-import type { Order, OrderStatus } from '@/types';
-import type { User } from '@supabase/supabase-js';
+import type { Order, User } from '@/types';
 import { useLanguage } from '@/contexts/language-context';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -23,7 +23,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CreditCard, Edit, Package, UserIcon } from 'lucide-react';
+import { Edit, Package, UserIcon, Save, X, Lock, Eye, EyeOff } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { getStatusColor, getStatusIcon } from '@/utils/orders';
 
 export default function ProfilePage() {
   const { t } = useLanguage();
@@ -33,51 +42,60 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [orders, setOrders] = useState<Order[]>([]);
-  const [user, setUser] = useState<User | null>(null);
+  const [user] = useState<User>({
+    id: '123',
+    first_name: 'John',
+    last_name: 'Doe',
+    vessel_name: '',
+    shipping_company: '',
+    role: 'user',
+    preferred_language: 'en',
+    status: 'active',
+    email: 'john.doe@example.com',
+    email_confirmed_at: null,
+    email_verified: false,
+    created_at: '2025-01-01T00:00:00Z',
+    updated_at: '2025-04-01T00:00:00Z',
+    last_login: null,
+    avatar_url: '',
+  });
+  const [editMode, setEditMode] = useState(false);
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
+  const [passwordLoading, setPasswordLoading] = useState(false);
+
   const [profile, setProfile] = useState<{
-    username: string;
-    full_name: string;
+    first_name: string;
+    last_name: string;
     email: string;
     avatar_url: string | null;
   }>({
-    username: '',
-    full_name: '',
+    first_name: '',
+    last_name: '',
     email: '',
     avatar_url: null,
   });
 
-  const statusStyles: Record<OrderStatus, { class: string; label: string }> = {
-    pending: {
-      class: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-      label: t('status_pending') || 'Pending',
-    },
-    paid: {
-      class: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-      label: t('status_paid') || 'Paid',
-    },
-    processing: {
-      class: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-      label: t('status_processing') || 'Processing',
-    },
-    completed: {
-      class: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-      label: t('status_completed') || 'Completed',
-    },
-    cancelled: {
-      class: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-      label: t('status_cancelled') || 'Cancelled',
-    },
-    shipped: {
-      class: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
-      label: t('status_shipped') || 'Shipped',
-    },
-    delivered: {
-      class: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200',
-      label: t('status_delivered') || 'Delivered',
-    },
-  };
-
-  const handleSaveChanges = () => {};
+  const [originalProfile, setOriginalProfile] = useState<{
+    first_name: string;
+    last_name: string;
+    email: string;
+    avatar_url: string | null;
+  }>({
+    first_name: '',
+    last_name: '',
+    email: '',
+    avatar_url: null,
+  });
 
   useEffect(() => {
     const getProfile = async () => {
@@ -93,8 +111,6 @@ export default function ProfilePage() {
           return;
         }
 
-        setUser(user);
-
         const { data: profileData, error: profileError } = await supabase
           .from('user_profiles')
           .select('*')
@@ -104,12 +120,15 @@ export default function ProfilePage() {
         if (profileError) throw profileError;
 
         if (profileData) {
-          setProfile({
-            username: profileData.username || '',
-            full_name: profileData.first_name + ' ' + profileData.last_name || '',
+          const profileInfo = {
+            first_name: profileData.first_name || '',
+            last_name: profileData.last_name || '',
             email: user.email || '',
             avatar_url: profileData.avatar_url,
-          });
+          };
+
+          setProfile(profileInfo);
+          setOriginalProfile(profileInfo);
         }
 
         const { data: orderData, error: orderError } = await supabase
@@ -138,14 +157,16 @@ export default function ProfilePage() {
       const { error } = await supabase
         .from('user_profiles')
         .update({
-          username: profile.username,
-          full_name: profile.full_name,
+          first_name: profile.first_name,
+          last_name: profile.last_name,
           avatar_url: profile.avatar_url,
           updated_at: new Date().toISOString(),
         })
         .eq('id', user?.id);
 
       if (error) throw error;
+      setOriginalProfile({ ...profile });
+      setEditMode(false);
       alert(t('profile_updated') || 'Profile updated!');
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -153,6 +174,11 @@ export default function ProfilePage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleCancelEdit = () => {
+    setProfile({ ...originalProfile });
+    setEditMode(false);
   };
 
   const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -179,12 +205,61 @@ export default function ProfilePage() {
         .eq('id', user?.id);
 
       if (updateError) throw updateError;
+      setOriginalProfile({ ...originalProfile, avatar_url: data.publicUrl });
       alert(t('avatar_updated') || 'Avatar updated!');
     } catch (error) {
       console.error('Error uploading avatar:', error);
       alert(t('error_uploading_avatar') || 'Error uploading avatar!');
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handlePasswordChange = async () => {
+    try {
+      setPasswordError('');
+      setPasswordSuccess('');
+      setPasswordLoading(true);
+
+      // Validate password match
+      if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+        setPasswordError(t('passwords_do_not_match') || 'New passwords do not match');
+        return;
+      }
+
+      // Validate password length
+      if (passwordForm.newPassword.length < 8) {
+        setPasswordError(t('password_too_short') || 'Password must be at least 8 characters');
+        return;
+      }
+
+      // Update password in Supabase
+      const { error } = await supabase.auth.updateUser({
+        password: passwordForm.newPassword,
+      });
+
+      if (error) throw error;
+
+      // Clear form and show success message
+      setPasswordForm({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      });
+      setPasswordSuccess(t('password_updated') || 'Password updated successfully!');
+
+      // Close dialog after a short delay
+      setTimeout(() => {
+        setIsPasswordDialogOpen(false);
+        setPasswordSuccess('');
+      }, 2000);
+    } catch (error) {
+      console.error('Error updating password:', error);
+      setPasswordError(
+        t('error_updating_password') || 'Error updating password. Please try again.'
+      );
+    } finally {
+      setPasswordLoading(false);
     }
   };
 
@@ -199,20 +274,39 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-white dark:bg-gray-900">
-        <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
+        <motion.div
+          className="text-center"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <motion.div
+            className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"
+            animate={{ rotate: 360 }}
+            transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+          ></motion.div>
           <p className="mt-4 text-gray-700 dark:text-gray-300">
             {t('loading_profile') || 'Loading profile...'}
           </p>
-        </div>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto min-h-screen bg-gray-50 px-4 py-6 sm:px-6 xl:px-8 dark:bg-gray-900">
+    <motion.div
+      className="container mx-auto min-h-screen bg-gray-50 px-4 py-6 sm:px-6 xl:px-8 dark:bg-gray-900"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
       {/* Header Section */}
-      <div className="mb-6 flex flex-col gap-4">
+      <motion.div
+        className="mb-6 flex flex-col gap-4"
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.2 }}
+      >
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl dark:text-white">
             {t('my_profile') || 'My Profile'}
@@ -221,28 +315,65 @@ export default function ProfilePage() {
             {t('manage_profile_info') || 'Manage your personal information and orders'}
           </p>
         </div>
-      </div>
+      </motion.div>
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-        <div className="xl:col-span-1">
+        <motion.div
+          className="xl:col-span-1"
+          initial={{ x: -20, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ delay: 0.3 }}
+        >
           <Card className="h-full bg-white dark:bg-gray-800">
             <CardHeader className="relative pb-0">
               <div className="absolute top-4 right-4">
-                <Button variant="ghost" size="icon" className="text-gray-700 dark:text-gray-300">
-                  <Edit className="h-4 w-4" />
-                  <span className="sr-only">{t('edit_profile') || 'Edit profile'}</span>
-                </Button>
+                {editMode ? (
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleCancelEdit}
+                      className="text-gray-700 dark:text-gray-300"
+                    >
+                      <X className="h-4 w-4" />
+                      <span className="sr-only">{t('cancel') || 'Cancel'}</span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleUpdateProfile}
+                      className="text-green-600 dark:text-green-400"
+                    >
+                      <Save className="h-4 w-4" />
+                      <span className="sr-only">{t('save') || 'Save'}</span>
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setEditMode(true)}
+                    className="text-gray-700 dark:text-gray-300"
+                  >
+                    <Edit className="h-4 w-4" />
+                    <span className="sr-only">{t('edit_profile') || 'Edit profile'}</span>
+                  </Button>
+                )}
               </div>
               <div className="flex flex-col items-center space-y-3">
-                <div className="relative">
+                <motion.div
+                  className="relative"
+                  whileHover={{ scale: 1.05 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+                >
                   <Avatar className="h-20 w-20 sm:h-24 sm:w-24">
                     <AvatarImage
                       src={profile.avatar_url || '/images/user-placeholder.png'}
                       alt={t('avatar') || 'Avatar'}
                     />
                     <AvatarFallback className="bg-gray-200 text-gray-700 dark:bg-gray-600 dark:text-gray-300">
-                      {profile.username.charAt(0).toUpperCase()}
+                      {profile.first_name.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <label
@@ -260,7 +391,7 @@ export default function ProfilePage() {
                       disabled={uploading}
                     />
                   </label>
-                </div>
+                </motion.div>
                 {uploading && (
                   <p className="text-xs text-gray-500 sm:text-sm dark:text-gray-400">
                     {t('uploading_image') || 'Uploading image...'}
@@ -268,7 +399,7 @@ export default function ProfilePage() {
                 )}
                 <div className="space-y-1 text-center">
                   <h2 className="text-xl font-bold text-gray-900 sm:text-2xl dark:text-white">
-                    {profile.full_name || profile.username}
+                    {profile.first_name} {profile.last_name}
                   </h2>
                   <p className="text-sm text-gray-500 sm:text-base dark:text-gray-400">
                     {profile.email}
@@ -279,7 +410,7 @@ export default function ProfilePage() {
                     variant="secondary"
                     className="bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"
                   >
-                    {t('customer') || 'Customer'}
+                    {user?.role}
                   </Badge>
                 </div>
               </div>
@@ -306,50 +437,143 @@ export default function ProfilePage() {
                   </h3>
                   <div className="space-y-2">
                     <Label
-                      htmlFor="username"
+                      htmlFor="first_name"
                       className="text-sm text-gray-700 sm:text-base dark:text-gray-300"
                     >
-                      {t('username') || 'Username'}
+                      {t('first_name') || 'First Name'}
                     </Label>
-                    <Input
-                      id="username"
-                      value={profile.username}
-                      onChange={(e) => setProfile({ ...profile, username: e.target.value })}
-                      className="border-gray-300 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                    />
+                    <AnimatePresence mode="wait">
+                      {editMode ? (
+                        <motion.div
+                          key="edit-firstname"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <Input
+                            id="first_name"
+                            value={profile.first_name}
+                            onChange={(e) => setProfile({ ...profile, first_name: e.target.value })}
+                            className="border-gray-300 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                          />
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key="view-firstname"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="rounded-md border border-gray-300 bg-gray-50 px-3 py-2 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+                        >
+                          {profile.first_name}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                   <div className="space-y-2">
                     <Label
-                      htmlFor="full_name"
+                      htmlFor="last_name"
                       className="text-sm text-gray-700 sm:text-base dark:text-gray-300"
                     >
-                      {t('full_name') || 'Full Name'}
+                      {t('last_name') || 'Last Name'}
                     </Label>
-                    <Input
-                      id="full_name"
-                      value={profile.full_name}
-                      onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
-                      className="border-gray-300 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                    />
+                    <AnimatePresence mode="wait">
+                      {editMode ? (
+                        <motion.div
+                          key="edit-lastname"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <Input
+                            id="last_name"
+                            value={profile.last_name}
+                            onChange={(e) => setProfile({ ...profile, last_name: e.target.value })}
+                            className="border-gray-300 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                          />
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key="view-lastname"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="rounded-md border border-gray-300 bg-gray-50 px-3 py-2 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+                        >
+                          {profile.last_name}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 </div>
               </div>
             </CardContent>
-            <CardFooter className="flex justify-between">
+            <CardFooter className="flex flex-col space-y-2">
+              <AnimatePresence mode="wait">
+                {editMode ? (
+                  <motion.div
+                    className="grid w-full grid-cols-2 gap-2"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                  >
+                    <Button
+                      variant="outline"
+                      onClick={handleCancelEdit}
+                      className="border-gray-300 dark:border-gray-600"
+                    >
+                      {t('cancel') || 'Cancel'}
+                    </Button>
+                    <Button
+                      className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:text-white dark:hover:bg-blue-600"
+                      onClick={handleUpdateProfile}
+                      disabled={loading}
+                    >
+                      {loading
+                        ? t('saving') + '...' || 'Saving...'
+                        : t('save_changes') || 'Save Changes'}
+                    </Button>
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    className="w-full"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                  >
+                    <Button
+                      className="mb-2 w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:text-white dark:hover:bg-blue-600"
+                      onClick={() => setEditMode(true)}
+                    >
+                      {t('edit_profile') || 'Edit Profile'}
+                    </Button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
               <Button
-                className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:text-white dark:hover:bg-blue-600"
-                onClick={handleUpdateProfile}
-                disabled={loading}
+                variant="outline"
+                className="flex w-full items-center gap-2 border-gray-300 dark:border-gray-600"
+                onClick={() => setIsPasswordDialogOpen(true)}
               >
-                {loading ? t('saving') + '...' || 'Saving...' : t('save_changes') || 'Save Changes'}
+                <Lock className="h-4 w-4" />
+                {t('change_password') || 'Change Password'}
               </Button>
             </CardFooter>
           </Card>
-        </div>
+        </motion.div>
 
-        <div className="space-y-6 xl:col-span-2">
+        <motion.div
+          className="space-y-6 xl:col-span-2"
+          initial={{ x: 20, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ delay: 0.4 }}
+        >
           <Tabs defaultValue="orders" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 bg-gray-100 dark:bg-gray-800">
+            <TabsList className="grid w-full grid-cols-2 bg-gray-100 dark:bg-gray-800">
               <TabsTrigger
                 value="orders"
                 className="py-2 text-xs data-[state=active]:bg-white data-[state=active]:text-gray-900 sm:text-sm dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-white"
@@ -361,12 +585,6 @@ export default function ProfilePage() {
                 className="py-2 text-xs data-[state=active]:bg-white data-[state=active]:text-gray-900 sm:text-sm dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-white"
               >
                 {t('addresses') || 'Addresses'}
-              </TabsTrigger>
-              <TabsTrigger
-                value="payments"
-                className="py-2 text-xs data-[state=active]:bg-white data-[state=active]:text-gray-900 sm:text-sm dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-white"
-              >
-                {t('payments') || 'Payments'}
               </TabsTrigger>
             </TabsList>
 
@@ -383,17 +601,26 @@ export default function ProfilePage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {orders.length === 0 ? (
-                    <div className="py-8 text-center">
+                    <motion.div
+                      className="py-8 text-center"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.5 }}
+                    >
                       <p className="text-gray-500 dark:text-gray-400">
                         {t('no_orders_yet') || 'You have no orders yet'}
                       </p>
-                    </div>
+                    </motion.div>
                   ) : (
                     <div className="space-y-3">
-                      {orders.map((order) => (
-                        <div
+                      {orders.map((order, index) => (
+                        <motion.div
                           key={order.id}
                           className="flex flex-col gap-4 rounded-lg border border-gray-200 bg-white p-3 sm:p-4 dark:border-gray-700 dark:bg-gray-800"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.1 * index }}
+                          whileHover={{ scale: 1.01 }}
                         >
                           <div className="flex items-start gap-3">
                             <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-md bg-gray-100 sm:h-12 sm:w-12 dark:bg-gray-700">
@@ -407,9 +634,12 @@ export default function ProfilePage() {
                                 {formatOrderDate(order.created_at)}
                               </p>
                               <div className="mt-1 flex items-center gap-2 sm:hidden">
-                                <Badge className={`text-xs ${statusStyles[order.status].class}`}>
-                                  {statusStyles[order.status].label}
-                                </Badge>
+                                <div
+                                  className={`flex items-center rounded-full px-3 py-1 text-xs font-medium ${getStatusColor(order.status)}`}
+                                >
+                                  {getStatusIcon(order.status)}
+                                  <span className="ml-1 capitalize">{t(order.status)}</span>
+                                </div>
                                 <p className="text-sm font-medium text-gray-900 dark:text-white">
                                   ${order.total.toFixed(2)}
                                 </p>
@@ -418,9 +648,12 @@ export default function ProfilePage() {
                           </div>
                           <div className="hidden items-center justify-between gap-4 sm:flex">
                             <div className="flex items-center gap-4">
-                              <Badge className={`${statusStyles[order.status].class}`}>
-                                {statusStyles[order.status].label}
-                              </Badge>
+                              <div
+                                className={`flex items-center rounded-full px-3 py-1 text-xs font-medium ${getStatusColor(order.status)}`}
+                              >
+                                {getStatusIcon(order.status)}
+                                <span className="ml-1 capitalize">{t(order.status)}</span>
+                              </div>
                               <p className="font-medium text-gray-900 dark:text-white">
                                 {order.payment_method === 'card'
                                   ? `$${order.total.toFixed(2)}`
@@ -444,7 +677,7 @@ export default function ProfilePage() {
                           >
                             {t('view_details') || 'View details'}
                           </Button>
-                        </div>
+                        </motion.div>
                       ))}
                     </div>
                   )}
@@ -474,13 +707,21 @@ export default function ProfilePage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="relative rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800">
+                  <motion.div
+                    className="relative rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    whileHover={{ scale: 1.01 }}
+                  >
                     <Badge className="absolute top-3 right-3 bg-green-100 text-xs text-green-800 sm:text-sm dark:bg-green-900 dark:text-green-200">
                       {t('default') || 'Default'}
                     </Badge>
                     <div className="space-y-1 text-sm text-gray-700 sm:text-base dark:text-gray-300">
                       <h3 className="font-medium">{t('shipping_address') || 'Shipping Address'}</h3>
-                      <p>{profile.full_name}</p>
+                      <p>
+                        {profile.first_name} {profile.last_name}
+                      </p>
                       <p>123 Main Street</p>
                       <p>Anytown, CA 12345</p>
                       <p>{t('united_states') || 'United States'}</p>
@@ -501,58 +742,141 @@ export default function ProfilePage() {
                         {t('delete') || 'Delete'}
                       </Button>
                     </div>
-                  </div>
+                  </motion.div>
                 </CardContent>
                 <CardFooter>
-                  <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                  <Button className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:text-white dark:hover:bg-blue-600">
                     {t('add_new_address') || 'Add New Address'}
                   </Button>
                 </CardFooter>
               </Card>
             </TabsContent>
-
-            {/* Payments Tab */}
-            <TabsContent value="payments" className="space-y-4 pt-4">
-              <Card className="bg-white dark:bg-gray-800">
-                <CardHeader>
-                  <CardTitle className="text-lg text-gray-900 sm:text-xl dark:text-white">
-                    {t('payment_methods') || 'Payment Methods'}
-                  </CardTitle>
-                  <CardDescription className="text-sm text-gray-500 sm:text-base dark:text-gray-400">
-                    {t('manage_payment_methods') || 'Manage your payment methods'}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between dark:border-gray-700 dark:bg-gray-800">
-                    <div className="flex items-center gap-3">
-                      <CreditCard className="h-5 w-5 text-gray-700 sm:h-6 sm:w-6 dark:text-gray-300" />
-                      <div>
-                        <p className="text-sm font-medium text-gray-900 sm:text-base dark:text-white">
-                          {t('visa_ending_in') || 'Visa ending in'} 4242
-                        </p>
-                        <p className="text-xs text-gray-500 sm:text-sm dark:text-gray-400">
-                          {t('expires') || 'Expires'}: 04/2025
-                        </p>
-                      </div>
-                    </div>
-                    <Badge className="self-start bg-green-100 text-green-800 sm:self-center dark:bg-green-900 dark:text-green-200">
-                      {t('default') || 'Default'}
-                    </Badge>
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button
-                    onClick={handleSaveChanges}
-                    className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:text-white dark:hover:bg-blue-600"
-                  >
-                    {t('add_payment_method') || 'Add Payment Method'}
-                  </Button>
-                </CardFooter>
-              </Card>
-            </TabsContent>
           </Tabs>
-        </div>
+        </motion.div>
       </div>
-    </div>
+
+      {/* Password Change Dialog */}
+      <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center">
+              {t('change_password') || 'Change Password'}
+            </DialogTitle>
+            <DialogDescription className="text-center">
+              {t('password_change_description') || 'Update your password to secure your account.'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="current-password" className="text-sm sm:text-base">
+                {t('current_password') || 'Current Password'}
+              </Label>
+              <div className="relative">
+                <Input
+                  id="current-password"
+                  type={showCurrentPassword ? 'text' : 'password'}
+                  value={passwordForm.currentPassword}
+                  onChange={(e) =>
+                    setPasswordForm({ ...passwordForm, currentPassword: e.target.value })
+                  }
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-500"
+                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                >
+                  {showCurrentPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="new-password" className="text-sm sm:text-base">
+                {t('new_password') || 'New Password'}
+              </Label>
+              <div className="relative">
+                <Input
+                  id="new-password"
+                  type={showNewPassword ? 'text' : 'password'}
+                  value={passwordForm.newPassword}
+                  onChange={(e) =>
+                    setPasswordForm({ ...passwordForm, newPassword: e.target.value })
+                  }
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-500"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                >
+                  {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirm-password" className="text-sm sm:text-base">
+                {t('confirm_password') || 'Confirm Password'}
+              </Label>
+              <div className="relative">
+                <Input
+                  id="confirm-password"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  value={passwordForm.confirmPassword}
+                  onChange={(e) =>
+                    setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })
+                  }
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  className="absolute top-1/2 right-3 -translate-y-1/2 text-gray-500"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
+            </div>
+
+            {passwordError && (
+              <motion.div
+                className="rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-300"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                {passwordError}
+              </motion.div>
+            )}
+
+            {passwordSuccess && (
+              <motion.div
+                className="rounded-md bg-green-50 p-3 text-sm text-green-700 dark:bg-green-900/30 dark:text-green-300"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                {passwordSuccess}
+              </motion.div>
+            )}
+          </div>
+          <DialogFooter className="sm:justify-between">
+            <Button
+              variant="outline"
+              onClick={() => setIsPasswordDialogOpen(false)}
+              className="mb-2 sm:mb-0"
+            >
+              {t('cancel') || 'Cancel'}
+            </Button>
+            <Button
+              onClick={handlePasswordChange}
+              disabled={passwordLoading}
+              className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+            >
+              {passwordLoading
+                ? (t('updating') || 'Updating') + '...'
+                : t('update_password') || 'Update Password'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </motion.div>
   );
 }

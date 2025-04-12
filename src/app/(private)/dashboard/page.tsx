@@ -1,4 +1,3 @@
-// UI Components
 import StatsGrid from '@/components/dashboard/stats-grid';
 import RecentProductsTable from '@/components/dashboard/recent-products-table';
 import { createClient } from '@/utils/supabase/server';

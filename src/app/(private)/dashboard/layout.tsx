@@ -7,9 +7,9 @@ import { Suspense } from 'react';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
       {/* Sidebar */}
-      <div className="w-64 bg-[#0099ff] text-white">
+      <div className="w-64 bg-blue-500 text-white dark:bg-blue-600">
         <Link href="/" className="w-60">
           <div className="relative h-32">
             <Image src="/images/logo-w-lg.png" alt="logo" fill className="object-contain" />
@@ -33,8 +33,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
               <NavLink href="/dashboard/settings">Settings</NavLink>
             </li>
           </ul>
-          <div className="mt-8 border-t border-blue-400 pt-4">
-            <Link href="/" className="flex items-center gap-3 rounded-md p-2 hover:bg-blue-600">
+          <div className="mt-8 border-t border-blue-400 pt-4 dark:border-blue-700">
+            <Link
+              href="/"
+              className="flex items-center gap-3 rounded-md p-2 hover:bg-blue-600 dark:hover:bg-blue-800"
+            >
               <LogOut className="h-5 w-5" />
               Logout
             </Link>
@@ -42,15 +45,19 @@ export default async function DashboardLayout({ children }: { children: React.Re
         </nav>
       </div>
       <div className="flex-1 overflow-auto">
-        <header className="flex items-center justify-between bg-white p-4 shadow">
-          <h1 className="text-xl font-bold">Dashboard</h1>
+        <header className="flex items-center justify-between bg-white p-4 shadow dark:bg-gray-800 dark:shadow-gray-700">
+          <h1 className="text-xl font-bold dark:text-white">Dashboard</h1>
           <div className="flex items-center gap-4">
-            <Suspense fallback={<div>Loading search...</div>}>
+            <Suspense fallback={<div className="dark:text-white">Loading search...</div>}>
               <SearchInput />
             </Suspense>
           </div>
         </header>
-        <div className="p-6">{children}</div>
+        <div className="p-6 dark:bg-gray-900">
+          <div className="rounded-lg bg-white p-6 shadow dark:bg-gray-800 dark:shadow-gray-700">
+            {children}
+          </div>
+        </div>
       </div>
     </div>
   );

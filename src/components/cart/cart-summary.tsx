@@ -115,6 +115,36 @@ export default function CartSummary({
         return;
       }
 
+      if (paymentMethod === 'binance') {
+        const response = await fetch('/api/create-binance-order', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            items,
+            shippingMethod,
+            shippingPrice: selectedShipping.price,
+            user,
+            total: total * rate,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.success && data.redirectUrl) {
+          router.push(data.redirectUrl);
+        } else {
+          throw new Error('Failed to create Binance order');
+        }
+
+        return;
+      }
+
       const response = await fetch('/api/create-checkout-session', {
         method: 'POST',
         headers: {
