@@ -69,6 +69,7 @@ export async function deleteProduct(id: string): Promise<ProductResponse> {
     const { error } = await supabase.from('products').delete().eq('id', id);
 
     if (error) {
+      console.error('Error deleting product:', error);
       throw error;
     }
 

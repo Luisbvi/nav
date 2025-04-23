@@ -1,24 +1,48 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { Edit, Trash2, Copy, Check } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Order, OrderStatus, User } from '@/types';
+import { Order, OrderStatus } from '@/types';
+import { getStatusColor } from '@/utils/orders';
 
 const supabase = createClient();
 
-export default function OrdersDashboard({
-  initialOrders,
-  user,
-}: {
-  initialOrders: Order[];
-  user: User;
-}) {
+export default function OrdersDashboard({ initialOrders }: { initialOrders: Order[] }) {
   const [orders, setOrders] = useState<Order[]>(initialOrders);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [copiedText, setCopiedText] = useState<string | null>(null);
+  const [users, setUsers] = useState<Record<string, any>>({});
+  const [products, setProducts] = useState<Record<string, any>>({});
+
+  useEffect(() => {
+    const loadUsers = async () => {
+      const { data } = await supabase.from('user_profiles').select('*');
+      if (data) {
+        const usersMap = data.reduce((acc, user) => {
+          acc[user.id] = user;
+          return acc;
+        }, {});
+        setUsers(usersMap);
+      }
+    };
+
+    const loadProducts = async () => {
+      const { data } = await supabase.from('products').select('*');
+      if (data) {
+        const productsMap = data.reduce((acc, product) => {
+          acc[product.id] = product;
+          return acc;
+        }, {});
+        setProducts(productsMap);
+      }
+    };
+
+    loadUsers();
+    loadProducts();
+  }, []);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -45,40 +69,55 @@ export default function OrdersDashboard({
     setDialogOpen(true);
   };
 
-  const handleEditOrder = (id: string, e: React.MouseEvent) => {
+  const handleEditOrder = (order: Order, e: React.MouseEvent) => {
     e.stopPropagation();
-    alert(`Edit order with ID: ${id}`);
+    setSelectedOrder(order);
+    setDialogOpen(true);
   };
 
   const handleUpdateOrderStatus = async (id: string, newStatus: OrderStatus) => {
-    const { error, data } = await supabase
-      .from('orders')
-      .update({ status: newStatus })
-      .eq('id', id)
-      .select();
+    try {
+      const updateData: Partial<Order> = { status: newStatus };
+      const currentDate = new Date().toISOString();
 
-    if (error) {
-      console.error('Error updating order status:', error);
-    } else if (data) {
-      setOrders(orders.map((order) => (order.id === id ? { ...order, status: newStatus } : order)));
-      if (selectedOrder && selectedOrder.id === id) {
-        setSelectedOrder({ ...selectedOrder, status: newStatus });
+      // Asignar fechas según el nuevo estado
+      switch (newStatus) {
+        case 'processing':
+          updateData.processing_date = currentDate;
+          break;
+        case 'shipped':
+          updateData.shipped_date = currentDate;
+          break;
+        case 'delivered':
+          updateData.delivered_date = currentDate;
+          break;
+        case 'cancelled':
+          updateData.cancelled_date = currentDate;
+          break;
       }
-    }
-  };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200';
-      case 'cancelled':
-        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-200';
-      case 'paid':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200';
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+      if (newStatus === 'completed' && !selectedOrder?.payment_confirmation_date) {
+        updateData.payment_confirmation_date = currentDate;
+      }
+
+      const { error, data } = await supabase
+        .from('orders')
+        .update(updateData)
+        .eq('id', id)
+        .select();
+
+      if (error) throw error;
+
+      if (data) {
+        const updatedOrder = data[0];
+        setOrders(orders.map((order) => (order.id === id ? updatedOrder : order)));
+
+        if (selectedOrder?.id === id) {
+          setSelectedOrder(updatedOrder);
+        }
+      }
+    } catch (error) {
+      console.error('Error updating order status:', error);
     }
   };
 
@@ -123,69 +162,76 @@ export default function OrdersDashboard({
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
-              {orders.map((order) => (
-                <tr
-                  key={order.id}
-                  className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50"
-                  onClick={() => handleOpenOrderDetails(order)}
-                >
-                  <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-white">
-                    <div className="flex items-center">
-                      <span className="max-w-[120px] truncate">{order.id}</span>
+              {orders.map((order) => {
+                const user = users[order.user_id] || {};
+                return (
+                  <tr
+                    key={order.id}
+                    className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                    onClick={() => handleOpenOrderDetails(order)}
+                  >
+                    <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-white">
+                      <div className="flex items-center">
+                        <span className="max-w-[120px] truncate">{order.id}</span>
+                        <button
+                          className="ml-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            copyToClipboard(order.id);
+                          }}
+                        >
+                          {copiedText === order.id ? (
+                            <Check className="h-4 w-4 text-green-500 dark:text-green-400" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-white">
+                      {user.first_name || 'N/A'} {user.last_name || ''}
+                    </td>
+                    <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-white">
+                      {user.email || 'N/A'}
+                    </td>
+                    <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-white">
+                      {new Date(order.created_at).toLocaleDateString('en-US')}
+                    </td>
+                    <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-white">
+                      {formatCurrency(order.total)}
+                    </td>
+                    <td className="px-6 py-4 text-sm whitespace-nowrap">
+                      <span
+                        className={`inline-flex rounded-full px-2 text-xs leading-5 font-semibold ${getStatusColor(
+                          order.status
+                        )}`}
+                      >
+                        {order.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
                       <button
-                        className="ml-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                        className="mr-3 flex items-center text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
                         onClick={(e) => {
                           e.stopPropagation();
-                          copyToClipboard(order.id);
+                          setSelectedOrder(order);
+                          setDialogOpen(true);
                         }}
                       >
-                        {copiedText === order.id ? (
-                          <Check className="h-4 w-4 text-green-500 dark:text-green-400" />
-                        ) : (
-                          <Copy className="h-4 w-4" />
-                        )}
+                        <Edit size={16} className="mr-1" />
+                        <span>Edit</span>
                       </button>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-white">
-                    {order.id}
-                  </td>
-                  <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-white">
-                    {user.email}
-                  </td>
-                  <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-white">
-                    {new Date(order.created_at).toLocaleDateString('en-US')}
-                  </td>
-                  <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900 dark:text-white">
-                    {formatCurrency(order.total)}
-                  </td>
-                  <td className="px-6 py-4 text-sm whitespace-nowrap">
-                    <span
-                      className={`inline-flex rounded-full px-2 text-xs leading-5 font-semibold ${getStatusColor(
-                        order.status
-                      )}`}
-                    >
-                      {order.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
-                    <button
-                      className="mr-3 flex items-center text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                      onClick={(e) => handleEditOrder(order.id, e)}
-                    >
-                      <Edit size={16} className="mr-1" />
-                      <span>Edit</span>
-                    </button>
-                    <button
-                      className="flex items-center text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                      onClick={(e) => handleDeleteOrder(order.id, e)}
-                    >
-                      <Trash2 size={16} className="mr-1" />
-                      <span>Delete</span>
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                      <button
+                        className="flex items-center text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                        onClick={(e) => handleDeleteOrder(order.id, e)}
+                      >
+                        <Trash2 size={16} className="mr-1" />
+                        <span>Delete</span>
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -193,7 +239,7 @@ export default function OrdersDashboard({
 
       {/* Order Details Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="bg-white sm:max-w-md dark:bg-gray-800">
+        <DialogContent className="bg-white sm:max-w-[800px] dark:bg-gray-800">
           <DialogHeader>
             <DialogTitle className="text-gray-900 dark:text-white">Order Details</DialogTitle>
           </DialogHeader>
@@ -216,56 +262,108 @@ export default function OrdersDashboard({
                     </button>
                   </div>
                 </div>
+
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                    Payment ID
-                  </h3>
-                  <div className="mt-1 flex items-center text-sm text-gray-900 dark:text-white">
-                    <span className="mr-2 max-w-[180px] truncate">{selectedOrder.id}</span>
-                    <button
-                      className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                      onClick={() => copyToClipboard(selectedOrder.id)}
-                    >
-                      {copiedText === selectedOrder.id ? (
-                        <Check className="h-4 w-4 text-green-500 dark:text-green-400" />
-                      ) : (
-                        <Copy className="h-4 w-4" />
-                      )}
-                    </button>
-                  </div>
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Status</h3>
+                  <select
+                    className="mt-1 w-full rounded border border-gray-300 p-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    value={selectedOrder.status}
+                    onChange={(e) => {
+                      const newStatus = e.target.value as OrderStatus;
+                      handleUpdateOrderStatus(selectedOrder.id, newStatus);
+                    }}
+                  >
+                    {(
+                      [
+                        'pending',
+                        'processing',
+                        'shipped',
+                        'delivered',
+                        'cancelled',
+                        'paid',
+                      ] as const
+                    ).map((status) => (
+                      <option key={status} value={status}>
+                        {status.charAt(0).toUpperCase() + status.slice(1)}
+                      </option>
+                    ))}
+                  </select>
                 </div>
+
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Customer</h3>
                   <p className="mt-1 text-sm text-gray-900 dark:text-white">
-                    {user.first_name} {user.last_name}
+                    {users[selectedOrder.user_id]?.first_name || 'N/A'}{' '}
+                    {users[selectedOrder.user_id]?.last_name || ''}
                   </p>
                 </div>
+
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Email</h3>
-                  <p className="mt-1 text-sm text-gray-900 dark:text-white">{user.email}</p>
+                  <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                    {users[selectedOrder.user_id]?.email || 'N/A'}
+                  </p>
                 </div>
+
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">User ID</h3>
-                  <div className="mt-1 flex items-center text-sm text-gray-900 dark:text-white">
-                    <span className="mr-2 max-w-[180px] truncate">{selectedOrder.user_id}</span>
-                    <button
-                      className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                      onClick={() => copyToClipboard(selectedOrder.user_id)}
-                    >
-                      {copiedText === selectedOrder.user_id ? (
-                        <Check className="h-4 w-4 text-green-500 dark:text-green-400" />
-                      ) : (
-                        <Copy className="h-4 w-4" />
-                      )}
-                    </button>
-                  </div>
+                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                    Payment Method
+                  </h3>
+                  <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                    {selectedOrder.payment_method || 'N/A'}
+                  </p>
                 </div>
+
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Total</h3>
                   <p className="mt-1 text-sm text-gray-900 dark:text-white">
                     {formatCurrency(selectedOrder.total)}
                   </p>
                 </div>
+
+                {selectedOrder.processing_date && (
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                      Processing Date
+                    </h3>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                      {new Date(selectedOrder.processing_date).toLocaleString()}
+                    </p>
+                  </div>
+                )}
+
+                {selectedOrder.shipped_date && (
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                      Shipped Date
+                    </h3>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                      {new Date(selectedOrder.shipped_date).toLocaleString()}
+                    </p>
+                  </div>
+                )}
+
+                {selectedOrder.delivered_date && (
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                      Delivered Date
+                    </h3>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                      {new Date(selectedOrder.delivered_date).toLocaleString()}
+                    </p>
+                  </div>
+                )}
+
+                {selectedOrder.cancelled_date && (
+                  <div>
+                    <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                      Cancelled Date
+                    </h3>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                      {new Date(selectedOrder.cancelled_date).toLocaleString()}
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -276,6 +374,9 @@ export default function OrdersDashboard({
                       <tr>
                         <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
                           Product
+                        </th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
+                          Description
                         </th>
                         <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 dark:text-gray-400">
                           Quantity
@@ -289,27 +390,25 @@ export default function OrdersDashboard({
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 bg-white dark:bg-gray-800">
-                      {selectedOrder.items?.map(async (item) => {
-                        const { data: product } = await supabase
-                          .from('products')
-                          .select('*')
-                          .eq('id', item.id);
-
-                        const description = item.description || 'Product';
-
+                      {selectedOrder.items?.map((item) => {
+                        const product = products[item.id] || {};
+                        const totalPrice = product.price * (item.quantity || 0);
                         return (
-                          <tr key={item.id}>
+                          <tr key={`${item.id}-${item.quantity}`}>
                             <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
-                              {description}
+                              {product.name || 'Product'}
+                            </td>
+                            <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
+                              {item.description || product.description || '-'}
                             </td>
                             <td className="px-4 py-2 text-center text-sm text-gray-900 dark:text-white">
                               {item.quantity}
                             </td>
                             <td className="px-4 py-2 text-right text-sm text-gray-900 dark:text-white">
-                              {product || 0}
+                              {formatCurrency(product.price || 0)}
                             </td>
                             <td className="px-4 py-2 text-right text-sm text-gray-900 dark:text-white">
-                              {'formatCurrency(totalPrice)'}
+                              {formatCurrency(totalPrice)}
                             </td>
                           </tr>
                         );
@@ -319,24 +418,12 @@ export default function OrdersDashboard({
                 </div>
               </div>
 
-              <div className="flex justify-end space-x-2">
-                <select
-                  className="rounded border border-gray-300 p-2 text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                  value={selectedOrder.status}
-                  onChange={(e) =>
-                    handleUpdateOrderStatus(selectedOrder.id, e.target.value as OrderStatus)
-                  }
-                >
-                  <option value="pending">Pending</option>
-                  <option value="completed">Completed</option>
-                  <option value="cancelled">Cancelled</option>
-                  <option value="paid">Paid</option>
-                </select>
+              <div className="flex justify-end space-x-2 pt-4">
                 <button
                   className="rounded bg-red-600 px-4 py-2 text-sm text-white hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600"
                   onClick={() => handleDeleteOrder(selectedOrder.id)}
                 >
-                  Delete
+                  Delete Order
                 </button>
               </div>
             </div>

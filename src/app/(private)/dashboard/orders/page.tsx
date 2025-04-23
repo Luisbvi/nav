@@ -1,5 +1,4 @@
 import OrdersDashboard from '@/components/dashboard/orders.tsx/orders-dashboard';
-import { User } from '@/types';
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 
@@ -17,7 +16,6 @@ export default async function OrdersPage() {
   const { data: orders, error } = await supabase
     .from('orders')
     .select('*')
-    .eq('user_id', user?.id)
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -28,5 +26,5 @@ export default async function OrdersPage() {
     return <div>No orders found</div>;
   }
 
-  return <OrdersDashboard user={user.user_metadata as User} initialOrders={orders} />;
+  return <OrdersDashboard initialOrders={orders} />;
 }

@@ -20,7 +20,6 @@ export default function ProductsDashboard({
   initialProducts,
   initialCategories,
 }: ProductsDashboardProps) {
-  // Estados iniciales a partir de los datos SSR
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [categories] = useState<string[]>(initialCategories);
 
@@ -31,7 +30,6 @@ export default function ProductsDashboard({
   const [importSuccess, setImportSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Formulario para agregar/editar producto
   const [formData, setFormData] = useState<FormData>({
     name: '',
     description: '',
@@ -71,6 +69,7 @@ export default function ProductsDashboard({
 
     try {
       const result = await deleteProduct(id);
+
       if (result.error) {
         console.error('Error deleting product:', result.error);
         return;
@@ -80,6 +79,7 @@ export default function ProductsDashboard({
         .from('products')
         .select('*')
         .order('name');
+
       if (!productsError && productsData) {
         setProducts(productsData);
       }
@@ -88,7 +88,7 @@ export default function ProductsDashboard({
     }
   };
 
-  // Función para editar producto
+  // editar producto
   const handleEditProduct = (id: string) => {
     const product = products.find((p) => p.id === id);
     if (!product) return;
@@ -107,7 +107,7 @@ export default function ProductsDashboard({
     setShowAddModal(true);
   };
 
-  // Manejo del submit para agregar/editar producto
+  // agregar producto
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -124,6 +124,11 @@ export default function ProductsDashboard({
       submitData.append('stock', formData.stock.toString());
       submitData.append('imageUrl', imageUrl);
 
+      if (!formData.category) {
+        setFormError('Category is required');
+        return;
+      }
+
       const result = editingProductId
         ? await updateProduct(editingProductId, submitData)
         : await addProduct(submitData);
@@ -139,7 +144,6 @@ export default function ProductsDashboard({
         setShowAddModal(false);
         resetForm();
 
-        // Refrescar lista de productos (puedes optar por actualizar el estado en el cliente)
         const { data: productsData, error: productsError } = await supabase
           .from('products')
           .select('*')
@@ -196,21 +200,21 @@ export default function ProductsDashboard({
           <button
             disabled={true}
             onClick={() => fileInputRef.current?.click()}
-            className="flex items-center gap-2 rounded-md bg-green-600 px-4 py-2 text-white hover:bg-green-700"
+            className="flex cursor-pointer items-center gap-2 rounded-md bg-green-600 px-4 py-2 text-white hover:bg-green-700"
           >
             <FileSpreadsheet className="h-5 w-5" />
             Importar Excel
           </button>
           <button
             disabled={true}
-            className="flex items-center gap-2 rounded-md bg-gray-600 px-4 py-2 text-white hover:bg-gray-700"
+            className="flex cursor-pointer items-center gap-2 rounded-md bg-gray-600 px-4 py-2 text-white hover:bg-gray-700"
           >
             <FileSpreadsheet className="h-5 w-5" />
             Descargar Template
           </button>
           <button
             onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 rounded-md bg-[#0099ff] px-4 py-2 text-white hover:bg-[#0088ee]"
+            className="flex cursor-pointer items-center gap-2 rounded-md bg-[#0099ff] px-4 py-2 text-white hover:bg-[#0088ee]"
           >
             <PlusCircle className="h-5 w-5" />
             Agregar Producto
@@ -250,7 +254,7 @@ export default function ProductsDashboard({
           importSuccess={importSuccess}
           onClose={handleCloseImportModal}
           onConfirmImport={() => {
-            // Aquí implementa la lógica para confirmar la importación
+            //TODO: Implementar la lógica para importar los datos
           }}
         />
       )}
