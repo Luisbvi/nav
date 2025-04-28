@@ -5,7 +5,7 @@ import { createClient } from '@/utils/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
 // Define available languages
-export type Language = 'en' | 'es' | 'fr' | 'zh';
+export type Language = 'en' | 'es' | 'fr' | 'zh' | 'ru' | 'hi' | 'fil';
 
 // Define language context type
 interface LanguageContextType {
@@ -34,12 +34,18 @@ const defaultTranslations: Record<string, Record<Language, string>> = {
     es: 'Pedido',
     fr: 'Commande',
     zh: '订单',
+    ru: 'Заказ',
+    hi: 'आदेश',
+    fil: 'Order',
   },
   back_to_orders: {
     en: 'Back to Orders',
     es: 'Volver a Pedidos',
     fr: 'Retour aux Commandes',
     zh: '返回订单列表',
+    ru: 'Назад к заказам',
+    hi: 'आदेशों पर वापस जाएं',
+    fil: 'Bumalik sa Mga Order',
   },
 };
 

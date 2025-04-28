@@ -22,8 +22,10 @@ export default function LanguageSelector({ darkText }: { darkText?: boolean }) {
     { code: 'zh', name: '中文 (CN)', flag: '/images/flag/china.svg' },
     { code: 'es', name: 'Español', flag: '/images/flag/spain.svg' },
     { code: 'fr', name: 'Français', flag: '/images/flag/france.svg' },
+    { code: 'ru', name: 'Русский (RU)', flag: '/images/flag/russia.svg' },
+    { code: 'hi', name: 'हिन्दी (IN)', flag: '/images/flag/india.svg' },
+    { code: 'fil', name: 'Filipino (PH)', flag: '/images/flag/philippines.svg' },
   ];
-
   const selectedLanguage = languages.find((lang) => lang.code === language) || languages[0];
 
   // Close dropdown when clicking outside

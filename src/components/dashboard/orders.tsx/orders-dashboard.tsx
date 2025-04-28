@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { Edit, Trash2, Copy, Check } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Order, OrderStatus } from '@/types';
+import { Order, OrderStatus, Product, User } from '@/types';
 import { getStatusColor } from '@/utils/orders';
 
 const supabase = createClient();
@@ -14,8 +14,8 @@ export default function OrdersDashboard({ initialOrders }: { initialOrders: Orde
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [copiedText, setCopiedText] = useState<string | null>(null);
-  const [users, setUsers] = useState<Record<string, any>>({});
-  const [products, setProducts] = useState<Record<string, any>>({});
+  const [users, setUsers] = useState<Record<string, User>>({});
+  const [products, setProducts] = useState<Record<string, Product>>({});
 
   useEffect(() => {
     const loadUsers = async () => {
@@ -65,12 +65,6 @@ export default function OrdersDashboard({ initialOrders }: { initialOrders: Orde
   };
 
   const handleOpenOrderDetails = (order: Order) => {
-    setSelectedOrder(order);
-    setDialogOpen(true);
-  };
-
-  const handleEditOrder = (order: Order, e: React.MouseEvent) => {
-    e.stopPropagation();
     setSelectedOrder(order);
     setDialogOpen(true);
   };
