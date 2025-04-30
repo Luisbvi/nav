@@ -2,7 +2,6 @@
 
 import { useState, type ChangeEvent, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { MoonIcon, SunIcon } from 'lucide-react';
 import { updatePagomovil } from '../../actions/settings';
 import { banks } from '@/utils/orders';
 
