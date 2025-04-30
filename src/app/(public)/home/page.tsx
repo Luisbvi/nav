@@ -1,6 +1,8 @@
+import About from '@/components/home/about';
 import CategoryGrid from '@/components/home/categories';
 import FeaturedProducts from '@/components/home/features';
 import HeroSection from '@/components/home/hero';
+import HomeBanner from '@/components/home/home-banner';
 import { createClient } from '@/utils/supabase/server';
 
 export default async function Home() {
@@ -32,6 +34,8 @@ export default async function Home() {
 
   return (
     <>
+      <HomeBanner />
+      <About />
       <CategoryGrid categories={categories} />
       <HeroSection />
       <FeaturedProducts products={featuredProducts || []} />
