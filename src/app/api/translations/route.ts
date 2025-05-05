@@ -2788,6 +2788,15 @@ const translations = {
     hi: 'सीसीएच लॉजिस्टिक्स सर्विसेज ग्रुप में, हम व्यापक लॉजिस्टिक्स समाधानों में आपके रणनीतिक साझेदार होने पर गर्व करते हैं, जो वेनेजुएला और पनामा दोनों में कुशलता से सेवा प्रदान करते हैं। समुद्री और कार्गो परिवहन की जटिलताओं की गहरी समझ के साथ, हम आपके संचालन को अनुकूलित करने और आपकी आपूर्ति के निरंतर प्रवाह को सुनिश्चित करने के लिए समर्पित हैं।',
     fil: 'Sa CCH Logistics Services Group, ipinagmamalaki naming maging iyong strategic partner sa komprehensibong mga solusyon sa logistics, mahusay na naglilingkod sa parehong Venezuela at Panama. Sa malalim na pag-unawa sa mga kumplikado ng maritime at cargo transportation, kami ay nakatuon sa pag-optimize ng iyong mga operasyon at tinitiyak ang patuloy na daloy ng iyong mga supply.',
   },
+  mixed_vegetables: {
+    en: 'Mixed Vegetables',
+    es: 'Vegetales Mixtos',
+    fr: 'Légumes Mixtes',
+    zh: '混合蔬菜',
+    ru: 'Овощная Смесь',
+    hi: 'मिश्रित सब्जियां',
+    fil: 'Pinaghalong Gulay',
+  },
 };
 
 export async function GET() {
