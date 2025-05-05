@@ -13,7 +13,7 @@ export const ProductRow = ({ product }: ProductRowProps) => {
           <div className="relative h-10 w-10 flex-shrink-0">
             <Image
               src={product.image_url || '/images/img-placeholder.webp'}
-              alt={product.name}
+              alt={product.info['en'].name}
               fill
               className="rounded-md object-contain dark:brightness-90"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -21,7 +21,7 @@ export const ProductRow = ({ product }: ProductRowProps) => {
           </div>
           <div className="ml-4">
             <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-              {product.name}
+              {product.info['en'].name}
             </div>
           </div>
         </div>

@@ -5,10 +5,13 @@ import { useSearchParams } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 import { Category, Product } from '@/utils/supabase/types';
 import CatalogClient from '@/components/catalog/catalog-client';
+import { User } from '@/types';
+import { useLanguage } from '@/contexts/language-context';
 
 const CatalogPage = () => {
   const supabase = createClient();
   const searchParams = useSearchParams();
+  const { language } = useLanguage();
 
   // State for managing catalog data
   const [products, setProducts] = useState<Product[]>([]);
@@ -17,6 +20,7 @@ const CatalogPage = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userData, setUserData] = useState<User>();
 
   // Extract search parameters
   const category = searchParams.get('category') || 'All';
@@ -28,6 +32,24 @@ const CatalogPage = () => {
   const page = parseInt(searchParams.get('page') || '1', 10);
   const pageSize = 9;
 
+  // Fetch user data on component mount
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase
+          .from('user_profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+        setUserData(data);
+      }
+    };
+    fetchUserData();
+  }, [supabase.auth]);
+
   // Fetch products and categories
   useEffect(() => {
     const fetchData = async () => {
@@ -38,8 +60,7 @@ const CatalogPage = () => {
         // Fetch categories
         const { data: categoriesData, error: categoryError } = await supabase
           .from('products')
-          .select('category')
-          .order('category');
+          .select('category');
 
         if (categoryError) throw categoryError;
 
@@ -68,7 +89,7 @@ const CatalogPage = () => {
         }
 
         if (search) {
-          query = query.ilike('name', `%${search}%`);
+          query = query.ilike(`info->${language}->>name`, `%${search}%`);
         }
 
         if (minPrice) {
@@ -100,10 +121,10 @@ const CatalogPage = () => {
             query = query.order('price', { ascending: false });
             break;
           case 'name-asc':
-            query = query.order('name', { ascending: true });
+            query = query.order(`info->${language}->>name`, { ascending: true });
             break;
           case 'name-desc':
-            query = query.order('name', { ascending: false });
+            query = query.order(`info->${language}->>name`, { ascending: false });
             break;
           case 'favorites':
             const favoriteIds = getFavorites();
@@ -127,7 +148,21 @@ const CatalogPage = () => {
 
         if (productError) throw productError;
 
-        setProducts(data || []);
+        // Transform data to match expected Product type
+        const transformedProducts = (data || []).map((product: Product) => ({
+          id: product.id,
+          category: product.category,
+          price: product.price,
+          unit: product.unit,
+          stock: product.stock,
+          image_url: product.image_url,
+          created_at: product.created_at,
+          updated_at: product.updated_at,
+          discount: product.discount,
+          info: product.info,
+        }));
+
+        setProducts(transformedProducts);
         setTotalCount(count || 0);
         setTotalPages(Math.ceil((count || 0) / pageSize));
       } catch (err) {
@@ -139,7 +174,7 @@ const CatalogPage = () => {
     };
 
     fetchData();
-  }, [category, search, sort, minPrice, maxPrice, availability, page]);
+  }, [category, search, sort, minPrice, maxPrice, availability, page, userData, language]);
 
   if (error) {
     return <div>{error}</div>;

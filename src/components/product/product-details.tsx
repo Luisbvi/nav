@@ -24,7 +24,7 @@ const ProductDetails = ({ product }: ProductDetailsProps) => {
 
     addItem({
       id: product.id,
-      name: product.name,
+      name: product.info['en']?.name,
       price: product.price,
       image: product.image_url || '/images/img-placeholder.webp',
       quantity,
@@ -42,7 +42,9 @@ const ProductDetails = ({ product }: ProductDetailsProps) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.2 }}
     >
-      <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-gray-100">{product.name}</h1>
+      <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-gray-100">
+        {product.info['en'].name}
+      </h1>
 
       <div className="mb-4 flex items-center gap-2">
         <Badge variant={'outline'} className="text-sm text-gray-500 dark:text-gray-300">
@@ -80,7 +82,9 @@ const ProductDetails = ({ product }: ProductDetailsProps) => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.4 }}
       >
-        {product.description || t('no_description') || 'No description available for this product.'}
+        {product.info['en'].description ||
+          t('no_description') ||
+          'No description available for this product.'}
       </motion.p>
 
       <motion.div

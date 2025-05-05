@@ -17,7 +17,7 @@ const ProductTable: React.FC<ProductTableProps> = ({ products, onEdit, onDelete 
   const searchQuery = params.get('query') || '';
 
   const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(searchQuery.toLowerCase())
+    product.info['en'].name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -51,7 +51,7 @@ const ProductTable: React.FC<ProductTableProps> = ({ products, onEdit, onDelete 
                     <div className="relative h-10 w-10 flex-shrink-0">
                       <Image
                         src={product.image_url || '/images/img-placeholder.webp'}
-                        alt={product.name}
+                        alt={product.info['en'].name}
                         fill
                         className="rounded-md object-contain"
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -59,7 +59,7 @@ const ProductTable: React.FC<ProductTableProps> = ({ products, onEdit, onDelete 
                     </div>
                     <div className="ml-4">
                       <div className="text-sm font-medium text-gray-900 dark:text-white">
-                        {product.name}
+                        {product.info['en'].name}
                       </div>
                     </div>
                   </div>

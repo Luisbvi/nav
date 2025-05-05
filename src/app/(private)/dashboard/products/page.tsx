@@ -10,7 +10,7 @@ export default async function ProductsPage() {
   const { data: products, error: productsError } = await supabase
     .from('products')
     .select('*')
-    .order('name');
+    .order('info->>name', { ascending: true });
 
   const { categories, error: categoriesError } = await getCategories();
 

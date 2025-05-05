@@ -3,7 +3,6 @@ export type SortOption = 'featured' | 'price-low' | 'price-high' | 'name-asc';
 
 export interface Product {
   id: string;
-  name: string;
   category: string;
   price: number;
   unit?: string;
@@ -13,6 +12,12 @@ export interface Product {
   created_at: Date;
   updated_at: Date;
   discount: number;
+  info: {
+    [lang: string]: {
+      name: string;
+      description: string;
+    };
+  };
 }
 
 export interface Category {

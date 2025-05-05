@@ -46,7 +46,7 @@ export default function OrderItems({ order }: OrderItemsProps) {
     addItem({
       id: item.id,
       image: item.image_url || '/images/img-placeholder.webp',
-      name: item.name,
+      name: item.info['en'].name,
       price: item.price,
       quantity: order.items?.find((i) => i.id == item.id)?.quantity || 1,
       unit: item.unit,
@@ -67,7 +67,7 @@ export default function OrderItems({ order }: OrderItemsProps) {
               <div className="relative h-32 w-32 flex-shrink-0 overflow-hidden rounded-md bg-gray-100 dark:bg-gray-700">
                 <Image
                   src={product.image_url || '/images/img-placeholder.webp'}
-                  alt={product.name}
+                  alt={product.info['en'].name}
                   fill
                   className="object-contain p-2"
                   sizes="128px"
@@ -77,10 +77,10 @@ export default function OrderItems({ order }: OrderItemsProps) {
               <div className="flex flex-1 flex-col justify-between">
                 <div className="space-y-2">
                   <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                    {product.name}
+                    {product.info['en'].name}
                   </h3>
                   <p className="line-clamp-3 text-sm text-gray-500 dark:text-gray-400">
-                    {product.description ||
+                    {product.info['en'].description ||
                       t('no_description') ||
                       'No description available for this product.'}
                   </p>

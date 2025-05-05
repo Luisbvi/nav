@@ -95,8 +95,8 @@ export default function ProductsDashboard({
 
     setEditingProductId(id);
     setFormData({
-      name: product.name,
-      description: product.description || '',
+      name: product.info['en'].name,
+      description: product.info['en'].description || '',
       price: product.price,
       category: product.category,
       unit: product.unit || 'KG',

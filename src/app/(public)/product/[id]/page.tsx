@@ -62,7 +62,7 @@ const ProductPage = () => {
   const breadcrumbItems = [
     { label: 'Home', href: '/' },
     { label: 'Catalog', href: '/catalog' },
-    { label: product.name, href: `/product/${product.id}`, current: true },
+    { label: product.info['es'].name.toUpperCase(), href: `/product/${product.id}`, current: true },
   ];
 
   const specifications = [
@@ -80,7 +80,7 @@ const ProductPage = () => {
         <div className="mt-8 grid gap-10 md:grid-cols-2">
           <ProductGallery
             imageUrl={product.image_url || '/images/img-placeholder.webp'}
-            productName={product.name}
+            productName={product.info['en'].name}
           />
           <ProductDetails product={product} />
         </div>

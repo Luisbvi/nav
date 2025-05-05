@@ -13,7 +13,9 @@ export default function RecentProductsTable({ products }: RecentProductsTablePro
   const searchQuery = params.get('query');
 
   const filteredProducts = searchQuery
-    ? products.filter((product) => product.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    ? products.filter((product) =>
+        product.info['en'].name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
     : products;
 
   return (

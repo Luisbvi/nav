@@ -58,7 +58,7 @@ export default function ProductTabs({ product, specifications }: ProductTabsProp
                 {t('product_details') || 'Product Details'}
               </h2>
               <p className="mb-4 dark:text-gray-300">
-                {product.description ||
+                {product.info['en'].description ||
                   t('no_detailed_description') ||
                   'No detailed description available for this product.'}
               </p>

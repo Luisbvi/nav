@@ -1,14 +1,19 @@
 export interface Product {
   id: string;
-  name: string;
-  description: string;
-  price: number;
   category: string;
-  unit: string;
+  price: number;
+  unit?: string;
   stock: number;
   image_url?: string;
-  created_at?: string;
-  updated_at?: string;
+  created_at: Date;
+  updated_at: Date;
+  discount: number;
+  info: {
+    [lang: string]: {
+      name: string;
+      description: string;
+    };
+  };
 }
 
 export interface CartItem {

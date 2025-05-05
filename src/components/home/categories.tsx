@@ -29,17 +29,31 @@ export default function CategoryGrid({ categories }: CategoryGridProps) {
       const result: CategoryWithProduct[] = [];
 
       for (const category of categories) {
-        const { data: products } = await supabase
+        const { count: productCount } = await supabase
           .from('products')
-          .select('image_url, name')
-          .eq('category', category.name)
-          .limit(1)
-          .order('created_at', { ascending: false });
+          .select('*', { count: 'exact', head: true })
+          .eq('category', category.name);
 
-        result.push({
-          ...category,
-          randomProduct: products?.[0] || null,
-        });
+        if (productCount && productCount > 0) {
+          const randomOffset = Math.floor(Math.random() * productCount);
+
+          const { data: randomProduct } = await supabase
+            .from('products')
+            .select('image_url, info->>name')
+            .eq('category', category.name)
+            .range(randomOffset, randomOffset)
+            .single();
+
+          result.push({
+            ...category,
+            randomProduct: randomProduct || null,
+          });
+        } else {
+          result.push({
+            ...category,
+            randomProduct: null,
+          });
+        }
       }
 
       setCategoriesWithProducts(result);

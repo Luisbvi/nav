@@ -390,10 +390,10 @@ export default function OrdersDashboard({ initialOrders }: { initialOrders: Orde
                         return (
                           <tr key={`${item.id}-${item.quantity}`}>
                             <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
-                              {product.name || 'Product'}
+                              {product.info['en'].name || 'Product'}
                             </td>
                             <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
-                              {item.description || product.description || '-'}
+                              {item.description || product.info['en'].description || '-'}
                             </td>
                             <td className="px-4 py-2 text-center text-sm text-gray-900 dark:text-white">
                               {item.quantity}

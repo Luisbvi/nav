@@ -15,7 +15,7 @@ interface ProductCardProps {
 }
 
 const ProductCard = ({ product }: ProductCardProps) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
@@ -53,7 +53,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
     addItem({
       id: product.id,
       unit: product.unit,
-      name: product.name,
+      name: product.info[language].name,
       price: product.price,
       image: product.image_url || '',
       quantity: quantity,
@@ -138,7 +138,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
         <Link href={`/product/${product.id}`} className="relative block pb-[100%]">
           <Image
             src={product.image_url || '/images/img-placeholder.webp'}
-            alt={product.name}
+            alt={product.info[language].name}
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
             className="rounded-lg object-contain transition-transform duration-300 group-hover:scale-105"
@@ -155,7 +155,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
           </span>
           <Link href={`/product/${product.id}`}>
             <h3 className="line-clamp-2 text-sm font-medium text-gray-900 transition-colors hover:text-blue-600 sm:text-base dark:text-gray-100 dark:hover:text-blue-400">
-              {product.name}
+              {product.info[language].name}
             </h3>
           </Link>
         </div>

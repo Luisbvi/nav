@@ -109,7 +109,7 @@ const ImportExcelModal = ({
                           {importedData.map((item, index) => (
                             <tr key={index}>
                               <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-900">
-                                {item.name}
+                                {item.info['en'].name}
                               </td>
                               <td className="px-6 py-4 text-sm whitespace-nowrap text-gray-500">
                                 {item.category}

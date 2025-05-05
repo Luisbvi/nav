@@ -7,7 +7,10 @@ export default async function DashboardPage() {
   const supabase = await createClient();
 
   // Fetch productos
-  const { data: products } = await supabase.from('products').select('*').order('name');
+  const { data: products } = await supabase
+    .from('products')
+    .select('*')
+    .order('info->>name', { ascending: true });
 
   if (!products) {
     throw new Error('Failed to fetch products');
