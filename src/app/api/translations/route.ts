@@ -2797,6 +2797,33 @@ const translations = {
     hi: 'मिश्रित सब्जियां',
     fil: 'Pinaghalong Gulay',
   },
+  chicken: {
+    en: 'Chicken',
+    es: 'Pollo',
+    fr: 'Poulet',
+    zh: '鸡肉',
+    ru: 'Курица',
+    hi: 'मुर्गी',
+    fil: 'Manok',
+  },
+  beef: {
+    en: 'Beef',
+    es: 'Carne',
+    fr: 'Bœuf',
+    zh: '牛肉',
+    ru: 'Говядина',
+    hi: 'गोमांस',
+    fil: 'Baka',
+  },
+  fish: {
+    en: 'Fish & Seafood',
+    es: 'Pescado y Mariscos',
+    fr: 'Poisson et Fruits de Mer',
+    zh: '鱼和海鲜',
+    ru: 'Рыба и Морепродукты',
+    hi: 'मछली और समुद्री भोजन',
+    fil: 'Isda at Seafood',
+  },
 };
 
 export async function GET() {
