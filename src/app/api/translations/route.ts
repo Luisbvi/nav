@@ -2833,6 +2833,24 @@ const translations = {
     hi: 'मछली और समुद्री भोजन',
     fil: 'Isda at Seafood',
   },
+  'sausages_&_processed_meats': {
+    en: 'Sausages & Processed Meats',
+    es: 'Embutidos y Carnes Procesadas',
+    fr: 'Saucisses et Viandes Transformées',
+    zh: '香肠和加工肉类',
+    ru: 'Колбасы и Переработанное Мясо',
+    hi: 'सॉसेज और प्रसंस्कृत मांस',
+    fil: 'Mga Longganisa at Pinrosesong Karne',
+  },
+  all: {
+    en: 'All',
+    es: 'Todos',
+    fr: 'Tous',
+    zh: '所有',
+    ru: 'Все',
+    hi: 'सभी',
+    fil: 'Lahat',
+  },
 };
 
 export async function GET() {
