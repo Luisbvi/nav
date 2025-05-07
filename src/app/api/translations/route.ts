@@ -2851,6 +2851,24 @@ const translations = {
     hi: 'सभी',
     fil: 'Lahat',
   },
+  cheeses_and_dairy: {
+    en: 'Cheeses and Dairy',
+    es: 'Quesos y Lácteos',
+    fr: 'Fromages et Produits Laitiers',
+    zh: '奶酪和乳制品',
+    ru: 'Сыры и Молочные Продукты',
+    hi: 'पनीर और डेयरी',
+    fil: 'Kesyo at Pagawaan ng Gatas',
+  },
+  mineral_water: {
+    en: 'Mineral Water',
+    es: 'Agua Mineral',
+    fr: 'Eau Minérale',
+    zh: '矿泉水',
+    ru: 'Минеральная Вода',
+    hi: 'खनिज पानी',
+    fil: 'Tubig na Mineral',
+  },
 };
 
 export async function GET() {
