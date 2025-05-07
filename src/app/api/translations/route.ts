@@ -2815,6 +2815,15 @@ const translations = {
     hi: 'गोमांस',
     fil: 'Baka',
   },
+  pork: {
+    en: 'Pork',
+    es: 'Puerco',
+    fr: 'Porc',
+    zh: '猪肉',
+    ru: 'Свинина',
+    hi: 'सूअर का मांस',
+    fil: 'Baboy',
+  },
   fish: {
     en: 'Fish & Seafood',
     es: 'Pescado y Mariscos',
