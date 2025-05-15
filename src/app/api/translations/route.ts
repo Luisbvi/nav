@@ -2869,6 +2869,15 @@ const translations = {
     hi: 'खनिज पानी',
     fil: 'Tubig na Mineral',
   },
+  others: {
+    en: 'Others',
+    es: 'Otros',
+    fr: 'Autres',
+    zh: '其他',
+    ru: 'Другие',
+    hi: 'अन्य',
+    fil: 'Iba pa',
+  },
 };
 
 export async function GET() {
