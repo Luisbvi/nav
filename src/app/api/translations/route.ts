@@ -2878,6 +2878,33 @@ const translations = {
     hi: 'अन्य',
     fil: 'Iba pa',
   },
+  spices: {
+    en: 'Spices',
+    es: 'Especias',
+    fr: 'Épices',
+    zh: '香料',
+    ru: 'Специи',
+    hi: 'मसाले',
+    fil: 'Pampalasa',
+  },
+  sweet_and_candies: {
+    en: 'Sweet and Candies',
+    es: 'Dulces y Caramelos',
+    fr: 'Friandises et Bonbons',
+    zh: '甜点和糖果',
+    ru: 'Сладости и Конфеты',
+    hi: 'मिठाई और कैंडी',
+    fil: 'Matamis at Kendi',
+  },
+  soft_drinks: {
+    en: 'Soft Drinks',
+    es: 'Bebidas Refrescantes',
+    fr: 'Boissons Gazeuses',
+    zh: '软饮料',
+    ru: 'Безалкогольные напитки',
+    hi: 'सॉफ्ट ड्रिंक्स',
+    fil: 'Mga Malamig na Inumin',
+  },
 };
 
 export async function GET() {
