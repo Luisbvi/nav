@@ -2905,6 +2905,15 @@ const translations = {
     hi: 'सॉफ्ट ड्रिंक्स',
     fil: 'Mga Malamig na Inumin',
   },
+  clean: {
+    en: 'Clean',
+    es: 'Limpieza',
+    fr: 'Nettoyage',
+    zh: '清洁',
+    ru: 'Уборка',
+    hi: 'सफाई',
+    fil: 'Kalinis',
+  },
 };
 
 export async function GET() {
