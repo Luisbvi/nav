@@ -9,8 +9,10 @@ import ProductGallery from '@/components/product/product-gallery';
 import ProductDetails from '@/components/product/product-details';
 import ProductTab from '@/components/product/product-tab';
 import { Product } from '@/types';
+import { useLanguage } from '@/contexts/language-context';
 
 const ProductPage = () => {
+  const { language } = useLanguage();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -62,7 +64,11 @@ const ProductPage = () => {
   const breadcrumbItems = [
     { label: 'Home', href: '/' },
     { label: 'Catalog', href: '/catalog' },
-    { label: product.info['es'].name.toUpperCase(), href: `/product/${product.id}`, current: true },
+    {
+      label: product.info[language].name.toUpperCase(),
+      href: `/product/${product.id}`,
+      current: true,
+    },
   ];
 
   const specifications = [
@@ -80,7 +86,7 @@ const ProductPage = () => {
         <div className="mt-8 grid gap-10 md:grid-cols-2">
           <ProductGallery
             imageUrl={product.image_url || '/images/img-placeholder.webp'}
-            productName={product.info['en'].name}
+            productName={product.info[language].name}
           />
           <ProductDetails product={product} />
         </div>

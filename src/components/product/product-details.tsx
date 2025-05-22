@@ -3,28 +3,34 @@ import { Product } from '@/types';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
-import { Check, MinusCircle, PlusCircle, ShieldCheck, Truck } from 'lucide-react';
+import { Check, MinusCircle, PlusCircle, ShieldCheck, Truck, X } from 'lucide-react';
 import { useState } from 'react';
 import { useCart } from '@/contexts/cart-context';
 import { Separator } from '../ui/separator';
 import { useLanguage } from '@/contexts/language-context';
+import { cn } from '@/lib/utils';
 
 interface ProductDetailsProps {
   product: Product;
 }
 
 const ProductDetails = ({ product }: ProductDetailsProps) => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [quantity, setQuantity] = useState(1);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const { addItem } = useCart();
+  const [showContactPopup, setShowContactPopup] = useState(false);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (confirmed: boolean = false) => {
+    if (product.price === 0 && !confirmed) {
+      setShowContactPopup(true);
+      return;
+    }
+
     setIsAddingToCart(true);
-
     addItem({
       id: product.id,
-      name: product.info['en']?.name,
+      name: product.info[language]?.name,
       price: product.price,
       image: product.image_url || '/images/img-placeholder.webp',
       quantity,
@@ -33,6 +39,7 @@ const ProductDetails = ({ product }: ProductDetailsProps) => {
 
     setTimeout(() => {
       setIsAddingToCart(false);
+      setShowContactPopup(false);
     }, 2000);
   };
 
@@ -43,7 +50,7 @@ const ProductDetails = ({ product }: ProductDetailsProps) => {
       transition={{ duration: 0.5, delay: 0.2 }}
     >
       <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-gray-100">
-        {product.info['en'].name}
+        {product.info[language].name}
       </h1>
 
       <div className="mb-4 flex items-center gap-2">
@@ -73,7 +80,10 @@ const ProductDetails = ({ product }: ProductDetailsProps) => {
         animate={{ scale: 1 }}
         transition={{ duration: 0.3, delay: 0.3 }}
       >
-        {t('price_format', { price: product.price.toFixed(2) }) || `$${product.price.toFixed(2)}`}
+        {product.price > 0
+          ? t('price_format', { price: product.price.toFixed(2) }) + '$' ||
+            `$${product.price.toFixed(2)}`
+          : t('contact_for_price') || 'Contact for price'}
       </motion.div>
 
       <motion.p
@@ -82,7 +92,7 @@ const ProductDetails = ({ product }: ProductDetailsProps) => {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 0.4 }}
       >
-        {product.info['en'].description ||
+        {product.info[language].description ||
           t('no_description') ||
           'No description available for this product.'}
       </motion.p>
@@ -105,7 +115,7 @@ const ProductDetails = ({ product }: ProductDetailsProps) => {
             <MinusCircle className="size-4" />
           </Button>
           <span className="mx-4 dark:text-gray-200">
-            {quantity}
+            {quantity + ' '}
             <span className="text-sm text-gray-500 dark:text-gray-400">
               {product.unit ? t(product.unit.toLowerCase()) || product.unit : ''}
             </span>
@@ -124,7 +134,7 @@ const ProductDetails = ({ product }: ProductDetailsProps) => {
 
         <Button
           className="relative cursor-pointer overflow-hidden bg-blue-500 px-8 hover:bg-blue-600 dark:bg-blue-600 dark:text-gray-100 dark:hover:bg-blue-700"
-          onClick={handleAddToCart}
+          onClick={() => handleAddToCart()}
           disabled={!product?.stock || isAddingToCart}
         >
           <AnimatePresence mode="wait">
@@ -184,6 +194,75 @@ const ProductDetails = ({ product }: ProductDetailsProps) => {
           </div>
         </div>
       </motion.div>
+
+      <AnimatePresence>
+        {showContactPopup && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="relative w-full max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-gray-800"
+            >
+              <button
+                onClick={() => setShowContactPopup(false)}
+                className="absolute top-4 right-4 rounded-full p-1 hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+              </button>
+              <div className="text-center">
+                <h3 className="mb-4 text-lg font-medium text-gray-900 dark:text-gray-100">
+                  {t('contact_popup_title') || 'We will contact you soon'}
+                </h3>
+                <p className="mb-6 text-gray-600 dark:text-gray-300">
+                  {t('contact_popup_message') ||
+                    'Our team will contact you shortly via email to provide more information about this product.'}
+                </p>
+                <motion.button
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  disabled={isAddingToCart}
+                  onClick={() => handleAddToCart(true)}
+                  className={cn(
+                    'flex w-full items-center justify-center gap-1 rounded-md py-2 text-sm font-medium text-white transition-colors sm:text-base',
+                    'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600'
+                  )}
+                >
+                  <AnimatePresence mode="wait">
+                    {isAddingToCart ? (
+                      <motion.div
+                        key="loading"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="flex items-center"
+                      >
+                        <Check className="mr-1 size-3 sm:size-4" />
+                        {t('added') || 'Added'}
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="add"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="flex items-center"
+                      >
+                        {t('understand') || 'I understand'}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };

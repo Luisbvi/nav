@@ -15,13 +15,7 @@ const ProductGallery = ({ imageUrl, productName, additionalImages = [] }: Produc
   const allImages = [imageUrl || '/images/img-placeholder.webp', ...additionalImages];
 
   const displayImages =
-    allImages.length > 1
-      ? allImages
-      : [
-          imageUrl || '/images/img-placeholder.webp',
-          '/images/img-placeholder.webp',
-          '/images/img-placeholder.webp',
-        ];
+    allImages.length > 1 ? allImages : [imageUrl || '/images/img-placeholder.webp'];
 
   return (
     <motion.div
