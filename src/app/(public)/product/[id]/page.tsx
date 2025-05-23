@@ -12,7 +12,7 @@ import { Product } from '@/types';
 import { useLanguage } from '@/contexts/language-context';
 
 const ProductPage = () => {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -23,7 +23,6 @@ const ProductPage = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        // Use params.id instead of searchParams
         const productId = params.id;
 
         if (!productId) {
@@ -97,7 +96,8 @@ const ProductPage = () => {
 
         <div className="mt-4">
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            If you need more information about this product, please contact us.
+            {t('contact_product_info') ||
+              'If you need more information about this product, please contact us.'}
           </p>
         </div>
       </div>

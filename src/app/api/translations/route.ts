@@ -2959,6 +2959,15 @@ const translations = {
     hi: 'हमारी टीम ऑर्डर करने के बाद आपको ईमेल के माध्यम से कोटेशन के लिए संपर्क करेगी...',
     fil: 'Makikipag-ugnayan ang aming koponan sa iyo sa pamamagitan ng email para sa presyo pagkatapos ng order...',
   },
+  contact_product_info: {
+    en: 'If you need more information about this product, please contact us.',
+    es: 'Si necesitas más información sobre este producto, por favor contáctanos.',
+    fr: 'Si vous avez besoin de plus d’informations sur ce produit, veuillez nous contacter.',
+    zh: '如果您需要更多关于该产品的信息，请联系我们。',
+    ru: 'Если вам нужна дополнительная информация о продукте, пожалуйста, свяжитесь с нами.',
+    hi: 'यदि आपको इस उत्पाद के बारे में अधिक जानकारी चाहिए, तो कृपया हमसे संपर्क करें।',
+    fil: 'Kung kailangan mo ng karagdagang impormasyon tungkol sa produktong ito, mangyaring makipag-ugnayan sa amin.',
+  },
 };
 
 export async function GET() {
