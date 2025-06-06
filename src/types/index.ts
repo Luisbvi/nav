@@ -39,15 +39,18 @@ export interface CategoryResponse {
   categories?: string[];
 }
 
-export interface FormData {
+export interface LanguageInfo {
   name: string;
-  description: string;
+  description?: string;
+}
+
+export interface FormData {
   price: number;
   category: string;
   unit: string;
   stock: number;
-  status: 'active' | 'inactive' | 'pending' | 'archived';
-  image_url?: string;
+  discount?: number;
+  info: Record<string, LanguageInfo>;
 }
 
 export interface User {

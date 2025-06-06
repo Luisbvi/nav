@@ -12,7 +12,7 @@ interface ProductTabsProps {
 }
 
 export default function ProductTabs({ product, specifications }: ProductTabsProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [activeTab, setActiveTab] = useState('details');
 
   return (
@@ -58,7 +58,7 @@ export default function ProductTabs({ product, specifications }: ProductTabsProp
                 {t('product_details') || 'Product Details'}
               </h2>
               <p className="mb-4 dark:text-gray-300">
-                {product.info['en'].description ||
+                {product.info[language].description ||
                   t('no_detailed_description') ||
                   'No detailed description available for this product.'}
               </p>
@@ -81,8 +81,12 @@ export default function ProductTabs({ product, specifications }: ProductTabsProp
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.3, delay: index * 0.1 }}
                   >
-                    <span className="font-medium dark:text-gray-200">{spec.name}: </span>
-                    <span className="text-gray-600 dark:text-gray-400">{spec.value}</span>
+                    <span className="font-medium dark:text-gray-200">
+                      {t(spec.name.toLowerCase()) || spec.name}:{' '}
+                    </span>
+                    <span className="text-gray-600 dark:text-gray-400">
+                      {t(spec.value) || spec.value}
+                    </span>
                   </motion.div>
                 ))}
               </div>

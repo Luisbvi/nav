@@ -1,12 +1,13 @@
 'use client';
-import { X, AlertCircle, Check, Save } from 'lucide-react';
+
+import React from 'react';
+import { useState, useMemo } from 'react';
+import { X, Upload, Loader2, Globe, Trash2 } from 'lucide-react';
+import type { FormData } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@radix-ui/react-label';
-
-import ImageUploader from '@/components/image-uploader';
-import { FormEvent } from 'react';
 import {
   Select,
   SelectContent,
@@ -14,309 +15,476 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-export interface FormData {
+interface LanguageHandlers {
+  handleNameChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleDescriptionChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   name: string;
   description: string;
-  price: number;
-  category: string;
-  unit: string;
-  stock: number;
-  status: 'active' | 'inactive' | 'pending' | 'archived';
-  image_url?: string;
 }
 
 interface AddEditProductModalProps {
   formData: FormData;
   categories: string[];
-  imageUrl: string;
+  imagePreview: string;
   isSubmitting: boolean;
   formError: string | null;
   formSuccess: string | null;
   editingProductId: string | null;
+  supportedLanguages: readonly string[];
+  languageHandlers: Record<string, LanguageHandlers>;
   onInputChange: (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => void;
   onSelectChange: (field: keyof FormData, value: string) => void;
-  onSubmit: (e: FormEvent<HTMLFormElement>) => void;
+  onImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onSubmit: (e: React.FormEvent) => void;
   onClose: () => void;
-  onImageUploadComplete: (url: string) => void;
+  onPriceChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onStockChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onDiscountChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onCategoryChange: (value: string) => void;
+  onUnitChange: (value: string) => void;
 }
 
-const AddEditProductModal = ({
+const LANGUAGE_NAMES: Record<string, string> = {
+  en: 'English',
+  es: 'Español',
+  fr: 'Français',
+  hi: 'हिन्दी',
+  ru: 'Русский',
+  zh: '中文',
+  fil: 'Filipino',
+};
+
+const UNITS = ['KG', 'UNIT', 'TIN', 'SERVICE', 'PKT', 'PCS', 'LTS'] as const;
+
+const LanguageForm = React.memo(
+  ({
+    lang,
+    handlers,
+    isRequired,
+  }: {
+    lang: string;
+    handlers: LanguageHandlers;
+    isRequired: boolean;
+  }) => {
+    return (
+      <div className="grid gap-4">
+        <div>
+          <Label
+            htmlFor={`name-${lang}`}
+            className="text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
+            Product Name
+          </Label>
+          <Input
+            id={`name-${lang}`}
+            name="name"
+            value={handlers.name}
+            onChange={handlers.handleNameChange}
+            placeholder={`Name in ${LANGUAGE_NAMES[lang] || lang}`}
+            required={isRequired}
+            className="mt-1 border-gray-300 bg-white text-gray-900 placeholder:text-gray-500 focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder:text-gray-400 dark:focus:border-blue-400"
+          />
+        </div>
+
+        <div>
+          <Label
+            htmlFor={`description-${lang}`}
+            className="text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
+            Description
+          </Label>
+          <Textarea
+            id={`description-${lang}`}
+            name="description"
+            value={handlers.description}
+            onChange={handlers.handleDescriptionChange}
+            placeholder={`Description in ${LANGUAGE_NAMES[lang] || lang}`}
+            rows={3}
+            className="mt-1 resize-none border-gray-300 bg-white text-gray-900 placeholder:text-gray-500 focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder:text-gray-400 dark:focus:border-blue-400"
+          />
+        </div>
+      </div>
+    );
+  }
+);
+
+LanguageForm.displayName = 'LanguageForm';
+
+export default function AddEditProductModal({
   formData,
   categories,
+  imagePreview,
   isSubmitting,
   formError,
   formSuccess,
   editingProductId,
-  onInputChange,
-  onSelectChange,
+  supportedLanguages,
+  languageHandlers,
+  onImageChange,
   onSubmit,
   onClose,
-  onImageUploadComplete,
-}: AddEditProductModalProps) => {
+  onPriceChange,
+  onStockChange,
+  onDiscountChange,
+  onCategoryChange,
+  onUnitChange,
+}: AddEditProductModalProps) {
+  const [activeLang, setActiveLang] = useState('en');
+  const [isHoveringImage, setIsHoveringImage] = useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const isEditing = Boolean(editingProductId);
+  const modalTitle = isEditing ? 'Edit Product' : 'Add Product';
+  const modalDescription = isEditing
+    ? 'Modify the existing product information'
+    : 'Complete the information to create a new product';
+  const submitButtonText = isEditing ? 'Update' : 'Add';
+
+  const tabsGridCols = useMemo(() => {
+    const langCount = supportedLanguages.length;
+    return langCount <= 4 ? 'grid-cols-4' : 'lg:grid-cols-7';
+  }, [supportedLanguages.length]);
+
+  const handleRemoveImage = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    onImageChange({ target: { files: null } } as React.ChangeEvent<HTMLInputElement>);
+  };
+
+  const triggerFileInput = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div
-        className="fixed inset-0 bg-black/20 backdrop-blur-[2px] transition-opacity dark:bg-black/40"
-        onClick={onClose}
-      ></div>
-
-      {/* Modal Content */}
-      <div className="flex min-h-full items-center justify-center p-4">
-        <div className="relative w-full max-w-2xl transform rounded-xl bg-white p-6 shadow-xl transition-all dark:bg-gray-800 dark:shadow-gray-900/50">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-2xl font-semibold dark:text-white">
-              {editingProductId ? 'Edit Product' : 'Add New Product'}
-            </h2>
-            <button
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-sm dark:bg-gray-900/80">
+      <div className="flex min-h-screen items-center justify-center p-4">
+        <Card className="relative max-h-[90vh] w-full max-w-4xl overflow-y-auto border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-800">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 border-b border-gray-200 pb-4 dark:border-gray-700">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-xl text-gray-900 dark:text-gray-100">
+                <Globe className="h-5 w-5" />
+                {modalTitle}
+              </CardTitle>
+              <CardDescription className="text-gray-600 dark:text-gray-400">
+                {modalDescription}
+              </CardDescription>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={onClose}
-              className="rounded-full p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-500 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+              className="h-8 w-8 text-gray-500 hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
             >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-
-          {formError && (
-            <div className="mb-6 border-l-4 border-red-500 bg-red-50 p-4 dark:bg-red-900/20">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <AlertCircle className="h-5 w-5 text-red-500 dark:text-red-300" />
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm text-red-700 dark:text-red-200">{formError}</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {formSuccess && (
-            <div className="mb-6 border-l-4 border-green-500 bg-green-50 p-4 dark:bg-green-900/20">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <Check className="h-5 w-5 text-green-500 dark:text-green-300" />
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm text-green-700 dark:text-green-200">{formSuccess}</p>
-                </div>
-              </div>
-            </div>
-          )}
+              <X className="h-4 w-4" />
+            </Button>
+          </CardHeader>
 
           <form onSubmit={onSubmit}>
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="name" className="dark:text-gray-300">
-                    Product Name *
-                  </Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={onInputChange}
-                    required
-                    className="dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="category" className="dark:text-gray-300">
-                    Category *
-                  </Label>
-                  <div className="flex gap-2">
-                    <div className="flex-1">
-                      <Select
-                        value={
-                          categories.includes(formData.category) ? formData.category : 'custom'
-                        }
-                        onValueChange={(value) => {
-                          if (value === 'custom') {
-                            onSelectChange('category', '');
-                          } else {
-                            onSelectChange('category', value);
-                          }
-                        }}
+            <CardContent className="space-y-6 bg-white p-6 dark:bg-gray-800">
+              {/* Language Tabs */}
+              <div>
+                <Label className="text-base font-medium text-gray-900 dark:text-gray-100">
+                  Multilingual Information
+                </Label>
+                <Tabs value={activeLang} onValueChange={setActiveLang} className="mt-2">
+                  <TabsList
+                    className={`grid w-full ${tabsGridCols} border border-gray-200 bg-gray-100 dark:border-gray-600 dark:bg-gray-700`}
+                  >
+                    {supportedLanguages.map((lang) => (
+                      <TabsTrigger
+                        key={lang}
+                        value={lang}
+                        className="text-xs text-gray-600 hover:text-gray-900 data-[state=active]:bg-white data-[state=active]:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 data-[state=active]:dark:bg-gray-600 data-[state=active]:dark:text-gray-100"
                       >
-                        <SelectTrigger className="dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                          <SelectValue placeholder="Select a category" />
-                        </SelectTrigger>
-                        <SelectContent className="dark:border-gray-600 dark:bg-gray-700">
-                          {categories.map((category) => (
-                            <SelectItem
-                              key={category}
-                              value={category}
-                              className="dark:text-white dark:hover:bg-gray-600"
-                            >
-                              {category}
-                            </SelectItem>
-                          ))}
-                          <SelectItem
-                            value="custom"
-                            className="font-semibold dark:text-white dark:hover:bg-gray-600"
+                        {lang.toUpperCase()}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+
+                  {supportedLanguages.map((lang) => (
+                    <TabsContent key={lang} value={lang} className="mt-4 space-y-4">
+                      <div className="mb-4 flex items-center gap-2">
+                        <Badge
+                          variant="outline"
+                          className="border-gray-300 bg-white text-gray-700 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300"
+                        >
+                          {LANGUAGE_NAMES[lang] || lang.toUpperCase()}
+                        </Badge>
+                        {lang === 'en' && (
+                          <Badge
+                            variant="default"
+                            className="bg-blue-600 text-white dark:bg-blue-700"
                           >
-                            + Add Category
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {(formData.category === '' || !categories.includes(formData.category)) && (
-                      <div className="flex-1">
-                        <Input
-                          id="customCategory"
-                          name="category"
-                          placeholder="Enter category name"
-                          value={formData.category}
-                          onChange={(e) => onSelectChange('category', e.target.value)}
-                          required
-                          className="dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
-                        />
+                            Required
+                          </Badge>
+                        )}
                       </div>
-                    )}
-                  </div>
-                </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                      <LanguageForm
+                        lang={lang}
+                        handlers={languageHandlers[lang]}
+                        isRequired={lang === 'en'}
+                      />
+                    </TabsContent>
+                  ))}
+                </Tabs>
+              </div>
+
+              <Separator className="bg-gray-200 dark:bg-gray-700" />
+
+              {/* Product Details */}
+              <div>
+                <Label className="text-base font-medium text-gray-900 dark:text-gray-100">
+                  Product Details
+                </Label>
+                <div className="mt-4 grid gap-4 md:grid-cols-2">
                   <div>
-                    <Label htmlFor="price" className="dark:text-gray-300">
-                      Price *
+                    <Label
+                      htmlFor="price"
+                      className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                    >
+                      Price
                     </Label>
                     <Input
                       id="price"
                       name="price"
                       type="number"
-                      step="0.01"
-                      min="0"
-                      value={formData.price}
-                      onChange={onInputChange}
+                      value={formData.price || 0}
+                      onChange={onPriceChange}
+                      step="1"
+                      min="1"
+                      placeholder="1"
                       required
-                      className="dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                      className="mt-1 border-gray-300 bg-white text-gray-900 placeholder:text-gray-500 focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder:text-gray-400 dark:focus:border-blue-400"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="unit" className="dark:text-gray-300">
-                      Unit
-                    </Label>
-                    <Select
-                      value={formData.unit}
-                      onValueChange={(value) => onSelectChange('unit', value)}
+                    <Label
+                      htmlFor="category"
+                      className="text-sm font-medium text-gray-700 dark:text-gray-300"
                     >
-                      <SelectTrigger className="dark:border-gray-600 dark:bg-gray-700 dark:text-white">
-                        <SelectValue placeholder="Select a unit" />
+                      Category
+                    </Label>
+                    <Select value={formData.category} onValueChange={onCategoryChange}>
+                      <SelectTrigger className="mt-1 border-gray-300 bg-white text-gray-900 focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:focus:border-blue-400">
+                        <SelectValue placeholder="Select category" />
                       </SelectTrigger>
-                      <SelectContent className="dark:border-gray-600 dark:bg-gray-700">
-                        <SelectItem value="KG" className="dark:text-white dark:hover:bg-gray-600">
-                          KG
-                        </SelectItem>
-                        <SelectItem value="UNIT" className="dark:text-white dark:hover:bg-gray-600">
-                          UNIT
-                        </SelectItem>
-                        <SelectItem
-                          value="LITER"
-                          className="dark:text-white dark:hover:bg-gray-600"
-                        >
-                          LITER
-                        </SelectItem>
-                        <SelectItem value="TON" className="dark:text-white dark:hover:bg-gray-600">
-                          TON
-                        </SelectItem>
+                      <SelectContent className="border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-700">
+                        {categories.map((category) => (
+                          <SelectItem
+                            key={category}
+                            value={category}
+                            className="text-gray-900 hover:bg-gray-100 focus:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-600 dark:focus:bg-gray-600"
+                          >
+                            {category}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
-                </div>
 
-                <div>
-                  <Label htmlFor="stock" className="dark:text-gray-300">
-                    Stock *
-                  </Label>
-                  <Input
-                    id="stock"
-                    name="stock"
-                    type="number"
-                    min="0"
-                    value={formData.stock}
-                    onChange={onInputChange}
-                    required
-                    className="dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
-                  />
-                </div>
+                  <div>
+                    <Label
+                      htmlFor="unit"
+                      className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                    >
+                      Unit
+                    </Label>
+                    <Select value={formData.unit} onValueChange={onUnitChange}>
+                      <SelectTrigger className="mt-1 border-gray-300 bg-white text-gray-900 focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:focus:border-blue-400">
+                        <SelectValue placeholder="Select unit" />
+                      </SelectTrigger>
+                      <SelectContent className="border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-700">
+                        {UNITS.map((unit) => (
+                          <SelectItem
+                            key={unit}
+                            value={unit}
+                            className="text-gray-900 hover:bg-gray-100 dark:text-gray-100 dark:hover:bg-gray-600"
+                          >
+                            {unit}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                <div>
-                  <Label htmlFor="description" className="dark:text-gray-300">
-                    Description
-                  </Label>
-                  <Textarea
-                    id="description"
-                    name="description"
-                    value={formData.description}
-                    onChange={onInputChange}
-                    rows={4}
-                    className="dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
-                  />
+                  <div>
+                    <Label
+                      htmlFor="stock"
+                      className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                    >
+                      Stock
+                    </Label>
+                    <Input
+                      id="stock"
+                      name="stock"
+                      step={1}
+                      type="number"
+                      value={formData.stock || 0}
+                      onChange={onStockChange}
+                      min="1"
+                      placeholder="1"
+                      required
+                      className="mt-1 border-gray-300 bg-white text-gray-900 placeholder:text-gray-500 focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder:text-gray-400 dark:focus:border-blue-400"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <Label
+                      htmlFor="discount"
+                      className="text-sm font-medium text-gray-700 dark:text-gray-300"
+                    >
+                      Discount (%)
+                    </Label>
+                    <Input
+                      id="discount"
+                      name="discount"
+                      type="number"
+                      value={formData.discount || 0}
+                      onChange={onDiscountChange}
+                      min="0"
+                      max="100"
+                      placeholder="0"
+                      className="mt-1 border-gray-300 bg-white text-gray-900 placeholder:text-gray-500 focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100 dark:placeholder:text-gray-400 dark:focus:border-blue-400"
+                    />
+                  </div>
                 </div>
               </div>
 
+              <Separator className="bg-gray-200 dark:bg-gray-700" />
+
+              {/* Image Upload */}
               <div>
-                <Label className="dark:text-gray-300">Product Image</Label>
-                <ImageUploader
-                  bucket="products"
-                  onUploadComplete={(url) => {
-                    onImageUploadComplete(url);
-                  }}
-                  className="mt-4"
-                />
-                <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                  Upload an image for the product. Maximum size: 5MB.
-                </p>
+                <Label className="text-base font-medium text-gray-900 dark:text-gray-100">
+                  Product Image
+                </Label>
+                <div className="mt-4">
+                  {!imagePreview ? (
+                    <div className="flex w-full items-center justify-center">
+                      <label className="flex h-32 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 transition-colors hover:border-gray-400 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-700 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <Upload className="mb-2 h-8 w-8 text-gray-500 dark:text-gray-400" />
+                          <p className="text-sm text-gray-600 dark:text-gray-300">
+                            <span className="font-semibold">Click to upload</span> or drag and drop
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            PNG, JPG, GIF up to 10MB
+                          </p>
+                        </div>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={onImageChange}
+                          className="hidden"
+                          ref={fileInputRef}
+                        />
+                      </label>
+                    </div>
+                  ) : (
+                    <div className="relative inline-block">
+                      <div
+                        className="relative h-64 w-64 overflow-hidden rounded-lg border border-gray-300 bg-white dark:border-gray-600 dark:bg-gray-700"
+                        onMouseEnter={() => setIsHoveringImage(true)}
+                        onMouseLeave={() => setIsHoveringImage(false)}
+                      >
+                        <img
+                          src={imagePreview}
+                          alt="Preview"
+                          className="h-full w-full object-contain"
+                        />
+                        {isHoveringImage && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-black/50 transition-opacity">
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="icon"
+                              onClick={handleRemoveImage}
+                              className="h-10 w-10 rounded-full"
+                            >
+                              <Trash2 className="h-5 w-5" />
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                      <div className="mt-2 text-center">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={triggerFileInput}
+                          className="text-sm"
+                        >
+                          Change Image
+                        </Button>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={onImageChange}
+                          className="hidden"
+                          ref={fileInputRef}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
 
-            <div className="mt-8 flex justify-end">
+              {/* Error/Success Messages */}
+              {formError && (
+                <Alert
+                  variant="destructive"
+                  className="border-red-300 bg-red-50 dark:border-red-700 dark:bg-red-900/20"
+                >
+                  <AlertDescription className="!text-red-800 dark:!text-red-200">
+                    {formError}
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {formSuccess && (
+                <Alert className="border-green-300 bg-green-50 dark:border-green-700 dark:bg-green-900/20">
+                  <AlertDescription className="!text-green-800 dark:!text-green-200">
+                    {formSuccess}
+                  </AlertDescription>
+                </Alert>
+              )}
+            </CardContent>
+
+            {/* Footer */}
+            <div className="flex items-center justify-end gap-3 border-t border-gray-200 bg-gray-50 p-6 dark:border-gray-700 dark:bg-gray-800">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                disabled={isSubmitting}
+                className="border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-gray-100"
+              >
+                Cancel
+              </Button>
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:text-white dark:hover:bg-blue-700"
+                className="min-w-[140px] bg-blue-600 text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-blue-700 dark:hover:bg-blue-800"
               >
-                {isSubmitting ? (
-                  <>
-                    <svg
-                      className="mr-2 -ml-1 h-4 w-4 animate-spin text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-4 w-4" />
-                    Save Product
-                  </>
-                )}
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isSubmitting ? 'Processing...' : submitButtonText}
               </Button>
             </div>
           </form>
-        </div>
+        </Card>
       </div>
     </div>
   );
-};
-
-export default AddEditProductModal;
+}

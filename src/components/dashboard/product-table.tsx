@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Product } from '@/types';
 import Image from 'next/image';
 import { Edit, Trash2 } from 'lucide-react';
@@ -12,13 +12,19 @@ interface ProductTableProps {
   onDelete: (id: string) => void;
 }
 
-const ProductTable: React.FC<ProductTableProps> = ({ products, onEdit, onDelete }) => {
+const ProductTable = React.memo(function ProductTable({
+  products,
+  onEdit,
+  onDelete,
+}: ProductTableProps) {
   const params = useSearchParams();
   const searchQuery = params.get('query') || '';
 
-  const filteredProducts = products.filter((product) =>
-    product.info['en'].name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredProducts = useMemo(() => {
+    return products.filter((product) =>
+      product.info['en'].name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [products, searchQuery]);
 
   return (
     <div className="overflow-hidden rounded-lg bg-white shadow dark:bg-gray-800">
@@ -109,6 +115,8 @@ const ProductTable: React.FC<ProductTableProps> = ({ products, onEdit, onDelete 
       )}
     </div>
   );
-};
+});
+
+ProductTable.displayName = 'ProductTable'; // Esto es importante para el debugging
 
 export default ProductTable;
