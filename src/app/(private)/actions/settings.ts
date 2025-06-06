@@ -27,45 +27,21 @@ export async function updatePagomovil(data: PagomovilData): Promise<OperationRes
 
     const userId = userData.user.id;
 
-    const { data: existingData, error: fetchError } = await supabase
-      .from('pagomovil_settings')
-      .select('*')
-      .eq('user_id', userId)
-      .single();
-
-    if (fetchError && fetchError.code !== 'PGRST116') {
-      throw fetchError;
-    }
-
-    let result;
-
-    if (existingData) {
-      // Update existing record
-      result = await supabase
-        .from('pagomovil_settings')
-        .update({
-          phone_number: data.phoneNumber,
+    const { error: updateError } = await supabase
+      .from('settings')
+      .update({
+        pagomovil: JSON.stringify({
+          phoneNumber: data.phoneNumber,
           bank: data.bank,
-          identification_number: data.identificationNumber,
-          holder_name: data.holderName,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('user_id', userId);
-    } else {
-      // Insert new record
-      result = await supabase.from('pagomovil_settings').insert({
-        user_id: userId,
-        phone_number: data.phoneNumber,
-        bank: data.bank,
-        identification_number: data.identificationNumber,
-        holder_name: data.holderName,
-        created_at: new Date().toISOString(),
+          identificationNumber: data.identificationNumber,
+          holderName: data.holderName,
+        }),
         updated_at: new Date().toISOString(),
-      });
-    }
+      })
+      .eq('id', 1);
 
-    if (result.error) {
-      throw result.error;
+    if (updateError) {
+      throw new Error(updateError.message);
     }
 
     revalidatePath('/settings');

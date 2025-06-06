@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, type ChangeEvent, type FormEvent } from 'react';
+import { useState, useEffect, type ChangeEvent, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { updatePagomovil } from '../../actions/settings';
 import { banks } from '@/utils/orders';
+import { usePagomovilInfo } from '@/utils/pagmovil';
 
 interface FormData {
   phoneNumber: string;
@@ -27,6 +28,12 @@ interface Notification {
 }
 
 export default function SettingsPage() {
+  const {
+    pagomovilInfo,
+    loading: pagomovilLoading,
+    error: pagomovilError,
+    refetch,
+  } = usePagomovilInfo();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [formData, setFormData] = useState<FormData>({
     phoneNumber: '',
@@ -48,6 +55,32 @@ export default function SettingsPage() {
   });
 
   const router = useRouter();
+
+  // Update form data when pagomovilInfo changes
+  useEffect(() => {
+    if (pagomovilInfo) {
+      // Extract bank code from stored bank value if it contains the full format
+      let bankCode = pagomovilInfo.bank || '';
+      if (bankCode.includes(' - ')) {
+        // If stored as "0102 - Banco de Venezuela...", extract just the code
+        bankCode = bankCode.split(' - ')[0];
+      }
+
+      setFormData({
+        phoneNumber: pagomovilInfo.phoneNumber || '',
+        bank: bankCode,
+        identificationNumber: pagomovilInfo.identificationNumber || '',
+        holderName: pagomovilInfo.holderName || '',
+      });
+    }
+  }, [pagomovilInfo]);
+
+  // Show error notification if there's an error loading pagomovil info
+  useEffect(() => {
+    if (pagomovilError) {
+      showNotification('error', 'Loading Error', pagomovilError);
+    }
+  }, [pagomovilError]);
 
   const showNotification = (type: 'success' | 'error', title: string, message: string) => {
     setNotification({
@@ -151,6 +184,10 @@ export default function SettingsPage() {
         'Settings Updated',
         'Your Pagomovil payment information has been successfully updated.'
       );
+
+      // Refetch the pagomovil info to get the latest data
+      await refetch();
+
       router.refresh();
     } catch (error) {
       console.error('Error updating settings:', error);
@@ -208,7 +245,19 @@ export default function SettingsPage() {
             Configure your Pagomovil account information to receive payments.
           </p>
         </div>
-        <div className="p-6">
+
+        {/* Loading overlay */}
+        {pagomovilLoading && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/80 dark:bg-gray-800/80">
+            <div className="flex items-center space-x-2">
+              <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-blue-600"></div>
+              <span className="text-gray-600 dark:text-gray-400">Loading...</span>
+            </div>
+          </div>
+        )}
+
+        <div className="relative p-6">
+          {/* Made relative for loading overlay */}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <label
@@ -324,7 +373,7 @@ export default function SettingsPage() {
 
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || pagomovilLoading}
               className="w-full rounded-md bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none disabled:opacity-50 dark:bg-blue-700 dark:hover:bg-blue-800 dark:focus:ring-offset-gray-800"
             >
               {isLoading ? 'Saving...' : 'Save Changes'}
