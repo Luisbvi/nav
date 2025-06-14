@@ -116,7 +116,7 @@ export interface ShippingAddress {
   state?: string;
 }
 
-export type PaymentMethod = 'card' | 'cash' | 'Pago movil';
+export type PaymentMethod = 'card' | 'cash' | 'Pago movil' | 'Binance';
 
 export interface OrderData {
   id?: number;

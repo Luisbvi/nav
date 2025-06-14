@@ -21,6 +21,7 @@ import type { CartItem } from '@/types';
 import type { ShippingMethodType, ShippingOption } from './cart-content';
 import PaymentMethodSelector from './payment-method-selector';
 import PagomovilModal, { type PagomovilPaymentData } from './pagomovil-modal';
+import BinanceModal, { type BinancePaymentData } from './binance-modal';
 import { USDRes } from '@/utils/supabase/types';
 
 interface CartSummaryProps {
@@ -47,6 +48,7 @@ export default function CartSummary({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('credit_card');
   const [showPagomovilModal, setShowPagomovilModal] = useState(false);
+  const [showBinanceModal, setShowBinanceModal] = useState(false);
   const [rate, setRate] = useState(1);
 
   useEffect(() => {
@@ -85,6 +87,12 @@ export default function CartSummary({
         return;
       }
 
+      if (paymentMethod === 'binance') {
+        setShowBinanceModal(true);
+        setIsSubmitting(false);
+        return;
+      }
+
       if (paymentMethod === 'cash') {
         const response = await fetch('/api/create-cash-order', {
           method: 'POST',
@@ -110,36 +118,6 @@ export default function CartSummary({
           router.push(data.redirectUrl);
         } else {
           throw new Error('Failed to create order');
-        }
-
-        return;
-      }
-
-      if (paymentMethod === 'binance') {
-        const response = await fetch('/api/create-binance-order', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            items,
-            shippingMethod,
-            shippingPrice: selectedShipping.price,
-            user,
-            total: total * rate,
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        if (data.success && data.redirectUrl) {
-          router.push(data.redirectUrl);
-        } else {
-          throw new Error('Failed to create Binance order');
         }
 
         return;
@@ -208,6 +186,43 @@ export default function CartSummary({
       }
     } catch (error) {
       console.error('Error processing Pagomovil payment:', error);
+      alert('Something went wrong. Please try again.');
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleBinanceSubmit = async (paymentData: BinancePaymentData) => {
+    try {
+      setIsSubmitting(true);
+
+      const response = await fetch('/api/create-binance-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          items,
+          shippingMethod,
+          shippingPrice: selectedShipping.price,
+          user,
+          paymentData,
+          total: total * rate,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.success && data.redirectUrl) {
+        router.push(data.redirectUrl);
+      } else {
+        throw new Error('Failed to create Binance order');
+      }
+    } catch (error) {
+      console.error('Error processing Binance payment:', error);
       alert('Something went wrong. Please try again.');
       setIsSubmitting(false);
     }
@@ -386,6 +401,16 @@ export default function CartSummary({
           onSubmit={handlePagomovilSubmit}
           total={total}
           rate={rate}
+          isSubmitting={isSubmitting}
+        />
+      )}
+
+      {showBinanceModal && (
+        <BinanceModal
+          isOpen={showBinanceModal}
+          onClose={() => setShowBinanceModal(false)}
+          onSubmit={handleBinanceSubmit}
+          total={total}
           isSubmitting={isSubmitting}
         />
       )}

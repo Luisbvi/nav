@@ -81,3 +81,36 @@ export function usePagomovilInfo() {
 
   return { pagomovilInfo, loading, error, refetch: fetchPagomovilInfo };
 }
+
+export const useBinanceInfo = () => {
+  const [binanceInfo, setBinanceInfo] = useState<any>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const refetch = async () => {
+    try {
+      setLoading(true);
+      const supabase = createClient();
+      const { data, error: supabaseError } = await supabase
+        .from('settings')
+        .select('binance')
+        .single();
+
+      if (supabaseError) throw supabaseError;
+
+      setBinanceInfo(data?.binance || {});
+      setError(null);
+    } catch (err) {
+      setError('Error loading Binance information');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    refetch();
+  }, []);
+
+  return { binanceInfo, loading, error, refetch };
+};

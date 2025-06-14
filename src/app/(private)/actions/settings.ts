@@ -54,3 +54,15 @@ export async function updatePagomovil(data: PagomovilData): Promise<OperationRes
     return { success: false, error: 'Error desconocido' };
   }
 }
+
+export const updateBinance = async (binanceData: { email: string }) => {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from('settings')
+    .update({ binance: { email: binanceData.email } })
+    .single();
+
+  if (error) {
+    throw error.message;
+  }
+};
