@@ -464,7 +464,7 @@ export default function SettingsPage() {
                     <p className="text-sm text-red-500 dark:text-red-400">{errors.holderName}</p>
                   )}
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Enter the full name of the account holder.
+                    {`Enter the full name of the account holder's name.`}
                   </p>
                 </div>
               </>
@@ -499,8 +499,8 @@ export default function SettingsPage() {
                     Important Note:
                   </h4>
                   <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                    Customers will send payments to this Binance email address. Make sure it's
-                    correct and that you have access to this account.
+                    {`Customers will send payments to this Binance email address. Make sure it's
+                    correct and that you have access to this account.`}
                   </p>
                 </div>
               </>

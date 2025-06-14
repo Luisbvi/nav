@@ -23,6 +23,13 @@ type LanguageAction =
   | { type: 'RESET' }
   | { type: 'SET_ALL'; data: LanguageState };
 
+type LanguageHandler = {
+  handleNameChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleDescriptionChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  name: string;
+  description: string;
+};
+
 const initialLanguageState: LanguageState = {
   en: { name: '', description: '' },
   es: { name: '', description: '' },
@@ -104,7 +111,7 @@ export default function ProductsDashboard({
   );
 
   const languageHandlers = useMemo(() => {
-    const handlers: Record<string, any> = {};
+    const handlers: Record<string, LanguageHandler> = {};
     SUPPORTED_LANGUAGES.forEach((lang) => {
       handlers[lang] = createLanguageHandlers(lang);
     });

@@ -9,6 +9,13 @@ export interface PagomovilInfo {
   holderName: string;
 }
 
+interface BinanceInfo {
+  apiKey?: string;
+  secretKey?: string;
+  isEnabled?: boolean;
+  email?: string;
+}
+
 /**
  * Obtiene la información de Pagomovil del admin para mostrar en el checkout
  */
@@ -83,7 +90,7 @@ export function usePagomovilInfo() {
 }
 
 export const useBinanceInfo = () => {
-  const [binanceInfo, setBinanceInfo] = useState<any>(null);
+  const [binanceInfo, setBinanceInfo] = useState<BinanceInfo | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 

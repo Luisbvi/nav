@@ -25,8 +25,6 @@ export async function updatePagomovil(data: PagomovilData): Promise<OperationRes
       throw new Error('No se pudo obtener el usuario actual');
     }
 
-    const userId = userData.user.id;
-
     const { error: updateError } = await supabase
       .from('settings')
       .update({
