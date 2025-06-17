@@ -11,7 +11,7 @@ const HomeBanner = () => {
   return (
     <div className="relative w-full">
       {/* Banner azul */}
-      <div className="relative mt-8 w-full overflow-visible rounded-lg bg-blue-600 pt-16 sm:mt-10 sm:pt-20 md:mt-14 md:pt-24">
+      <div className="relative mt-8 w-full overflow-visible rounded-lg bg-blue-600 pt-16 sm:mt-10 sm:pt-20 md:mt-24">
         <div className="flex flex-col items-center justify-between px-4 py-8 sm:px-6 md:px-10 md:py-10 lg:flex-row">
           {/* Texto */}
           <div className="mb-8 w-full text-center lg:mb-0 lg:max-w-[50%] lg:text-left">
@@ -33,8 +33,9 @@ const HomeBanner = () => {
         </div>
       </div>
 
+      {/* Imagen ajustada para que su parte inferior comience en el contenedor azul */}
       <div className="absolute top-0 right-4 z-20 hidden md:right-12 xl:block">
-        <div className="relative -mt-[78px] h-[500px] w-[500px]">
+        <div className="relative h-[450px] w-[450px] md:mt-[-44px] lg:mt-[-104px]">
           {/* Shadow radial detrás de la imagen */}
           <div className="absolute inset-0 -z-10 scale-80 rounded-full bg-cyan-600/40 blur-2xl"></div>
           <div className="absolute inset-0 -z-10 scale-70 rounded-full bg-cyan-400/30 blur-xl"></div>
