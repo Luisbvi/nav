@@ -28,6 +28,8 @@ export default function CategoryGrid({ categories }: CategoryGridProps) {
     async function loadCategoriesWithProducts() {
       const result: CategoryWithProduct[] = [];
 
+      console.log('Loading categories with products:', categories);
+
       for (const category of categories) {
         const { count: productCount } = await supabase
           .from('products')

@@ -7,7 +7,7 @@ export default function AcercaDeCCH() {
   const { t } = useLanguage();
 
   return (
-    <div className="w-full py-12">
+    <div className="mx-auto w-full max-w-7xl py-12">
       <div className="container mx-auto px-4">
         <div className="flex flex-col items-center gap-8 md:flex-row">
           <div className="w-full md:w-1/2">

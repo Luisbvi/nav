@@ -3069,6 +3069,15 @@ const translations = {
     hi: 'भुगतान निर्देश',
     fil: 'Mga tagubilin sa pagbabayad',
   },
+  services: {
+    en: 'Service',
+    es: 'Servicio',
+    zh: '服务',
+    fr: 'Service',
+    ru: 'Oбслуживание',
+    hi: 'सेवा',
+    fil: 'Serbisyo',
+  },
 };
 
 export async function GET() {

@@ -14,7 +14,7 @@ export default function HeroSection() {
 
   return (
     <section className="relative mt-4">
-      <div className="mx-auto max-w-4xl text-center">
+      <div className="mx-auto max-w-7xl text-center">
         <motion.h1
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
