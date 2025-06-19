@@ -77,7 +77,45 @@ export default function CategoryGrid({ categories }: CategoryGridProps) {
           {t('browse_categories') || 'Browse Categories'}
         </motion.h2>
 
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Contenedor para scroll horizontal en móviles */}
+        <div className="-mx-6 overflow-x-auto px-6 pb-4 md:hidden">
+          <div className="flex w-max space-x-4">
+            {categoriesWithProducts.map((category, index) => (
+              <motion.div
+                key={category.name}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                whileHover={{ y: -5 }}
+                className="w-64 flex-shrink-0 overflow-hidden rounded-lg bg-white shadow-md transition-all hover:shadow-lg dark:bg-gray-700"
+              >
+                <Link href={`/catalog?category=${encodeURIComponent(category.name)}`}>
+                  <div className="relative h-40 w-full overflow-hidden bg-gray-200 dark:bg-gray-600">
+                    <Image
+                      src={category.randomProduct?.image_url || '/images/img-placeholder.webp'}
+                      alt={category.randomProduct?.name || category.name}
+                      fill
+                      className="object-contain transition-transform duration-300 group-hover:scale-105"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                    />
+                  </div>
+                  <div className="p-4">
+                    <h3 className="text-lg font-semibold group-hover:text-blue-600 dark:text-white dark:group-hover:text-blue-400">
+                      {t(category.name.toLowerCase().replace(/\s+/g, '_')) || category.name}
+                    </h3>
+                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-300">
+                      {category.count} {t('products') || 'products'}
+                    </p>
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+
+        {/* Grid normal para desktop (se muestra a partir de md: breakpoint) */}
+        <div className="hidden grid-cols-1 gap-6 sm:grid-cols-2 md:grid lg:grid-cols-4">
           {categoriesWithProducts.map((category, index) => (
             <motion.div
               key={category.name}
@@ -86,7 +124,7 @@ export default function CategoryGrid({ categories }: CategoryGridProps) {
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
               whileHover={{ y: -5 }}
-              className="group overflow-hidden rounded-lg bg-white shadow-md transition-all hover:shadow-lg dark:bg-gray-700"
+              className="overflow-hidden rounded-lg bg-white shadow-md transition-all hover:shadow-lg dark:bg-gray-700"
             >
               <Link href={`/catalog?category=${encodeURIComponent(category.name)}`}>
                 <div className="relative h-40 w-full overflow-hidden bg-gray-200 dark:bg-gray-600">
