@@ -9,7 +9,7 @@ interface PaymentMethodSelectorProps {
   selectedMethod: string;
   onMethodChange: (method: string) => void;
   total: number;
-  rate: number;
+  // rate: number;
 }
 
 export default function PaymentMethodSelector({
@@ -20,7 +20,7 @@ export default function PaymentMethodSelector({
   const methods = [
     { id: 'credit_card', label: t('credit_card') },
     { id: 'cash', label: t('cash') },
-    { id: 'pagomovil', label: t('pagomovil') },
+    // { id: 'pagomovil', label: t('pagomovil') },
     { id: 'binance', label: 'Binance' },
   ];
 
@@ -41,9 +41,7 @@ export default function PaymentMethodSelector({
               {method.id === 'cash' && (
                 <Banknote className="mr-2 h-5 w-5 text-gray-600 dark:text-gray-400" />
               )}
-              {method.id === 'pagomovil' && (
-                <Smartphone className="mr-2 h-5 w-5 text-gray-600 dark:text-gray-400" />
-              )}
+
               {method.id === 'binance' && (
                 <svg
                   className="mr-2 h-5 w-5 text-gray-600 dark:text-gray-400"

@@ -49,9 +49,9 @@ export default function CartSummary({
   const [paymentMethod, setPaymentMethod] = useState('credit_card');
   const [showPagomovilModal, setShowPagomovilModal] = useState(false);
   const [showBinanceModal, setShowBinanceModal] = useState(false);
-  const [rate, setRate] = useState(1);
+  // const [rate, setRate] = useState(1);
 
-  useEffect(() => {
+  /* useEffect(() => {
     fetch('https://pydolarve.org/api/v1/dollar?page=bcv')
       .then((res) => res.json())
       .then(({ monitors }: USDRes) => {
@@ -60,7 +60,7 @@ export default function CartSummary({
       .catch((error) => {
         console.error('Error fetching exchange rate:', error);
       });
-  }, []);
+  }, []); */
 
   const selectedShipping = shippingOptions[shippingMethod];
 
@@ -104,7 +104,7 @@ export default function CartSummary({
             shippingMethod,
             shippingPrice: selectedShipping.price,
             user,
-            total: total * rate,
+            total: total,
           }),
         });
 
@@ -169,7 +169,7 @@ export default function CartSummary({
           shippingPrice: selectedShipping.price,
           user,
           paymentData,
-          total: total * rate,
+          total: total,
         }),
       });
 
@@ -206,7 +206,7 @@ export default function CartSummary({
           shippingPrice: selectedShipping.price,
           user,
           paymentData,
-          total: total * rate,
+          total: total,
         }),
       });
 
@@ -354,7 +354,7 @@ export default function CartSummary({
           selectedMethod={paymentMethod}
           onMethodChange={setPaymentMethod}
           total={Number.parseFloat(total.toFixed(2))}
-          rate={rate}
+          //  rate={rate}
         />
       </div>
 
@@ -394,7 +394,7 @@ export default function CartSummary({
         </Button>
       </motion.div>
 
-      {showPagomovilModal && (
+      {/*showPagomovilModal && (
         <PagomovilModal
           isOpen={showPagomovilModal}
           onClose={() => setShowPagomovilModal(false)}
@@ -403,7 +403,7 @@ export default function CartSummary({
           rate={rate}
           isSubmitting={isSubmitting}
         />
-      )}
+      )*/}
 
       {showBinanceModal && (
         <BinanceModal
