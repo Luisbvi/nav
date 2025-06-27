@@ -18,7 +18,7 @@ export default function PaymentMethodSelector({
 }: PaymentMethodSelectorProps) {
   const { t } = useLanguage();
   const methods = [
-    { id: 'credit_card', label: t('credit_card') },
+    //  { id: 'credit_card', label: t('credit_card') },
     { id: 'cash', label: t('cash') },
     // { id: 'pagomovil', label: t('pagomovil') },
     { id: 'binance', label: 'Binance' },
@@ -35,9 +35,9 @@ export default function PaymentMethodSelector({
           >
             <RadioGroupItem value={method.id} id={method.id} />
             <Label htmlFor={method.id} className="flex flex-1 cursor-pointer items-center">
-              {method.id === 'credit_card' && (
+              {/*method.id === 'credit_card' && (
                 <CreditCard className="mr-2 h-5 w-5 text-gray-600 dark:text-gray-400" />
-              )}
+              )*/}
               {method.id === 'cash' && (
                 <Banknote className="mr-2 h-5 w-5 text-gray-600 dark:text-gray-400" />
               )}
