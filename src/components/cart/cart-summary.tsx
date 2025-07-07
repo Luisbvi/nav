@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import type { User } from '@supabase/supabase-js';
 import { HelpCircle, Truck, MapPin, Package } from 'lucide-react';
@@ -20,9 +20,7 @@ import { useRouter } from 'next/navigation';
 import type { CartItem } from '@/types';
 import type { ShippingMethodType, ShippingOption } from './cart-content';
 import PaymentMethodSelector from './payment-method-selector';
-import PagomovilModal, { type PagomovilPaymentData } from './pagomovil-modal';
 import BinanceModal, { type BinancePaymentData } from './binance-modal';
-import { USDRes } from '@/utils/supabase/types';
 
 interface CartSummaryProps {
   subtotal: number;
@@ -47,7 +45,7 @@ export default function CartSummary({
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('credit_card');
-  const [showPagomovilModal, setShowPagomovilModal] = useState(false);
+  // const [showPagomovilModal, setShowPagomovilModal] = useState(false);
   const [showBinanceModal, setShowBinanceModal] = useState(false);
   // const [rate, setRate] = useState(1);
 
@@ -82,7 +80,7 @@ export default function CartSummary({
       setIsSubmitting(true);
 
       if (paymentMethod === 'pagomovil') {
-        setShowPagomovilModal(true);
+        //  setShowPagomovilModal(true);
         setIsSubmitting(false);
         return;
       }
@@ -153,7 +151,7 @@ export default function CartSummary({
       setIsSubmitting(false);
     }
   };
-
+  /*
   const handlePagomovilSubmit = async (paymentData: PagomovilPaymentData) => {
     try {
       setIsSubmitting(true);
@@ -190,6 +188,7 @@ export default function CartSummary({
       setIsSubmitting(false);
     }
   };
+  */
 
   const handleBinanceSubmit = async (paymentData: BinancePaymentData) => {
     try {

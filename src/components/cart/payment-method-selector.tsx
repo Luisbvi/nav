@@ -3,7 +3,7 @@
 import { useLanguage } from '@/contexts/language-context';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
-import { CreditCard, Banknote, Smartphone } from 'lucide-react';
+import { Banknote } from 'lucide-react';
 
 interface PaymentMethodSelectorProps {
   selectedMethod: string;
