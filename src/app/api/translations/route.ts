@@ -3078,6 +3078,35 @@ const translations = {
     hi: 'सेवा',
     fil: 'Serbisyo',
   },
+  protein: {
+    en: 'Protein',
+    es: 'Proteína',
+    zh: '蛋白质',
+    fr: 'Protéine',
+    ru: 'Белок',
+    hi: 'प्रोटीन',
+    fil: 'Protina',
+  },
+
+  drinks_and_candies: {
+    en: 'Drinks and Candies',
+    es: 'Bebidas y Dulces',
+    zh: '饮料和糖果',
+    fr: 'Boissons et Bonbons',
+    ru: 'Напитки и Конфеты',
+    hi: 'पेय और मिठाई',
+    fil: 'Inumin at Kendi',
+  },
+
+  fruits_and_vegetables: {
+    en: 'Fruits and Vegetables',
+    es: 'Frutas y Verduras',
+    zh: '水果和蔬菜',
+    fr: 'Fruits et Légumes',
+    ru: 'Фрукты и Овощи',
+    hi: 'फल और सब्ज़ियाँ',
+    fil: 'Prutas at Gulay',
+  },
 };
 
 export async function GET() {
