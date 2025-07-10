@@ -16,35 +16,17 @@ export default async function Home() {
   const { data: categoriesData } = await supabase
     .from('products')
     .select('category')
-    .order('category');
+    .eq('category', 'service');
 
-  const categoryCounts: Record<string, number> = {};
-  categoriesData?.forEach((item) => {
-    const category = item.category;
-    if (categoryCounts[category]) {
-      categoryCounts[category]++;
-    } else {
-      categoryCounts[category] = 1;
-    }
-  });
+  const categories = categoriesData?.map((item) => ({ name: item.category })) || [];
 
   console.log('Category counts:', categoriesData);
-
-  // Separar la categoría "services" del resto
-  const servicesEntry = Object.entries(categoryCounts).find(([name]) => name === 'SERVICES');
-  const otherEntries = Object.entries(categoryCounts).filter(([name]) => name !== 'SERVICES');
-
-  // Combinar "services" con las otras categorías (limitando a 3 para que en total sean 4)
-  const categories = [
-    ...(servicesEntry ? [{ name: servicesEntry[0], count: servicesEntry[1] }] : []),
-    ...otherEntries.map(([name, count]) => ({ name, count })).slice(0, 3), // Tomamos solo 3 para que con "services" sean 4 en total
-  ];
 
   return (
     <>
       <HomeBanner />
       <About />
-      <CategoryGrid categories={categories} />
+      <CategoryGrid />
       <HeroSection />
       <FeaturedProducts products={featuredProducts || []} />
     </>
