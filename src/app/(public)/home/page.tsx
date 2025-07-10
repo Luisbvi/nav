@@ -18,8 +18,6 @@ export default async function Home() {
     .select('category')
     .eq('category', 'service');
 
-  const categories = categoriesData?.map((item) => ({ name: item.category })) || [];
-
   console.log('Category counts:', categoriesData);
 
   return (
