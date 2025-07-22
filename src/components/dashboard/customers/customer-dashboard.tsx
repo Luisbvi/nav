@@ -186,7 +186,11 @@ export default function CustomersDashboard({ initialCustomers }: { initialCustom
       </div>
 
       <Suspense
-        fallback={<div className="text-gray-700 dark:text-gray-300">Loading customer table...</div>}
+        fallback={
+          <div className="text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+            Loading customer table...
+          </div>
+        }
       >
         <CustomerTable
           customers={customers}
@@ -197,7 +201,11 @@ export default function CustomersDashboard({ initialCustomers }: { initialCustom
 
       {selectedUser && (
         <Suspense
-          fallback={<div className="text-gray-700 dark:text-gray-300">Loading user details...</div>}
+          fallback={
+            <div className="text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+              Loading user details...
+            </div>
+          }
         >
           <UserDetailsModal
             selectedUser={selectedUser}
