@@ -196,7 +196,7 @@ export default function OrdersDashboard({ initialOrders }: { initialOrders: Orde
                     </td>
                     <td className="px-6 py-4 text-sm whitespace-nowrap">
                       <span
-                        className={`inline-flex rounded-full px-2 text-xs leading-5 font-semibold ${getStatusColor(
+                        className={`inline-flex rounded-full px-2 text-xs leading-5 font-semibold uppercase ${getStatusColor(
                           order.status
                         )}`}
                       >

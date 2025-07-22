@@ -9,6 +9,8 @@ import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { useCart } from '@/contexts/cart-context';
 import { useLanguage } from '@/contexts/language-context';
+import { User } from '@/types';
+import { createClient } from '@/utils/supabase/client';
 
 interface ProductCardProps {
   product: Product;
@@ -22,7 +24,37 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const [isEditingQuantity, setIsEditingQuantity] = useState(false);
   const [inputValue, setInputValue] = useState('1');
   const [showContactPopup, setShowContactPopup] = useState(false);
+  const [user, setUser] = useState<User>();
   const { addItem } = useCart();
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    const getUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        setUser(undefined);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      setUser(data);
+    };
+
+    getUser();
+  }, []);
 
   useEffect(() => {
     const favoriteProducts = JSON.parse(localStorage.getItem('favoriteProducts') || '[]');
@@ -169,18 +201,20 @@ const ProductCard = ({ product }: ProductCardProps) => {
           </div>
 
           {/* Price Section */}
-          <div className="mb-2 flex items-center sm:mb-3">
-            <span className="text-base font-bold text-gray-900 sm:text-lg dark:text-gray-100">
-              {finalPrice > 0
-                ? finalPrice.toFixed(2) + '$'
-                : t('contact_for_price') || 'Contact for price'}
-            </span>
-            {discount > 0 && (
-              <span className="ml-1 text-xs text-gray-500 line-through sm:ml-2 sm:text-sm dark:text-gray-300">
-                {product.price.toFixed(2)}$
+          {user && (user.role === 'admin' || user.role === 'customer') && (
+            <div className="mb-2 flex items-center sm:mb-3">
+              <span className="text-base font-bold text-gray-900 sm:text-lg dark:text-gray-100">
+                {finalPrice > 0
+                  ? finalPrice.toFixed(2) + '$'
+                  : t('contact_for_price') || 'Contact for price'}
               </span>
-            )}
-          </div>
+              {discount > 0 && (
+                <span className="ml-1 text-xs text-gray-500 line-through sm:ml-2 sm:text-sm dark:text-gray-300">
+                  {product.price.toFixed(2)}$
+                </span>
+              )}
+            </div>
+          )}
 
           {/* Stock Status */}
           <div className="mb-3 flex items-center">
@@ -207,100 +241,102 @@ const ProductCard = ({ product }: ProductCardProps) => {
           </div>
 
           {/* Quantity and Add to Cart */}
-          <div className="flex flex-col gap-2">
-            <div className="flex justify-between rounded-md border dark:border-gray-300">
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={() => {
-                  const newQuantity = Math.max(1, quantity - 1);
-                  setQuantity(newQuantity);
-                  setInputValue(newQuantity.toString());
-                }}
-                disabled={quantity <= 1}
-                className="cursor-pointer px-2 py-1 text-gray-600 disabled:opacity-50 dark:text-gray-200"
-                aria-label={t('decrease_quantity') || 'Decrease quantity'}
-              >
-                <Minus className="size-3 sm:size-4" />
-              </motion.button>
-
-              {isEditingQuantity ? (
-                <input
-                  type="text"
-                  value={inputValue}
-                  onChange={handleQuantityChange}
-                  onBlur={handleQuantityBlur}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') handleQuantityBlur();
+          {user && (user.role === 'admin' || user.role === 'customer') && (
+            <div className="flex flex-col gap-2">
+              <div className="flex justify-between rounded-md border dark:border-gray-300">
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => {
+                    const newQuantity = Math.max(1, quantity - 1);
+                    setQuantity(newQuantity);
+                    setInputValue(newQuantity.toString());
                   }}
-                  className="w-12 border-0 bg-transparent p-0 text-center text-xs focus:ring-0 focus:outline-none sm:text-sm"
-                  autoFocus
-                />
-              ) : (
-                <button
-                  onClick={() => setIsEditingQuantity(true)}
-                  className="min-w-[20px] px-1 py-1 text-center text-xs sm:min-w-[30px] sm:px-2 sm:text-sm"
+                  disabled={quantity <= 1}
+                  className="cursor-pointer px-2 py-1 text-gray-600 disabled:opacity-50 dark:text-gray-200"
+                  aria-label={t('decrease_quantity') || 'Decrease quantity'}
                 >
-                  {quantity}
-                  <span className="mx-1 text-gray-400 sm:mx-2 dark:text-gray-500">
-                    {product.unit}
-                  </span>
-                </button>
-              )}
+                  <Minus className="size-3 sm:size-4" />
+                </motion.button>
+
+                {isEditingQuantity ? (
+                  <input
+                    type="text"
+                    value={inputValue}
+                    onChange={handleQuantityChange}
+                    onBlur={handleQuantityBlur}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') handleQuantityBlur();
+                    }}
+                    className="w-12 border-0 bg-transparent p-0 text-center text-xs focus:ring-0 focus:outline-none sm:text-sm"
+                    autoFocus
+                  />
+                ) : (
+                  <button
+                    onClick={() => setIsEditingQuantity(true)}
+                    className="min-w-[20px] px-1 py-1 text-center text-xs sm:min-w-[30px] sm:px-2 sm:text-sm"
+                  >
+                    {quantity}
+                    <span className="mx-1 text-gray-400 sm:mx-2 dark:text-gray-500">
+                      {product.unit}
+                    </span>
+                  </button>
+                )}
+
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => {
+                    const newQuantity = quantity + 1;
+                    setQuantity(newQuantity);
+                    setInputValue(newQuantity.toString());
+                  }}
+                  disabled={product.stock <= quantity}
+                  className="cursor-pointer px-2 py-1 text-gray-600 disabled:opacity-50 dark:text-gray-200"
+                  aria-label={t('increase_quantity') || 'Increase quantity'}
+                >
+                  <Plus className="size-3 sm:size-4" />
+                </motion.button>
+              </div>
 
               <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={() => {
-                  const newQuantity = quantity + 1;
-                  setQuantity(newQuantity);
-                  setInputValue(newQuantity.toString());
-                }}
-                disabled={product.stock <= quantity}
-                className="cursor-pointer px-2 py-1 text-gray-600 disabled:opacity-50 dark:text-gray-200"
-                aria-label={t('increase_quantity') || 'Increase quantity'}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                disabled={product.stock <= 0 || isAddingToCart}
+                onClick={() => handleAddToCart(false)}
+                className={cn(
+                  'flex items-center justify-center gap-1 rounded-md py-2 text-sm font-medium text-white transition-colors sm:flex-1 sm:py-2 sm:text-base',
+                  product.stock > 0
+                    ? 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600'
+                    : 'cursor-not-allowed bg-gray-400'
+                )}
               >
-                <Plus className="size-3 sm:size-4" />
+                <AnimatePresence mode="wait">
+                  {isAddingToCart ? (
+                    <motion.div
+                      key="loading"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="flex items-center"
+                    >
+                      <Check className="mr-1 size-3 sm:size-4" />
+                      {t('added') || 'Added'}
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      key="add"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="flex items-center"
+                    >
+                      <ShoppingCart className="mr-1 size-3 sm:size-4" />
+                      {t('add_to_cart') || 'Add to Cart'}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.button>
             </div>
-
-            <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              disabled={product.stock <= 0 || isAddingToCart}
-              onClick={() => handleAddToCart(false)}
-              className={cn(
-                'flex items-center justify-center gap-1 rounded-md py-2 text-sm font-medium text-white transition-colors sm:flex-1 sm:py-2 sm:text-base',
-                product.stock > 0
-                  ? 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600'
-                  : 'cursor-not-allowed bg-gray-400'
-              )}
-            >
-              <AnimatePresence mode="wait">
-                {isAddingToCart ? (
-                  <motion.div
-                    key="loading"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="flex items-center"
-                  >
-                    <Check className="mr-1 size-3 sm:size-4" />
-                    {t('added') || 'Added'}
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    key="add"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    className="flex items-center"
-                  >
-                    <ShoppingCart className="mr-1 size-3 sm:size-4" />
-                    {t('add_to_cart') || 'Add to Cart'}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.button>
-          </div>
+          )}
         </div>
       </motion.div>
       <AnimatePresence>

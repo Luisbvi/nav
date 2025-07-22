@@ -8,11 +8,11 @@ export default function UserRoleBadge({ role }: { role: string }) {
         Admin
       </span>
     );
-  } else if (role === 'manager') {
+  } else if (role === 'customer') {
     return (
       <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
         <UserCheck size={12} className="mr-1" />
-        Manager
+        Customer
       </span>
     );
   } else {

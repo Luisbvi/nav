@@ -108,13 +108,18 @@ export default function CustomersDashboard({ initialCustomers }: { initialCustom
       vesselName: 'vessel_name',
       shippingCompany: 'shipping_company',
       preferredLanguage: 'preferred_language',
+      role: 'role',
+      status: 'status',
     };
     const stateProperty = fieldMappings[name] || name;
     setEditForm((prev) => ({ ...prev, [stateProperty]: value }));
   };
 
   const handleSaveChanges = async () => {
-    if (!selectedUser) return;
+    if (!selectedUser) {
+      console.log('No user selected');
+      return;
+    }
 
     try {
       const { error: profileError } = await supabase

@@ -53,13 +53,15 @@ export interface FormData {
   info: Record<string, LanguageInfo>;
 }
 
+export type Role = 'user' | 'admin' | 'customer';
+
 export interface User {
   id: string;
   first_name: string;
   last_name: string;
   vessel_name: string;
   shipping_company: string;
-  role: string;
+  role: Role;
   preferred_language: string;
   status: string;
   email: string;

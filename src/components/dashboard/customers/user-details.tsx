@@ -98,9 +98,7 @@ export default function UserDetails({ selectedUser }: { selectedUser: User }) {
           <Shield className="mt-1 mr-2 text-gray-400 dark:text-gray-500" size={16} />
           <div>
             <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Role</p>
-            <p className="text-sm text-gray-900 dark:text-white">
-              {selectedUser.role === 'admin' ? 'Administrator' : 'User'}
-            </p>
+            <p className="text-sm text-gray-900 dark:text-white">{selectedUser.role}</p>
           </div>
         </div>
         <div className="flex items-start">
