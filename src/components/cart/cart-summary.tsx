@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import type { User } from '@supabase/supabase-js';
-import { HelpCircle, Truck, MapPin, Package } from 'lucide-react';
+import { HelpCircle, Truck, Ship, Anchor } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -64,12 +64,11 @@ export default function CartSummary({
 
   const getShippingIcon = (method: string) => {
     switch (method) {
-      case 'standard':
-        return <Truck className="mr-1.5 h-4 w-4" />;
-      case 'express':
-        return <Package className="mr-1.5 h-4 w-4" />;
-      case 'pickup':
-        return <MapPin className="mr-1.5 h-4 w-4" />;
+      case 'anchored':
+        return <Anchor className="mr-1.5 h-4 w-4" />;
+      case 'docked':
+        return <Ship className="mr-1.5 h-4 w-4" />;
+
       default:
         return <Truck className="mr-1.5 h-4 w-4" />;
     }

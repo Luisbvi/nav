@@ -89,19 +89,23 @@ const ProductTable = React.memo(function ProductTable({
                     {product.stock}
                   </span>
                 </td>
-                <td className="px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
-                  <button
-                    onClick={() => onEdit(product.id)}
-                    className="mr-4 text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                  >
-                    <Edit className="h-4 w-4" />
-                  </button>
-                  <button
-                    onClick={() => onDelete(product.id)}
-                    className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
+                <td className="items-center px-6 py-4 text-right text-sm font-medium whitespace-nowrap">
+                  <div className="flex justify-end space-x-2">
+                    <button
+                      onClick={() => onEdit(product.id)}
+                      className="mr-4 flex cursor-pointer p-2 text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                    >
+                      <Edit className="h-4 w-4" />
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => onDelete(product.id)}
+                      className="flex cursor-pointer p-2 text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Delete
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

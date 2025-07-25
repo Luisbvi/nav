@@ -135,7 +135,7 @@ export default function CustomerTable({
                 >
                   <div className="flex justify-end space-x-2">
                     <button
-                      className="flex items-center text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                      className="mr-4 flex cursor-pointer items-center p-2 text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
                       onClick={(e) => {
                         e.stopPropagation();
                         openUserDetails(user);
@@ -145,7 +145,7 @@ export default function CustomerTable({
                       <span>Edit</span>
                     </button>
                     <button
-                      className="flex items-center text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                      className="flex cursor-pointer items-center p-2 text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleDeleteCustomer(user.id);

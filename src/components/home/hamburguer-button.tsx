@@ -241,7 +241,7 @@ const HamburguerButton = ({ user }: { user: User | null }) => {
                   {user ? (
                     <div>
                       <span className="block text-sm text-gray-900 dark:text-white">
-                        {user?.first_name} {user?.last_name}
+                        {user?.vessel_name}
                       </span>
                       <span className="block text-sm text-gray-500 dark:text-gray-400">
                         {user?.email}

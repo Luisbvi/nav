@@ -61,8 +61,7 @@ const LANGUAGE_NAMES: Record<string, string> = {
   zh: '中文',
   fil: 'Filipino',
 };
-
-const UNITS = ['KG', 'UNIT', 'TIN', 'SERVICE', 'PKT', 'PCS', 'LTS'] as const;
+const UNITS = ['KG', 'UNIT', 'TIN', 'SERVICE', 'PKT', 'PCS', 'LTS', 'TN', 'CM³'] as const;
 
 const LanguageForm = React.memo(
   ({

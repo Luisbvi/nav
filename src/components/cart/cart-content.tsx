@@ -16,7 +16,7 @@ export interface ShippingOption {
   displayName: string;
 }
 
-export type ShippingMethodType = 'free' | 'express' | 'overnight';
+export type ShippingMethodType = 'anchored' | 'docked';
 
 interface CartContentProps {
   user: User | null;
@@ -25,30 +25,24 @@ interface CartContentProps {
 export default function CartContent({ user }: CartContentProps) {
   const { t } = useLanguage();
   const { items, total } = useCart();
-  const [shippingMethod, setShippingMethod] = useState<ShippingMethodType>('free');
+  const [shippingMethod, setShippingMethod] = useState<ShippingMethodType>('anchored');
 
   if (items.length === 0) {
     return <EmptyCart />;
   }
 
   const shippingOptions: Record<ShippingMethodType, ShippingOption> = {
-    free: {
-      name: 'Standard',
-      displayName: t('shipping_standard') || 'Standard (5-7 days)',
+    anchored: {
+      name: 'Anchored',
+      displayName: t('anchored') || 'Anchored',
       price: 0,
-      estimatedDelivery: t('delivery_standard') || '5-7 business days',
+      estimatedDelivery: t('delivery_anchored') || '',
     },
-    express: {
-      name: 'Express',
-      displayName: t('shipping_express') || 'Express (2-3 days)',
-      price: 9.99,
-      estimatedDelivery: t('delivery_express') || '2-3 business days',
-    },
-    overnight: {
-      name: 'Overnight',
-      displayName: t('shipping_overnight') || 'Overnight (Next day)',
-      price: 19.99,
-      estimatedDelivery: t('delivery_overnight') || 'Next business day',
+    docked: {
+      name: 'Docked',
+      displayName: t('docked') || 'Docked',
+      price: 0,
+      estimatedDelivery: t('delivery_docked') || '',
     },
   };
 

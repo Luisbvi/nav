@@ -24,6 +24,7 @@ export const signUp = async (formData: FormData) => {
     password: formData.get('password') as string,
     vessel_name: formData.get('vessel-name') as string,
     shipping_company: formData.get('shipping-company') as string,
+    imo: formData.get('imo') as string,
     preferred_language: formData.get('preferred-language') as string,
   };
 
@@ -39,6 +40,7 @@ export const signUp = async (formData: FormData) => {
         email_verified: false,
         role: 'user',
         preferred_language: credentials.preferred_language,
+        imo: credentials.imo,
         status: 'active',
       },
     },

@@ -335,6 +335,21 @@ export default function RegisterPage() {
                     aria-required="false"
                   />
                 </motion.div>
+
+                <motion.div variants={itemVariants}>
+                  <Label
+                    htmlFor="imo"
+                    className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                  >
+                    {t('imo') || 'IMO'}
+                  </Label>
+                  <Input
+                    id="imo"
+                    name="imo"
+                    className="mt-1 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200"
+                    aria-required="false"
+                  />
+                </motion.div>
               </motion.div>
 
               <motion.div variants={itemVariants}>

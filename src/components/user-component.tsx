@@ -76,9 +76,7 @@ const UserComponent = ({ user, role }: { user: User; role: string }) => {
             />
           </div>
 
-          <span className="text-sm font-medium">
-            {user?.first_name} {user?.last_name}
-          </span>
+          <span className="text-sm font-medium">{user?.vessel_name}</span>
         </motion.button>
 
         <AnimatePresence>

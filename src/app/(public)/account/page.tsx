@@ -42,23 +42,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [orders, setOrders] = useState<Order[]>([]);
-  const [user] = useState<User>({
-    id: '123',
-    first_name: 'John',
-    last_name: 'Doe',
-    vessel_name: '',
-    shipping_company: '',
-    role: 'user',
-    preferred_language: 'en',
-    status: 'active',
-    email: 'john.doe@example.com',
-    email_confirmed_at: null,
-    email_verified: false,
-    created_at: '2025-01-01T00:00:00Z',
-    updated_at: '2025-04-01T00:00:00Z',
-    last_login: null,
-    avatar_url: '',
-  });
+  const [user] = useState<User>();
   const [editMode, setEditMode] = useState(false);
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [passwordForm, setPasswordForm] = useState({
@@ -74,27 +58,39 @@ export default function ProfilePage() {
   const [passwordLoading, setPasswordLoading] = useState(false);
 
   const [profile, setProfile] = useState<{
+    id: string;
     first_name: string;
+    createdAt: string;
     last_name: string;
     email: string;
     avatar_url: string | null;
+    imo: string;
   }>({
+    id: '',
+    createdAt: '',
     first_name: '',
     last_name: '',
     email: '',
     avatar_url: null,
+    imo: '',
   });
 
   const [originalProfile, setOriginalProfile] = useState<{
+    id: string;
+    createdAt: string;
     first_name: string;
     last_name: string;
     email: string;
     avatar_url: string | null;
+    imo: string;
   }>({
+    id: '',
+    createdAt: '',
     first_name: '',
     last_name: '',
     email: '',
     avatar_url: null,
+    imo: '',
   });
 
   useEffect(() => {
@@ -121,10 +117,13 @@ export default function ProfilePage() {
 
         if (profileData) {
           const profileInfo = {
+            id: profileData.id || '',
+            createdAt: profileData.created_at || '',
             first_name: profileData.first_name || '',
             last_name: profileData.last_name || '',
             email: user.email || '',
             avatar_url: profileData.avatar_url,
+            imo: profileData.imo || '',
           };
 
           setProfile(profileInfo);
@@ -157,12 +156,13 @@ export default function ProfilePage() {
       const { error } = await supabase
         .from('user_profiles')
         .update({
+          imo: profile.imo,
           first_name: profile.first_name,
           last_name: profile.last_name,
           avatar_url: profile.avatar_url,
           updated_at: new Date().toISOString(),
         })
-        .eq('id', user?.id);
+        .eq('id', profile?.id);
 
       if (error) throw error;
       setOriginalProfile({ ...profile });
@@ -421,7 +421,7 @@ export default function ProfilePage() {
                   <UserIcon className="mr-2 h-4 w-4 text-gray-500 dark:text-gray-400" />
                   <span>
                     {t('member_since') || 'Member since'}{' '}
-                    {new Date(user?.created_at || '').toLocaleDateString()}
+                    {new Date(profile.createdAt).toLocaleDateString()}
                   </span>
                 </div>
                 <div className="flex items-center text-sm text-gray-700 sm:text-base dark:text-gray-300">
@@ -509,6 +509,44 @@ export default function ProfilePage() {
                       )}
                     </AnimatePresence>
                   </div>
+
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="imo"
+                      className="text-sm text-gray-700 sm:text-base dark:text-gray-300"
+                    >
+                      {t('imo') || 'IMO'}
+                    </Label>
+                    <AnimatePresence mode="wait">
+                      {editMode ? (
+                        <motion.div
+                          key="edit-imo"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <Input
+                            id="imo"
+                            value={profile.imo}
+                            onChange={(e) => setProfile({ ...profile, imo: e.target.value })}
+                            className="border-gray-300 bg-white text-gray-900 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                          />
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key="view-imo"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="rounded-md border border-gray-300 bg-gray-50 px-3 py-2 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+                        >
+                          {profile.imo}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -579,12 +617,6 @@ export default function ProfilePage() {
                 className="py-2 text-xs data-[state=active]:bg-white data-[state=active]:text-gray-900 sm:text-sm dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-white"
               >
                 {t('orders') || 'Orders'}
-              </TabsTrigger>
-              <TabsTrigger
-                value="addresses"
-                className="py-2 text-xs data-[state=active]:bg-white data-[state=active]:text-gray-900 sm:text-sm dark:data-[state=active]:bg-gray-700 dark:data-[state=active]:text-white"
-              >
-                {t('addresses') || 'Addresses'}
               </TabsTrigger>
             </TabsList>
 
@@ -695,8 +727,7 @@ export default function ProfilePage() {
               </Card>
             </TabsContent>
 
-            {/* Addresses Tab */}
-            <TabsContent value="addresses" className="space-y-4 pt-4">
+            {/* *<TabsContent value="addresses" className="space-y-4 pt-4">
               <Card className="bg-white dark:bg-gray-800">
                 <CardHeader>
                   <CardTitle className="text-lg text-gray-900 sm:text-xl dark:text-white">
@@ -750,7 +781,7 @@ export default function ProfilePage() {
                   </Button>
                 </CardFooter>
               </Card>
-            </TabsContent>
+            </TabsContent> Addresses Tab */}
           </Tabs>
         </motion.div>
       </div>

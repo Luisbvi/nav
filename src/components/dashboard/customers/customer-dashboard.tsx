@@ -16,6 +16,7 @@ export default function CustomersDashboard({ initialCustomers }: { initialCustom
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<User>({
+    imo: '',
     id: '',
     first_name: '',
     last_name: '',
@@ -69,6 +70,7 @@ export default function CustomersDashboard({ initialCustomers }: { initialCustom
   const openUserDetails = (user: User) => {
     setSelectedUser(user);
     setEditForm({
+      imo: user.imo,
       id: user.id,
       email: user.email,
       email_confirmed_at: user.email_confirmed_at,
